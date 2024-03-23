@@ -25,6 +25,7 @@ class IpAddressType(Type):
 
 class WirelessLAN(Type):
     ssid = str
+    auth_psk = str
 
 class Interface(Type):
     name = str
@@ -64,7 +65,10 @@ def create_query(mac : str) -> str :
     interfaces.ip_addresses.tags.name()
     interfaces.wireless_lans()
     interfaces.wireless_lans.ssid()
+    interfaces.wireless_lans.auth_psk()
     #Netbox API understands snake_case but the sgqlc library uses camelCase for the fields
     # so we convert it
     snakified_query = camel_to_snake(str(query)) 
     return snakified_query
+
+#ceci_est_un_motdepasse0

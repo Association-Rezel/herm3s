@@ -43,7 +43,13 @@ class NetboxInterface:
                 if wlan['tags'] :
                     map_tag_to_ssid[wlan['tags'][0]['name']] = wlan['wireless_lans'][0]['ssid']
         return map_tag_to_ssid
-        
+    
+    def __extract_psks(self, json_data) :
+        """"""
+        all_interfaces = json_data['data']['interface_list']
+        wlans = [inter['wireless_lans'][0] for inter in all_interfaces if inter['wireless_lans']]
+        return {wlan['ssid'] : wlan['auth_psk'] for wlan in wlans}
+
     def __extract_ip_addresses(self, json_data) :
         """extract the ip adresses from a dict returned by Netbox containing
         the interfaces of a certain mac address
@@ -65,7 +71,7 @@ class NetboxInterface:
         """get the ip addresses associated with a mac address"""
         json_data = self.get_raw_infos_by_mac(mac)
         ip_addresses = self.__extract_ip_addresses(json_data)
-        return ip_addresses
+        return ip_addresses, self.__extract_psks(json_data)
     
 
 if __name__ == "__main__" :
