@@ -14,37 +14,25 @@ from sgqlc.operation import Operation
 
 
 """Declaration of the data types corresponding to the GraphQL schema of Netbox
-(only the types needed for the query are declared, although a few more are added
- to provide examples for future extensions)"""
+(only the types needed for the queries are declared)"""
+
+class Tag(Type):
+    name = str
+
 class IpAddressType(Type):
-    # id = int
     address = str
+    tags = list_of(Tag)
 
-class Site(Type):
-    id = int
-    name = str
-
-class Rack(Type):
-    id = int
-    name = str
-
-class Device(Type):
-    id = int
-    name = str
-    site = Field(Site)
-    rack = Field(Rack)
-    primary_ip4 = Field(IpAddressType)
-    primary_ip6 = Field(IpAddressType)
+class WirelessLAN(Type):
+    ssid = str
 
 class Interface(Type):
-    id = int
     name = str
-    mac_address = str
+    tags = list_of(Tag)
     ip_addresses = list_of(IpAddressType)
-    device = Field(Device)
-
+    wireless_lans = list_of(WirelessLAN)
+    
 class Query(Type):
-    device_list = Field(list_of('Device'), args={'role': str})
     interface_list = Field(list_of('Interface'), args={'mac_address': str})
 
 
@@ -69,7 +57,13 @@ def create_query(mac : str) -> str :
     interfaces = query.interface_list(mac_address=mac)
     #selection of the fields to be returned
     interfaces.name()
+    interfaces.tags()
     interfaces.ip_addresses()
+    interfaces.ip_addresses.address()
+    interfaces.ip_addresses.tags()
+    interfaces.ip_addresses.tags.name()
+    interfaces.wireless_lans()
+    interfaces.wireless_lans.ssid()
     #Netbox API understands snake_case but the sgqlc library uses camelCase for the fields
     # so we convert it
     snakified_query = camel_to_snake(str(query)) 
