@@ -1,18 +1,21 @@
 """
-Différents clients considérés :
-* gql : ne permet pas la génération de query string
-* graphql-query : quasiment pas de doc
-* sgqlc : permet la génération de query string, dernier commit il y a 9 mois mais 489 stars 
-(et documentation exhaustive : https://sgqlc.readthedocs.io/en/latest/)
+A few clients were considered :
+* gql : doesn't allow the generation of query strings
+* graphql-query : almost no documentation
+* sgqlc : allows the generation of query strings, last commit 9 months ago but 489 stars
+PLUS : exhaustive documentation : https://sgqlc.readthedocs.io/en/latest/
 
-http://netbox.dev.fai.rezel.net/graphql/ pour le playground
+It is possible to test the queries in the playground of the Netbox GraphQL API :
+http://netbox.dev.fai.rezel.net/graphql/
 """
 
 from sgqlc.types import Type, Field, list_of
 from sgqlc.operation import Operation
 
 
-"""On déclare les types de données correspondant au schéma GrahpQL de Netbox"""
+"""Declaration of the data types corresponding to the GraphQL schema of Netbox
+(only the types needed for the query are declared, although a few more are added
+ to provide examples for future extensions)"""
 class IpAddressType(Type):
     # id = int
     address = str
@@ -46,29 +49,28 @@ class Query(Type):
 
 
 def camel_to_snake(string : str):
-    """Convertit une chaine de caractère de camelCase en snake_case en préservant les adresses MAC"""
-    resultat = []
+    """convert a camelCase string to snake_case while preserving the integrity of the MAC addresses"""
+    result = []
     is_previous_previous_colon = False
     is_previous_colon = False
     for c in string[1:] :
         if c.isupper() and not is_previous_colon and not is_previous_previous_colon:
-            resultat.append('_')
-            resultat.append(c.lower())
+            result.append('_')
+            result.append(c.lower())
         else :
             is_previous_previous_colon = is_previous_colon
             is_previous_colon = (c == ':')
-            resultat.append(c)
-    return string[0] + ''.join(resultat)
+            result.append(c)
+    return string[0] + ''.join(result)
 
 def create_query(mac : str) -> str :
-    """génère une query string pour récupérer les informations sur une box
-      à partir de son adresse MAC"""
+    """create a query string to get the informations about a box from its MAC address"""
     query = Operation(Query)
     interfaces = query.interface_list(mac_address=mac)
-    #sélection des champs à récupérer
+    #selection of the fields to be returned
     interfaces.name()
     interfaces.ip_addresses()
-    #Netbox attend du snake_case et sgqlc génère du camelCase donc :
+    #Netbox API understands snake_case but the sgqlc library uses camelCase for the fields
+    # so we convert it
     snakified_query = camel_to_snake(str(query)) 
-
     return snakified_query

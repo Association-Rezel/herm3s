@@ -5,8 +5,7 @@ import env
 
 
 class NetboxInterface:
-    """Permet de récupérer des informations sur les box dans Netbox,
-    depuis son API GraphQL."""
+    """Gets informations from Netbox using its GraphQL API"""
 
     def __init__(self):
         self.__url = "http://netbox.dev.fai.rezel.net/graphql/"
@@ -17,7 +16,7 @@ class NetboxInterface:
         }
     
     def __request_netbox(self, query : str) :
-        """execute query contre l'API GraphQL de Netbox, et retourne la réponse"""
+        """exectue query against the Netbox Graphql API and returns the result as a dict"""
         json_data = {
             'query': 'query ' + query,
         }
@@ -31,17 +30,18 @@ class NetboxInterface:
         return self.__request_netbox(query)
     
     def __extract_ip_addresses(self, json_data) :
-        """extrait les adresses ip d'un json retourné par Netbox contenant
-        les interfaces d'une certaine adresse mac
-        Renvoie une liste de dict {name, ip_address}"""
+        """extract the ip adresses from a dict returned by Netbox containing
+        the interfaces of a certain mac address
+        Returns a list of dict {name : string, ip_addresses : []}"""
         all_interfaces = json_data['data']['interface_list']
-        interfaces_with_ip_adress = [interface for interface in 
+        interfaces_with_ip_addresses = [interface for interface in 
                                      all_interfaces if interface['ip_addresses']]
-        return [{'name': inter['name'], 'ip_address': inter['ip_addresses'][0]['address']}
-                 for inter in interfaces_with_ip_adress]
+        return [{'name': inter['name'], 
+                 'ip_address': [ip_wrapper['address'] for ip_wrapper in inter['ip_addresses']]}
+                 for inter in interfaces_with_ip_addresses]
 
     def get_ip_addresses_by_mac(self, mac : str) :
-        """Récupère les adresses IP associées à une adresse MAC"""
+        """get the ip addresses associated with a mac address"""
         json_data = self.get_raw_infos_by_mac(mac)
         ip_addresses = self.__extract_ip_addresses(json_data)
         return ip_addresses
@@ -49,6 +49,6 @@ class NetboxInterface:
 
 if __name__ == "__main__" :
     netbox = NetboxInterface()
-    mac_adress1 = "88:C3:97:14:B9:1F" #adresse MAC de la box dans le netbox de test
-    mac_adress2 = "88:C3:97:69:96:69"
-    print(netbox.get_ip_addresses_by_mac(mac=mac_adress2))
+    mac_address1 = "88:C3:97:14:B9:1F" #MAC address of a box in netbox.dev.fai.rezel.net
+    mac_address2 = "88:C3:97:69:96:69"
+    print(netbox.get_ip_addresses_by_mac(mac=mac_address2))
