@@ -3,6 +3,8 @@ Define a class NetboxInterface to get :
 * ssid of wlans
 * ip adresses by ssid
 * password by ssid
+
+unet_id : user network id
 """
 
 import json
@@ -22,6 +24,13 @@ class NetboxInterface:
             "Authorization": "Token " + self.__token,
             "Accept": "application/json",
         }
+
+    def __extract_unet_id_from_ssid(self, ssid: str):
+        """extract the user network id from the ssid
+
+        Args :
+            ssid (str) : ssid of the wlan"""
+        return ssid.split("-")[1]
 
     def __request_netbox(self, query: str):
         """execute query against the Netbox Graphql API and returns the result as a dict
@@ -107,13 +116,22 @@ class NetboxInterface:
         return result
 
     def get_infos_by_mac(self, mac: str):
-        """get the ip addresses associated with a mac address
+        """Return a dictionaary mapping the user network id (unet_id)
+        to a list of ip addresses and to its psk
 
         Args :
             mac (str) : mac address of the mac"""
         received_json_data = self.get_raw_infos_by_mac(mac)
         ip_addresses = self.__extract_ip_addresses(received_json_data)
-        return ip_addresses, self.__extract_psks(received_json_data)
+        psks = self.__extract_psks(received_json_data)
+        #rename the keys of the dict
+        for ssid in ip_addresses.keys():
+            unet_id = self.__extract_unet_id_from_ssid(ssid)
+            ip_addresses[unet_id] = ip_addresses.pop(ssid)
+        for ssid in psks.keys():
+            unet_id = self.__extract_unet_id_from_ssid(ssid)
+            psks[unet_id] = psks.pop(ssid)
+        return ip_addresses, psks
 
 
 if __name__ == "__main__":
