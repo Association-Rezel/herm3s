@@ -139,9 +139,9 @@ if __name__ == "__main__":
     # MAC address of a box in netbox.dev.fai.rezel.net
     MAX_ADDRESS1 = "88:C3:97:14:B9:1F"  
     MAX_ADDRESS2 = "88:C3:97:69:96:69"
-    json_data = netbox.get_raw_infos_by_mac(mac=MAX_ADDRESS2)
-    all_interfaces = json_data["data"]["interface_list"]
+    # json_data = netbox.get_raw_infos_by_mac(mac=MAX_ADDRESS2)
+    # all_interfaces = json_data["data"]["interface_list"]
     # print(json.dumps(netbox._NetboxInterface__get_map_wlan_tag_to_ssid(all_interfaces), indent=4))
     # print(json.dumps(json_data, indent=4))
-    print(json.dumps(netbox.get_infos_by_mac(MAX_ADDRESS2), indent=4))
-    # print(create_query(mac=MAX_ADDRESS2))
+    # print(json.dumps(netbox.get_infos_by_mac(MAX_ADDRESS2), indent=4))
+    print(create_query(mac=MAX_ADDRESS2))

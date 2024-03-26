@@ -46,24 +46,40 @@ class WirelessLAN(Type):
     auth_psk = str
 
 
+class Service(Type):
+    """Service in Netbox
+
+    Args:
+        Type (Type): MotherClass to create type of objects in Netbox"""
+    tags = list_of(Tag)
+    ipaddresses = list_of(IpAddressType)
+    ports = list_of(int)
+    custom_field_data = str
+
+class Device(Type):
+    """Device in Netbox
+
+    Args:
+        Type (Type): MotherClass to create type of objects in Netbox"""
+    services = list_of(Service)
+
 class Interface(Type):
     """Interface in Netbox (can be a physical interface or a virtual one like a VLAN)
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
-
     name = str
     tags = list_of(Tag)
+    device = Device
     ip_addresses = list_of(IpAddressType)
     wireless_lans = list_of(WirelessLAN)
-
 
 class Query(Type):
     """encompasses all the queries that can be made on the Netbox API
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
-
+    ip_address = Field(IpAddressType, args={"id":int})
     interface_list = Field(list_of("Interface"), args={"mac_address": str})
 
 
@@ -87,7 +103,7 @@ def camel_to_snake(string: str):
     return string[0] + "".join(result)
 
 
-def create_query(mac: str) -> str:
+def create_query_interface(mac: str) -> str:
     """create a query string to get the informations about a box from its MAC address
 
     Args :
@@ -104,7 +120,23 @@ def create_query(mac: str) -> str:
     interfaces.wireless_lans()
     interfaces.wireless_lans.ssid()
     interfaces.wireless_lans.auth_psk()
+    interfaces.device()
+    interfaces.device.services()
+    interfaces.device.services.ipaddresses()
+    interfaces.device.services.ports()
+    interfaces.device.services.custom_field_data()
     # Netbox API understands snake_case but the sgqlc library uses camelCase for the fields
     # so we convert it
+    snakified_query = camel_to_snake(str(query))
+    return snakified_query
+
+def create_query_ip(ip_id : int) :
+    """create a query string to get the ip address bearing a certain IP
+
+    Args :
+        id (int) : id of the ip"""
+    query = Operation(Query)
+    ip_address = query.ip_address(id = ip_id)
+    ip_address.address()
     snakified_query = camel_to_snake(str(query))
     return snakified_query
