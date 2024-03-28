@@ -1,0 +1,36 @@
+openapi: "3.0.0"
+info:
+  title: "Hermes API"
+  description: "API to download files from Hermes to a box"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8000"
+paths:
+  /box/{mac}/config:
+    get:
+      summary: "Download config file from Hermes to box"
+      description: "Endpoint to download config file from Hermes to box based on MAC address"
+      parameters:
+        - name: "mac"
+          in: "path"
+          description: "MAC address of the box"
+          required: true
+          schema:
+            type: "string"
+      responses:
+        '200':
+          description: "File downloaded successfully"
+          content:
+            application/octet-stream:
+              schema:
+                type: "string"
+                format: "binary"
+        '404':
+          description: "Invalid MAC address"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  Erreur:
+                    type: "string"
