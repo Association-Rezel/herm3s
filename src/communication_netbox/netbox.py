@@ -11,7 +11,7 @@ import json
 import requests
 import env
 
-from query_generator import create_query
+from query_generator import create_query_interface, create_query_ip
 
 
 class NetboxInterface:
@@ -54,8 +54,17 @@ class NetboxInterface:
         Args :
             mac (str) : mac address of the box
         """
-        query = create_query(mac)
+        query = create_query_interface(mac)
         return self.__request_netbox(query)
+
+    def __get_ip_by_id(self, ip_id: int):
+        """Return the ip address bearing a certain id
+
+        Args :
+            ip_id (int) : id of the ip address"""
+        query = create_query_ip(ip_id)
+        raw_infos = self.__request_netbox(query)
+        return raw_infos["data"]["ip_address"]["address"]
 
     def __get_map_wlan_tag_to_ssid(self, all_interfaces_list):
         """return a dict mapping the tag of a wlan to its ssid
@@ -93,7 +102,6 @@ class NetboxInterface:
     def __extract_ip_addresses(self, received_json_data):
         """extract the ip adresses from a dict returned by Netbox containing
         the interfaces of a certain mac address
-        Returns a list of dict {name : string, ip_addresses : []}
 
         Args :
             received_json_data (list) : raw data received from netbox"""
@@ -102,28 +110,58 @@ class NetboxInterface:
         result = {ssid: [] for ssid in map_wlan_tag_to_ssid.values()}
         interfaces_with_ip_addresses = [
             interface
-            for interface in all_interfaces
+            for interface in all_interfaces_list
             if interface["ip_addresses"]
         ]
         for interface in interfaces_with_ip_addresses:
             # ip_wrapper is a dict containing the address and the tags
             for ip_wrapper in interface["ip_addresses"]:
-                infos = {"name": interface["name"], "ip_address": ip_wrapper["address"]}
+                infos = {"name": interface["name"],
+                         "ip_address": ip_wrapper["address"]}
+                if ip_wrapper["nat_inside"] :
+                    infos["nat_inside_ip"] = ip_wrapper["nat_inside"]["address"]
                 tags = [tag["name"] for tag in ip_wrapper["tags"]]
                 wlan_tag = next((tag for tag in tags if tag in map_wlan_tag_to_ssid),
                                 "box owner")
                 result[map_wlan_tag_to_ssid[wlan_tag]].append(infos)
         return result
 
-    def get_infos_by_mac(self, mac: str):
-        """Return a dictionaary mapping the user network id (unet_id)
-        to a list of ip addresses and to its psk
+    def __extract_pat_rules(self, received_json_data):
+        """extract the PAT rules from a dict returned by Netbox containing
+        the interfaces of a certain mac address
 
         Args :
-            mac (str) : mac address of the mac"""
+            received_json_data (list) : raw data received from netbox"""
+        all_interfaces_list = received_json_data["data"]["interface_list"]
+        all_services = all_interfaces_list[0]["device"]["services"]
+        result = []
+        for service in all_services:
+            #if all necessary fields for PAT are defined
+            if service["custom_field_data"] and service["ipaddresses"] and service["ports"]:
+                inside_infos = json.loads(service["custom_field_data"])
+                inside_ip_id = inside_infos["inside_ip_address"]
+                inside_ip_address = self.__get_ip_by_id(inside_ip_id)
+                result.append({
+                    "inside_ip": inside_ip_address,
+                    "inside_port": inside_infos["inside_port"],
+                    "outside_ip": service["ipaddresses"][0]["address"],
+                    "outside_port": service["ports"][0],
+                })
+        return result
+
+    def get_infos_by_mac(self, mac: str):
+        """Return :
+            - a dictionary mapping the user network id (unet_id) to a list of 
+            ip addresses 
+            - a dictionary mapping the user network id (unet_id) to the password
+            - a list of PAT rules
+
+        Args :
+            - mac (str) : mac address of the mac"""
         received_json_data = self.get_raw_infos_by_mac(mac)
         ip_addresses = self.__extract_ip_addresses(received_json_data)
         psks = self.__extract_psks(received_json_data)
+        pat_rules = self.__extract_pat_rules(received_json_data)
         #rename the keys of the dict
         for ssid in ip_addresses.keys():
             unet_id = self.__extract_unet_id_from_ssid(ssid)
@@ -131,17 +169,18 @@ class NetboxInterface:
         for ssid in psks.keys():
             unet_id = self.__extract_unet_id_from_ssid(ssid)
             psks[unet_id] = psks.pop(ssid)
-        return ip_addresses, psks
+        return ip_addresses, psks, pat_rules
+
 
 
 if __name__ == "__main__":
     netbox = NetboxInterface()
     # MAC address of a box in netbox.dev.fai.rezel.net
-    MAX_ADDRESS1 = "88:C3:97:14:B9:1F"  
-    MAX_ADDRESS2 = "88:C3:97:69:96:69"
-    # json_data = netbox.get_raw_infos_by_mac(mac=MAX_ADDRESS2)
+    MAC_ADDRESS1 = "88:C3:97:14:B9:1F"
+    MAC_ADDRESS2 = "88:C3:97:69:96:69"
+    # json_data = netbox.get_raw_infos_by_mac(mac=MAC_ADDRESS2)
     # all_interfaces = json_data["data"]["interface_list"]
     # print(json.dumps(netbox._NetboxInterface__get_map_wlan_tag_to_ssid(all_interfaces), indent=4))
+    print(json.dumps(netbox.get_infos_by_mac(MAC_ADDRESS2), indent=4))
     # print(json.dumps(json_data, indent=4))
-    # print(json.dumps(netbox.get_infos_by_mac(MAX_ADDRESS2), indent=4))
-    print(create_query(mac=MAX_ADDRESS2))
+    # print(create_query_interface(MAC_ADDRESS2))
