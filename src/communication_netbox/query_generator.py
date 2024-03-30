@@ -63,6 +63,7 @@ class Service(Type):
     tags = list_of(Tag)
     ipaddresses = list_of(IpAddressType)
     ports = list_of(int)
+    protocol = str
     custom_field_data = str
 
 class Device(Type):
@@ -133,6 +134,7 @@ def create_query_interface(mac: str) -> str:
     interfaces.wireless_lans.auth_psk()
     interfaces.device()
     interfaces.device.services()
+    interfaces.device.services.protocol()
     interfaces.device.services.ipaddresses()
     interfaces.device.services.ports()
     interfaces.device.services.custom_field_data()

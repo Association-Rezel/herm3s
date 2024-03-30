@@ -146,6 +146,7 @@ class NetboxInterface:
                     "inside_port": inside_infos["inside_port"],
                     "outside_ip": service["ipaddresses"][0]["address"],
                     "outside_port": service["ports"][0],
+                    "protocol": service["protocol"],
                 })
         return result
 
