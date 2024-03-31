@@ -107,6 +107,8 @@ class UCIConfig:
             name (UCISectionName): The name of the network object
             optional_uci_commands (str, optional): Optional UCI commands. Defaults to "".
         """
+        if isinstance(name, str):
+            name = UCISectionName(name)
         self.name = name
         self.optional_uci_commands = optional_uci_commands
 
@@ -119,7 +121,7 @@ class UCIConfig:
         return self.optional_uci_commands
 
     def __str__(self) -> str:
-        """Return the string representation of the UCIConfig object"""
+        """Return the name of the network object"""
         return self.name.value
 
 # ---------------------------------------------------------------------------- #
@@ -160,7 +162,9 @@ class Device:
 
 
 class UCINetGlobals(UCIConfig):
-    """Used to create a global network configuration"""
+    """Used to create a global network configuration
+    See https://openwrt.org/docs/guide-user/network/network_configuration#section_globals 
+    """
 
     ula_prefix: IPNetwork
 
@@ -180,12 +184,15 @@ class UCINetGlobals(UCIConfig):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self}=globals
-        uci set network.{self}.ula_prefix='{self.ula_prefix}'"""
+uci set network.{self}.ula_prefix='{self.ula_prefix}'
+"""
         return string
 
 
 class UCISwitch(UCIConfig):
-    """Used to create a network switch"""
+    """Used to create a network switch
+    See https://openwrt.org/docs/guide-user/network/network_configuration#section_switch
+    """
 
     name: UCISectionName
     ports: UCINetworkPorts
@@ -207,11 +214,13 @@ class UCISwitch(UCIConfig):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self}=switch
-        uci set network.{self}.name='{self}'
-        uci set network.{self}.reset='1'
-        uci set network.{self}.enable_vlan='1'"""
+uci set network.{self}.name='{self}'
+uci set network.{self}.reset='1'
+uci set network.{self}.enable_vlan='1'
+"""
         if self.ports is not None:
-            string += f"""uci set network.{self}.ports='{self.ports}'"""
+            string += f"""uci set network.{self}.ports='{self.ports}'
+"""
         return string
 
 
@@ -233,7 +242,9 @@ class UCISimpleDevice(Device):
 
 
 class UCIBridge(UCIConfig, Device):
-    """Used to create a network bridge"""
+    """Represents a network bridge in uci
+    See https://openwrt.org/docs/guide-user/network/network_configuration#section_device
+    """
 
     ports: UCINetworkPorts
 
@@ -260,27 +271,30 @@ class UCIBridge(UCIConfig, Device):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self}=device
-        uci set network.{self}.proto='bridge'
-        uci set network.{self}.name='{self}'"""
+uci set network.{self}.proto='bridge'
+uci set network.{self}.name='{self}'
+"""
         if self.ports is not None:
-            string += f"""uci set network.{self}.ports='{self.ports}'"""
+            string += f"""uci set network.{self}.ports='{self.ports}'
+"""
         return string
 
 
 class UCIInterface(UCIConfig):
-    """Used to create a network interface"""
-
+    """Represents a network interface in uci
+    See https://openwrt.org/docs/guide-user/network/network_configuration#section_interface
+    """
     ip: IPAddress
     mask: IPAddress
     device: Device
 
     def __init__(
         self,
-        unetid: UNetId,
         name_prefix: UCISectionNamePrefix,
         ip: IPAddress,
         mask: IPAddress,
         proto: InterfaceProto,
+        unetid: UNetId = None,
         device: Device = None,
     ):
         """Initialize the UCIInterface object
@@ -306,17 +320,20 @@ class UCIInterface(UCIConfig):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self}=interface
-        uci set network.{self}.proto='{self.proto}'
-        uci set network.{self}.ipaddr='{self.ip}'
-        uci set network.{self}.netmask='{self.mask}'
-        uci commit network"""
+uci set network.{self}.proto='{self.proto}'
+uci set network.{self}.ipaddr='{self.ip}'
+uci set network.{self}.netmask='{self.mask}'
+"""
         if self.device is not None:
-            string += f"""uci set network.{self}.device='{self.device}'"""
+            string += f"""uci set network.{self}.device='{self.device}'
+"""
         return string
 
 
 class UCIRoute(UCIConfig):
-    """Used to create a network route"""
+    """Used to create a network route
+    See https://openwrt.org/docs/guide-user/network/routing/routes_configuration#static_routes
+    """
 
     def __init__(
         self,
@@ -347,14 +364,17 @@ class UCIRoute(UCIConfig):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self}=route
-        uci set network.{self}.target='{self.target}'
-        uci set network.{self}.gateway='{self.gateway}'
-        uci set network.{self}.interface='{self.interface}'"""
+uci set network.{self}.target='{self.target}'
+uci set network.{self}.gateway='{self.gateway}'
+uci set network.{self}.interface='{self.interface}'
+"""
         return string
 
 
 class UCINoIPInterface(UCIConfig):
-    """Used to create a network interface without an IP"""
+    """Used to create a network interface without an IP
+    See https://openwrt.org/docs/guide-user/network/network_configuration#section_interface
+    """
 
     def __init__(self, name: UCISectionName, device: Device):
         """Initialize the UCINoIPInterface object
@@ -373,12 +393,15 @@ class UCINoIPInterface(UCIConfig):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self}=interface
-        uci set network.{self}.device={self.device}"""
+uci set network.{self}.device={self.device}
+"""
         return string
 
 
 class UCISwitchVlan(UCIConfig):
-    """Used to create a VLAN on a switch"""
+    """Used to create a VLAN on a switch
+    See https://openwrt.org/docs/guide-user/network/network_configuration#section_switch_vlan
+    """
 
     name: UCISectionName
     device: UCISwitch
@@ -410,16 +433,16 @@ class UCISwitchVlan(UCIConfig):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self}=switch_vlan
-        uci set network.{self}.device='{self.device}'
-        uci set network.{self}.vlan='{self.vid}'
-        uci set network.{self}.ports='{self.ports}'"""
+uci set network.{self}.device='{self.device}'
+uci set network.{self}.vlan='{self.vid}'
+uci set network.{self}.ports='{self.ports}'
+"""
         return string
 
 
 # ---------------------------------------------------------------------------- #
 #                                   Wireless                                   #
 # ---------------------------------------------------------------------------- #
-
 
 class Path(Attribute):
     """Object used to store the path of a device"""
@@ -434,12 +457,12 @@ class Path(Attribute):
         Raises:
             ValueError: If the path is invalid.
         """
-        if re.match(r"^[A-z0-9_\-:\.]+$", value) is None:
+        if re.match(r"^[A-z0-9_\-:\.\/]+$", value) is None:
             raise ValueError("Invalid Path")
         self.value = value
 
 
-class DeviceType(Attribute):
+class WifiDeviceType(Attribute):
     """Object used to store the type of a device"""
 
     def __init__(self, value: str):
@@ -562,13 +585,15 @@ class Encryption(Attribute):
         Raises:
             ValueError: If the encryption is invalid.
         """
-        if re.match(r"^[a-z0-9\+\-]{8,63}$", value) is None:
+        if value not in ["none", "wep", "psk", "psk2", "psk-mixed", "sae"]:
             raise ValueError("Invalid Encryption")
         self.value = value
 
 
-class Key(Attribute):
-    """Object used to store the key of a wifi interface"""
+class WifiPassphrase(Attribute):
+    """Object used to store the key of a wifi interface
+    
+    """
 
     def __init__(self, value: str):
         """
@@ -586,10 +611,12 @@ class Key(Attribute):
 
 
 class UCIWifiDevice(UCIConfig):
-    """Used to create a wireless interface"""
+    """Used to create a wireless interface
+    See https://openwrt.org/docs/guide-user/network/wifi/basic#wi-fi_devices
+    """
 
     path: Path
-    type: DeviceType
+    type: WifiDeviceType
     channel: int
     htmode: Htmode
     country: Country
@@ -600,7 +627,7 @@ class UCIWifiDevice(UCIConfig):
         self,
         name: UCISectionName,
         path: Path,
-        device_type: DeviceType,
+        device_type: WifiDeviceType,
         channel: int,
         htmode: Htmode,
         country: Country,
@@ -633,18 +660,21 @@ class UCIWifiDevice(UCIConfig):
 
     def uci_build_string(self):
         string = f"""uci set wireless.{self}=wifi-device
-        uci set wireless.{self}.type='{self.type}'
-        uci set wireless.{self}.path='{self.path}'
-        uci set wireless.{self}.channel='{self.channel}'
-        uci set wireless.{self}.htmode='{self.htmode}'
-        uci set wireless.{self}.country='{self.country}'
-        uci set wireless.{self}.band='{self.band}'
-        uci set wireless.{self}.disabled='{self.disabled}'"""
+uci set wireless.{self}.type='{self.type}'
+uci set wireless.{self}.path='{self.path}'
+uci set wireless.{self}.channel='{self.channel}'
+uci set wireless.{self}.htmode='{self.htmode}'
+uci set wireless.{self}.country='{self.country}'
+uci set wireless.{self}.band='{self.band}'
+uci set wireless.{self}.disabled='{self.disabled}'
+"""
         return string
 
 
-class WifiIface(UCIConfig):
-    """Used to create a wireless interface"""
+class UCIWifiIface(UCIConfig):
+    """Used to create a wireless interface
+    See https://openwrt.org/docs/guide-user/network/wifi/basic#wi-fi_interfaces
+    """
 
     def __init__(
         self,
@@ -654,7 +684,7 @@ class WifiIface(UCIConfig):
         mode: Mode,
         ssid: SSID,
         encryption: Encryption,
-        key: Key,
+        passphrase: WifiPassphrase,
         disabled: int = 0,
     ):
         super().__init__(f"wifi_{unetid}_{device}")
@@ -663,20 +693,20 @@ class WifiIface(UCIConfig):
         self.mode = mode
         self.ssid = ssid
         self.encryption = encryption
-        self.key = key
+        self.key = passphrase
         self.disabled = disabled
 
     def uci_build_string(self):
         string = f"""uci set wireless.{self}=wifi-iface
-        uci set wireless.{self}.device='{self.device}'
-        uci set wireless.{self}.network='{self.network}'
-        uci set wireless.{self}.mode='{self.mode}'
-        uci set wireless.{self}.ssid='{self.ssid}'
-        uci set wireless.{self}.encryption='{self.encryption}'
-        uci set wireless.{self}.key='{self.key}'
-        uci set wireless.{self}.disabled='{self.disabled}'"""
+uci set wireless.{self}.device='{self.device}'
+uci set wireless.{self}.network='{self.network}'
+uci set wireless.{self}.mode='{self.mode}'
+uci set wireless.{self}.ssid='{self.ssid}'
+uci set wireless.{self}.encryption='{self.encryption}'
+uci set wireless.{self}.key='{self.key}'
+uci set wireless.{self}.disabled='{self.disabled}'
+"""
         return string
-
 
 # ---------------------------------------------------------------------------- #
 #                                   Firewall                                   #
@@ -790,7 +820,9 @@ class Family(Attribute):
 
 
 class UCIFirewallDefaults(UCIConfig):
-    """Used to create a default firewall configuration"""
+    """Used to create a default firewall configuration
+    See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#defaults
+    """
 
     def __init__(self):
         """
@@ -806,30 +838,41 @@ class UCIFirewallDefaults(UCIConfig):
             str: The UCI string representation of the defaults configuration.
         """
         string = f"""uci set firewall.{self}=defaults
-        uci set firewall.{self}.syn_flood='1'
-        uci set firewall.{self}.flow_offloading='1'
-        uci set firewall.{self}.flow_offloading_hw='1'
-        uci set firewall.{self}.input='ACCEPT'
-        uci set firewall.{self}.output='ACCEPT'
-        uci set firewall.{self}.forward='REJECT'"""
+uci set firewall.{self}.syn_flood='1'
+uci set firewall.{self}.flow_offloading='1'
+uci set firewall.{self}.flow_offloading_hw='1'
+uci set firewall.{self}.input='ACCEPT'
+uci set firewall.{self}.output='ACCEPT'
+uci set firewall.{self}.forward='REJECT'
+"""
         return string
 
 
 class UCIRedirect4(UCIConfig):
-    """Used to create a port redirection"""
-
+    """Used to create a port redirection
+    See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#redirects
+    """
+    desc: Description
+    src: UCIInterface
+    src_ip: IPAddress
+    src_dport: TCPUDPPort
+    dest: UCIInterface
+    dest_ip: IPAddress
+    dest_port: TCPUDPPort
+    proto: Protocol
+    
     def __init__(
         self,
         unetid: UNetId,
         name: UCISectionName,
         desc: Description,
         src: UCIInterface,
-        src_ip: IPAddress,
         src_dport: TCPUDPPort,
         dest: UCIInterface,
         dest_ip: IPAddress,
         dest_port: TCPUDPPort,
         proto: Protocol,
+        src_ip: IPAddress = None,
     ):
         """
         Initialize a UCIRedirect4 object.
@@ -864,19 +907,24 @@ class UCIRedirect4(UCIConfig):
             str: The UCI string representation of the redirect.
         """
         string = f"""uci set firewall.{self}=redirect
-        uci set firewall.{self}.name='{self.desc}'
-        uci set firewall.{self}.target='DNAT'
-        uci set firewall.{self}.src='{self.src}'
-        uci set firewall.{self}.src_ip='{self.src_ip}'
-        uci set firewall.{self}.src_dport='{self.src_dport}'
-        uci set firewall.{self}.dest='{self.dest}'
-        uci set firewall.{self}.dest_ip='{self.dest_ip}'
-        uci set firewall.{self}.dest_port='{self.dest_port}'"""
+uci set firewall.{self}.name='{self.desc}'
+uci set firewall.{self}.target='DNAT'
+uci set firewall.{self}.src='{self.src}'
+uci set firewall.{self}.src_dport='{self.src_dport}'
+uci set firewall.{self}.dest='{self.dest}'
+uci set firewall.{self}.dest_ip='{self.dest_ip}'
+uci set firewall.{self}.dest_port='{self.dest_port}'
+"""
+        if self.src_ip is not None:
+            string += f"""uci set firewall.{self}.src_ip='{self.src_ip}'
+"""
         return string
 
 
 class UCIForwarding(UCIConfig):
-    """Used to create a port forwarding"""
+    """Used to create a port forwarding
+    See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#forwardings
+    """
 
     def __init__(self, src: UCIInterface, dest: UCIInterface):
         """
@@ -898,13 +946,16 @@ class UCIForwarding(UCIConfig):
             str: The UCI string representation of the forwarding.
         """
         string = f"""uci set firewall.{self}=forwarding
-        uci set firewall.{self}.src='{self.src}'
-        uci set firewall.{self}.dest='{self.dest}'"""
+uci set firewall.{self}.src='{self.src}'
+uci set firewall.{self}.dest='{self.dest}'
+"""
         return string
 
 
 class UCIZone(UCIConfig):
-    """Used to create a firewall zone"""
+    """Used to create a firewall zone
+    See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#zones
+    """
 
     def __init__(
         self,
@@ -936,30 +987,45 @@ class UCIZone(UCIConfig):
             str: The UCI string representation of the zone.
         """
         string = f"""uci set firewall.{self}=zone
-        uci set firewall.{self}.name='{self}'
-        uci set firewall.{self}.network='{self.network}'
-        uci set firewall.{self}.input='{self.input}'
-        uci set firewall.{self}.output='{self.output}'
-        uci set firewall.{self}.forward='{self.forward}'"""
+uci set firewall.{self}.name='{self}'
+uci set firewall.{self}.network='{self.network}'
+uci set firewall.{self}.input='{self.input}'
+uci set firewall.{self}.output='{self.output}'
+uci set firewall.{self}.forward='{self.forward}'
+"""
         return string
 
 
 class UCIRule(UCIConfig):
-    """Used to create a firewall rule"""
+    """Used to create a firewall rule
+    See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#rules
+    """
+    desc: Description
+    proto: Protocol
+    src: UCIInterface
+    src_ip: IPAddress
+    src_port: TCPUDPPort
+    dest: UCIInterface
+    dest_ip: IPAddress
+    dest_port: TCPUDPPort
+    target: Target
+    icmp_type: str
+    family: Family
 
     def __init__(
         self,
         unetid: UNetId,
         name: UCISectionName,
         desc: Description,
-        dest_ip: IPAddress,
-        dest: UCIInterface,
         proto: Protocol,
         target: Target,
         src: UCIInterface = None,
         src_ip: IPAddress = None,
         src_port: TCPUDPPort = None,
+        dest_ip: IPAddress = None,
+        dest: UCIInterface = None,
         dest_port: TCPUDPPort = None,
+        icmp_type: str = None,
         family: Family = "ipv4",
     ):
         """
@@ -989,6 +1055,7 @@ class UCIRule(UCIConfig):
         self.dest_ip = dest_ip
         self.dest_port = dest_port
         self.target = target
+        self.icmp_type = icmp_type
         self.family = family
 
     def uci_build_string(self):
@@ -999,25 +1066,39 @@ class UCIRule(UCIConfig):
             str: The UCI string representation of the rule.
         """
         string = f"""uci set firewall.{self}=rule
-        uci set firewall.{self}.name='{self.desc}'
-        uci set firewall.{self}.dest='{self.dest}'
-        uci set firewall.{self}.dest_ip='{self.dest_ip}'
-        uci set firewall.{self}.proto='{self.proto}'
-        uci set firewall.{self}.target='{self.target}'
-        uci set firewall.{self}.family='{self.family}'"""
+uci set firewall.{self}.name='{self.desc}'
+uci set firewall.{self}.proto='{self.proto}'
+uci set firewall.{self}.target='{self.target}'
+uci set firewall.{self}.family='{self.family}'
+"""
         if self.src is not None:
-            string += f"""uci set firewall.{self}.src='{self.src}'"""
+            string += f"""uci set firewall.{self}.src='{self.src}'
+"""
         if self.src_ip is not None:
-            string += f"""uci set firewall.{self}.src_ip='{self.src_ip}'"""
+            string += f"""uci set firewall.{self}.src_ip='{self.src_ip}'
+"""
         if self.src_port is not None:
-            string += f"""uci set firewall.{self}.src_port='{self.src_port}'"""
+            string += f"""uci set firewall.{self}.src_port='{self.src_port}'
+"""
+        if self.dest is not None:
+            string += f"""uci set firewall.{self}.dest='{self.dest}'
+"""
+        if self.dest_ip is not None:
+            string += f"""uci set firewall.{self}.dest_ip='{self.dest_ip}'
+"""
         if self.dest_port is not None:
-            string += f"""uci set firewall.{self}.dest_port='{self.dest_port}'"""
+            string += f"""uci set firewall.{self}.dest_port='{self.dest_port}'
+"""
+        if self.icmp_type is not None:
+            string += f"""uci set firewall.{self}.icmp_type='{self.icmp_type}'
+"""
         return string
 
 
-class UCISNat(UCIConfig):
-    """Used to create a NAT rule"""
+class UCISnat(UCIConfig):
+    """Used to create a NAT rule
+    See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#source_nat
+    """
 
     def __init__(
         self,
@@ -1044,15 +1125,15 @@ class UCISNat(UCIConfig):
             str: The UCI string representation of the NAT rule.
         """
         string = f"""uci set firewall.{self}=nat
-        uci set firewall.{self}.name='{self}'
-        uci set firewall.{self}.target='SNAT'
-        uci set firewall.{self}.snat_ip='{self.wan_interface.ip}'
-        uci set firewall.{self}.src='{self.lan_interface}'
-        uci set firewall.{self}.src_ip='{self.lan_network}'
-        uci set firewall.{self}.proto='all'"""
+uci set firewall.{self}.name='{self}'
+uci set firewall.{self}.target='SNAT'
+uci set firewall.{self}.snat_ip='{self.wan_interface.ip}'
+uci set firewall.{self}.src='{self.lan_interface}'
+uci set firewall.{self}.src_ip='{self.lan_network}'
+uci set firewall.{self}.proto='all'
+"""
 
         return string
-
 
 # ---------------------------------------------------------------------------- #
 #                                     DHCP                                     #
@@ -1077,7 +1158,9 @@ class DnsServers(Attribute):
 
 
 class UCIdnsmasq(UCIConfig):
-    """Used to create a DNS server"""
+    """Used to create a DNS server
+    See https://openwrt.org/docs/guide-user/base-system/dhcp#common_options
+    """
 
     dns_servers: DnsServers
 
@@ -1106,24 +1189,26 @@ class UCIdnsmasq(UCIConfig):
         - None
         """
         string = f"""uci set dhcp.{self}=dnsmasq
-        uci set dhcp.{self}.domainneeded='1'
-        uci set dhcp.{self}.authoritative='1'
-        uci set dhcp.{self}.rebind_protection='1'
-        uci set dhcp.{self}.rebind_localhost='1'
-        uci set dhcp.{self}.localise_queries='1'
-        uci set dhcp.{self}.filterwin2k='0'
-        uci set dhcp.{self}.local='/lan/'
-        uci set dhcp.{self}.domain='lan'
-        uci set dhcp.{self}.expandhosts='1'
-        uci set dhcp.{self}.nonegcache='0'
-        uci set dhcp.{self}.readethers='1'
-        uci set dhcp.{self}.leasefile='/tmp/dhcp.leases'
-        uci set dhcp.{self}.resolvfile='/tmp/resolv.conf.auto'
-        uci set dhcp.{self}.nonwildcard='1'
-        uci set dhcp.{self}.localservice='1'
-        uci set dhcp.{self}.ednspacket_max='1232'"""
-        for dns in self.dns_servers:
-            string += f"""uci add_list dhcp.{self}.server='{dns}'"""
+uci set dhcp.{self}.domainneeded='1'
+uci set dhcp.{self}.authoritative='1'
+uci set dhcp.{self}.rebind_protection='1'
+uci set dhcp.{self}.rebind_localhost='1'
+uci set dhcp.{self}.localise_queries='1'
+uci set dhcp.{self}.filterwin2k='0'
+uci set dhcp.{self}.local='/lan/'
+uci set dhcp.{self}.domain='lan'
+uci set dhcp.{self}.expandhosts='1'
+uci set dhcp.{self}.nonegcache='0'
+uci set dhcp.{self}.readethers='1'
+uci set dhcp.{self}.leasefile='/tmp/dhcp.leases'
+uci set dhcp.{self}.resolvfile='/tmp/resolv.conf.auto'
+uci set dhcp.{self}.nonwildcard='1'
+uci set dhcp.{self}.localservice='1'
+uci set dhcp.{self}.ednspacket_max='1232'
+"""
+        for dns in self.dns_servers.value:
+            string += f"""uci add_list dhcp.{self}.server='{dns}'
+"""
         return string
 
 
@@ -1154,15 +1239,18 @@ class UCIodchp(UCIConfig):
         - None
         """
         string = f"""uci set dhcp.{self}=odhcpd
-        uci set dhcp.{self}.maindhcp='0'
-        uci set dhcp.{self}.leasefile='/tmp/hosts/odhcpd'
-        uci set dhcp.{self}.leasetrigger='/usr/sbin/odhcpd-update'
-        uci set dhcp.{self}.loglevel='{self.loglevel}'"""
+uci set dhcp.{self}.maindhcp='0'
+uci set dhcp.{self}.leasefile='/tmp/hosts/odhcpd'
+uci set dhcp.{self}.leasetrigger='/usr/sbin/odhcpd-update'
+uci set dhcp.{self}.loglevel='{self.loglevel}'
+"""
         return string
 
 
 class UCIDHCP(UCIConfig):
-    """Used to create a DHCP server"""
+    """Used to create a DHCP server
+    See https://openwrt.org/docs/guide-user/base-system/dhcp#dhcp_pools
+    """
 
     def __init__(self, interface: UCIInterface, start: int, limit: int, leasetime: int):
         """
@@ -1195,12 +1283,16 @@ class UCIDHCP(UCIConfig):
         - None
         """
         string = f"""uci set dhcp.{self}=dhcp
-        uci set dhcp.{self}.interface='{self.interface}'
-        uci set dhcp.{self}.start='{self.start}'
-        uci set dhcp.{self}.limit='{self.limit}'
-        uci set dhcp.{self}.leasetime='{self.leasetime}'"""
+uci set dhcp.{self}.interface='{self.interface}'
+uci set dhcp.{self}.start='{self.start}'
+uci set dhcp.{self}.limit='{self.limit}'
+uci set dhcp.{self}.leasetime='{self.leasetime}'
+"""
         return string
 
+# ---------------------------------------------------------------------------- #
+#                                   Dropbear                                   #
+# ---------------------------------------------------------------------------- #
 
 class UCIDropbear(UCIConfig):
     """Used to create a Dropbear configuration"""
@@ -1228,7 +1320,8 @@ class UCIDropbear(UCIConfig):
         - None
         """
         string = f"""uci set dropbear.{self}=dropbear
-        uci set dropbear.{self}.PasswordAuth='off'
-        uci set dropbear.{self}.RootPasswordAuth='off'
-        uci set dropbear.{self}.Port='22'"""
+uci set dropbear.{self}.PasswordAuth='off'
+uci set dropbear.{self}.RootPasswordAuth='off'
+uci set dropbear.{self}.Port='22'
+"""
         return string
