@@ -11,8 +11,8 @@ import json
 import requests
 import env
 
-from query_generator import create_query_interface, create_query_ip
-
+from communication_netbox.query_generator import create_query_interface, create_query_ip #avoid error on import from communication_deamon
+# from query_generator import create_query_interface, create_query_ip
 
 class NetboxInterface:
     """Gets informations from Netbox using its GraphQL API"""
