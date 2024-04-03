@@ -11,6 +11,7 @@ import json
 import requests
 import env
 
+from utils import str_to_protocol
 from query_generator import create_query_interface, create_query_ip
 
 
@@ -146,7 +147,7 @@ class NetboxInterface:
                     "inside_port": inside_infos["inside_port"],
                     "outside_ip": service["ipaddresses"][0]["address"],
                     "outside_port": service["ports"][0],
-                    "protocol": service["protocol"],
+                    "protocol": str_to_protocol(service["protocol"]),
                 })
         return result
 
@@ -182,6 +183,6 @@ if __name__ == "__main__":
     # json_data = netbox.get_raw_infos_by_mac(mac=MAC_ADDRESS2)
     # all_interfaces = json_data["data"]["interface_list"]
     # print(json.dumps(netbox._NetboxInterface__get_map_wlan_tag_to_ssid(all_interfaces), indent=4))
-    print(json.dumps(netbox.get_infos_by_mac(MAC_ADDRESS2), indent=4))
+    print(json.dumps(netbox.get_infos_by_mac(MAC_ADDRESS2), indent=4, default=str))
     # print(json.dumps(json_data, indent=4))
     # print(create_query_interface(MAC_ADDRESS2))
