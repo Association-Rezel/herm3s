@@ -1,4 +1,6 @@
-import UCICommon as UCI
+#import UCICommon as UCI
+import hermes_config_building.UCICommon as UCI #to import from communication_deamon
+
 
 class UCITypeConfig:
     commands: str

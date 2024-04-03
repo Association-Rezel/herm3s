@@ -14,7 +14,6 @@ import env
 from utils import str_to_protocol
 from query_generator import create_query_interface, create_query_ip
 
-
 class NetboxInterface:
     """Gets informations from Netbox using its GraphQL API"""
 
