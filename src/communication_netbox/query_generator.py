@@ -13,18 +13,8 @@ from sgqlc.types import Type, Field, list_of
 from sgqlc.operation import Operation
 
 
-# Declaration of the data types corresponding to the GraphQL schema of Netbox 
+# Declaration of the data types corresponding to the GraphQL schema of Netbox
 #(only the types needed for the queries are declared)
-
-
-class Tag(Type):
-    """A tag is a label that can be attached to any object in Netbox
-
-    Args:
-        Type (Type): MotherClass to create type of objects in Netbox"""
-
-    name = str
-
 
 class NatIpAddressType(Type):
     """WARNING : THIS IS NOT A REAL TYPE IN THE GRAPHQL SCHEMA OF NETBOX
@@ -39,10 +29,9 @@ class IpAddressType(Type):
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
-
     address = str
+    custom_field_data = str
     nat_inside = NatIpAddressType
-    tags = list_of(Tag)
 
 
 class WirelessLAN(Type):
@@ -50,7 +39,7 @@ class WirelessLAN(Type):
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
-
+    id = str
     ssid = str
     auth_psk = str
 
@@ -60,7 +49,7 @@ class Service(Type):
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
-    tags = list_of(Tag)
+    name = str
     ipaddresses = list_of(IpAddressType)
     ports = list_of(int)
     protocol = str
@@ -79,7 +68,6 @@ class Interface(Type):
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
     name = str
-    tags = list_of(Tag)
     device = Device
     ip_addresses = list_of(IpAddressType)
     wireless_lans = list_of(WirelessLAN)
@@ -122,18 +110,18 @@ def create_query_interface(mac: str) -> str:
     interfaces = query.interface_list(mac_address=mac)
     # selection of the fields to be returned
     interfaces.name()
-    interfaces.tags()
     interfaces.ip_addresses()
     interfaces.ip_addresses.address()
+    interfaces.ip_addresses.custom_field_data()
     interfaces.ip_addresses.nat_inside()
     interfaces.ip_addresses.nat_inside.address()
-    interfaces.ip_addresses.tags()
-    interfaces.ip_addresses.tags.name()
     interfaces.wireless_lans()
+    interfaces.wireless_lans.id()
     interfaces.wireless_lans.ssid()
     interfaces.wireless_lans.auth_psk()
     interfaces.device()
     interfaces.device.services()
+    interfaces.device.services.name()
     interfaces.device.services.protocol()
     interfaces.device.services.ipaddresses()
     interfaces.device.services.ports()

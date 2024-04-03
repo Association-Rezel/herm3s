@@ -9,7 +9,7 @@ Chaque box présente plusieurs interfaces :
 * eth0.102 : vlan 102 pour les adhérents non-télécommiens
 * lan1 / lan2 / lan3 : ports éthernets physique à l'arrière de la box
 * wlan : port éthernet physique à l'arrière de la box
-* wlan0 : le réseau wifi du possesseur de la box (adhérent fibre)
+* wlan0 : **le réseau wifi du possesseur de la box** (adhérent fibre), aussi appelé *main user* dans le code
 * wlan1 : réseau wifi du premier adhérent wifi
 * wlan2 : réseau wifi du deuxième adhérent wifi
 * wlan3,4, etc : idem
@@ -17,7 +17,8 @@ Chaque box présente plusieurs interfaces :
 ## Lien entre wlans et ip
 
 Chaque utilisateur possède un wlan qui lui est propre avec un ssid (ex : "Rezel-Thorium") contenant son User Network ID (ex : "Thorium").
-Chaque utilisateur possède également une ip publique sur le vlan 101 ou 102. Pour faire le lien entre le wlan et l'adresse ip, on crée un tag (ex : "box-kley-666-wlan-2") que l'on attribue au wlan et à l'adresse ip.
+Chaque utilisateur possède également une ip publique sur le vlan 101 ou 102.
+Pour faire le lien entre le wlan et l'adresse ip, on met dans le custom field "Linked WLAN" de l'adresse ip le wlan associé. Ceci doit être fait pour TOUTES les adresses ip (pas rétro-compatible)
 
 ## NAT
 

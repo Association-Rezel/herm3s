@@ -10,12 +10,13 @@ unet_id : user network id
 import json
 import requests
 import env
+# from pydantic import ValidationError #TO ADD WHEN THE ERRORS WILL BE HANDLED
 
-from utils import str_to_protocol
+from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField
 from query_generator import create_query_interface, create_query_ip
 
-class NetboxInterface:
-    """Gets informations from Netbox using its GraphQL API"""
+class NetboxInterface2:
+    """Gets and validates informations from Netbox using its GraphQL API"""
 
     def __init__(self):
         self.__url = "http://netbox.dev.fai.rezel.net/graphql/"
@@ -25,39 +26,29 @@ class NetboxInterface:
             "Accept": "application/json",
         }
 
-    def __extract_unet_id_from_ssid(self, ssid: str):
-        """extract the user network id from the ssid
+    def __get_unet_id_from_ssid(self, ssid: str):
+        """extract the user network id from the ssid of the wlan
 
         Args :
             ssid (str) : ssid of the wlan"""
         return ssid.split("-")[1]
 
-    def __request_netbox(self, query: str):
+    def __request_netbox(self, query: str) -> dict:
         """execute query against the Netbox Graphql API and returns the result as a dict
 
         Args :
-            query (str) : query execute against GraphQL API"""
-        json_data_to_send = {
-            "query": "query " + query,
-        }
+            query (str) : query string"""
+        json_data_to_send = {"query": "query " + query}
+        timeout = 999999
         response = requests.get(
             url=self.__url,
             headers=self.__headers,
             json=json_data_to_send,
-            timeout=999999,
+            timeout=timeout
         )
         return response.json()
 
-    def get_raw_infos_by_mac(self, mac: str):
-        """Return the informations contained by Netbox related to the mac
-
-        Args :
-            mac (str) : mac address of the box
-        """
-        query = create_query_interface(mac)
-        return self.__request_netbox(query)
-
-    def __get_ip_by_id(self, ip_id: int):
+    def __get_ip_by_id(self, ip_id: int) -> str:
         """Return the ip address bearing a certain id
 
         Args :
@@ -66,122 +57,141 @@ class NetboxInterface:
         raw_infos = self.__request_netbox(query)
         return raw_infos["data"]["ip_address"]["address"]
 
-    def __get_map_wlan_tag_to_ssid(self, all_interfaces_list):
-        """return a dict mapping the tag of a wlan to its ssid
+    def get_interfaces_by_mac(self, mac: str) -> list[Interface]:
+        """Return a list of the interfaces linked to the mac"
 
         Args :
-            all_interfaces_list (list) : list of all the interfaces associated
-                with a given mac in Netbox"""
-        map_tag_to_ssid = {}
-        wlans = [inter for inter in all_interfaces_list if inter["wireless_lans"]]
-        wlan_of_owner = [wlan for wlan in wlans if not wlan["tags"]]
-        if len(wlan_of_owner) != 1:
-            raise ValueError(
-                "There should exactly one wlan without tags"
-                + " but there are "
-                + str(len(wlan_of_owner))
-                + " wlans without tags"
-            )
-        map_tag_to_ssid["box owner"] = wlan_of_owner[0]["wireless_lans"][0]["ssid"]
-        for wlan in wlans:
-            if wlan["tags"]:
-                ssid = wlan["wireless_lans"][0]["ssid"]
-                map_tag_to_ssid[wlan["tags"][0]["name"]] = ssid
-        return map_tag_to_ssid
+            mac (str) : mac address of the box
+        """
+        query = create_query_interface(mac)
+        json_response = self.__request_netbox(query)
+        #TODO : GESTION DES ERREURS DE VALIDATION
+        interface_response : InterfaceResponse = InterfaceResponse.model_validate(json_response['data'])
+        return interface_response.interface_list
 
-    def __extract_psks(self, received_json_data):
-        """return a dict mapping ssid to password (psk)"""
-        all_interfaces_list = received_json_data["data"]["interface_list"]
-        wlans = [
-            inter["wireless_lans"][0]
-            for inter in all_interfaces_list
-            if inter["wireless_lans"]
-        ]
-        return {wlan["ssid"]: wlan["auth_psk"] for wlan in wlans}
-
-    def __extract_ip_addresses(self, received_json_data):
-        """extract the ip adresses from a dict returned by Netbox containing
-        the interfaces of a certain mac address
-
+    def __get_wlans(self, interfaces : list[Interface]) -> list[WirelessLAN]:
+        """Return all the wireless LANs mentionned in interfaces
+        
         Args :
-            received_json_data (list) : raw data received from netbox"""
-        all_interfaces_list = received_json_data["data"]["interface_list"]
-        map_wlan_tag_to_ssid = self.__get_map_wlan_tag_to_ssid(all_interfaces_list)
-        result = {ssid: [] for ssid in map_wlan_tag_to_ssid.values()}
-        interfaces_with_ip_addresses = [
-            interface
-            for interface in all_interfaces_list
-            if interface["ip_addresses"]
-        ]
-        for interface in interfaces_with_ip_addresses:
-            # ip_wrapper is a dict containing the address and the tags
-            for ip_wrapper in interface["ip_addresses"]:
-                infos = {"name": interface["name"],
-                         "ip_address": ip_wrapper["address"]}
-                if ip_wrapper["nat_inside"] :
-                    infos["nat_inside_ip"] = ip_wrapper["nat_inside"]["address"]
-                tags = [tag["name"] for tag in ip_wrapper["tags"]]
-                wlan_tag = next((tag for tag in tags if tag in map_wlan_tag_to_ssid),
-                                "box owner")
-                result[map_wlan_tag_to_ssid[wlan_tag]].append(infos)
-        return result
+            - interfaces (list[Interface]): list of all the interfaces with a given mac"""
+        wlans = [inter.wireless_lans[0] for inter in interfaces if inter.wireless_lans]
+        return wlans
 
-    def __extract_pat_rules(self, received_json_data):
-        """extract the PAT rules from a dict returned by Netbox containing
-        the interfaces of a certain mac address
-
+    def _get_unet_ids(self, interfaces : list[Interface]) -> list[str] :
+        """Return the UNet Ids contained in the list of interface
+        
         Args :
-            received_json_data (list) : raw data received from netbox"""
-        all_interfaces_list = received_json_data["data"]["interface_list"]
-        all_services = all_interfaces_list[0]["device"]["services"]
-        result = []
-        for service in all_services:
-            #if all necessary fields for PAT are defined
-            if service["custom_field_data"] and service["ipaddresses"] and service["ports"]:
-                inside_infos = json.loads(service["custom_field_data"])
-                inside_ip_id = inside_infos["inside_ip_address"]
-                inside_ip_address = self.__get_ip_by_id(inside_ip_id)
-                result.append({
-                    "inside_ip": inside_ip_address,
-                    "inside_port": inside_infos["inside_port"],
-                    "outside_ip": service["ipaddresses"][0]["address"],
-                    "outside_port": service["ports"][0],
-                    "protocol": str_to_protocol(service["protocol"]),
+            - interfaces (list[Interface]): list of all the interfaces with a given mac"""
+        wlans = self.__get_wlans(interfaces)
+        ssids = [wlan.ssid for wlan in wlans]
+        unet_ids = [self.__get_unet_id_from_ssid(ssid) for ssid in ssids]
+        return unet_ids
+
+    def __get_ip_addresses(self, interfaces : list[Interface]) :
+        """Return list of dict with the following keys :
+        - "name" (name of the interface)
+        - "ip_address"
+        - "nat_inside_ip" (NAT address inside)
+        
+        Args :
+            - interfaces (list[Interface]): list of all the interfaces with a given mac"""
+        res = []
+        interfaces_with_ip_addresses = [inter for inter in interfaces if inter.ip_addresses]
+        for interface in interfaces_with_ip_addresses :
+            for ip_wrapper in interface.ip_addresses :
+                res.append({
+                    "name" : interface.name,
+                    "ip_address" : ip_wrapper.address,
+                    "nat_inside_ip" : ip_wrapper.nat_inside.address if ip_wrapper.nat_inside else None
                 })
-        return result
+        return res
 
-    def get_infos_by_mac(self, mac: str):
-        """Return :
-            - a dictionary mapping the user network id (unet_id) to a list of 
-            ip addresses 
-            - a dictionary mapping the user network id (unet_id) to the password
-            - a list of PAT rules
+    def __get_passwords(self, interfaces : list[Interface]) -> dict[str:str] :
+        """return a dict binding each UNet Id to its wifi password
+        
+        Args :
+            - interfaces (list[Interface]): list of all the interfaces with a given mac"""
+        wlans : list[WirelessLAN] = self.__get_wlans(interfaces)
+        return {
+            self.__get_unet_id_from_ssid(wlan.ssid) : wlan.auth_psk
+            for wlan in wlans
+        }
+
+    def __get_main_unet_id(self, interfaces : list[Interface]) -> str :
+        """Return the UNet Id of the main user of the box (adhérent fibre)
+        We assume that the main user uses "wlan0"
+        
+        Args :
+            - interfaces (list[Interface]): list of all the interfaces with a given mac"""
+        interfaces_named_wlan0 = [
+            interface for interface in interfaces
+            if interface.wireless_lans
+            and interface.name == "wlan0"
+        ]
+        #TODO : traiter le cas d'erreur où il n'y a pas exactement un "wlan0"
+        main_ssid = interfaces_named_wlan0[0].wireless_lans[0].ssid
+        main_unet_id = self.__get_unet_id_from_ssid(main_ssid)
+        return main_unet_id
+
+    def __get_pat_rules(self, interfaces : list[Interface]) -> list[dict[str : str | int]] :
+        """Return a list of dict(representing the pat rules) with keys :
+        - "inside_ip" (ex: "192.168.0.0/24")
+        - "inside_port": (ex: 25)
+        - "outside_ip": (ex: "137.194.8.2/22")
+        - "outside_port": (ex: 80),
+        - "protocol": ("tcp" | "udp")
 
         Args :
-            - mac (str) : mac address of the mac"""
-        received_json_data = self.get_raw_infos_by_mac(mac)
-        ip_addresses = self.__extract_ip_addresses(received_json_data)
-        psks = self.__extract_psks(received_json_data)
-        pat_rules = self.__extract_pat_rules(received_json_data)
-        #rename the keys of the dict
-        for ssid in ip_addresses.keys():
-            unet_id = self.__extract_unet_id_from_ssid(ssid)
-            ip_addresses[unet_id] = ip_addresses.pop(ssid)
-        for ssid in psks.keys():
-            unet_id = self.__extract_unet_id_from_ssid(ssid)
-            psks[unet_id] = psks.pop(ssid)
-        return ip_addresses, psks, pat_rules
+            - interfaces (list[Interface]): list of all the interfaces with a given mac"""
+        pat_rules : list[dict]= []
+        services = interfaces[0].device.services
+        pat_services = [s for s in services if s.name == "PAT" and s.custom_field_data]
+        for s in pat_services :
+            #TODO : check that there exactly one outside ip and port
+            custom_fields = PATCustomField.model_validate_json(s.custom_field_data)
+            pat_rules.append({
+                "inside_ip" : self.__get_ip_by_id(str(custom_fields.inside_ip_address)),
+                "inside_port" : custom_fields.inside_port,
+                "outside_ip" : s.ipaddresses[0].address,
+                "outside_port" : s.ports[0],
+                "protocol" : s.protocol.lower()
+            })
+        return pat_rules
 
+    def get_infos_by_mac(self, mac: str,
+                         ip_adresses = True,
+                         passwords = True,
+                         pat_rules = True,
+                         main_unet_id=True):
+        """Return a dictionnary with keys :
+        - "ip_addresses"
+        - "passwords"
+        - "pat_rules"
+        - "main_unet_id"
 
+        Args :
+            mac (str) : mac address of the box
+            ip_adresses (bool) : if True, return the ip adresses by unet_id
+            passwords (bool) : if True, return the passwords by unet_id
+            pat_rules (bool) : if True, return the pat rules
+        """
+        interfaces : list[Interface] = self.get_interfaces_by_mac(mac)
+
+        result = {}
+        if ip_adresses:
+            result["ip_addresses"] = self.__get_ip_addresses(interfaces)
+        if passwords:
+            result["passwords"] = self.__get_passwords(interfaces)
+        if pat_rules:
+            result["pat_rules"] = self.__get_pat_rules(interfaces)
+        if main_unet_id:
+            result["main_unet_id"] = self.__get_main_unet_id(interfaces)
+        return result
 
 if __name__ == "__main__":
-    netbox = NetboxInterface()
-    # MAC address of a box in netbox.dev.fai.rezel.net
+    netbox = NetboxInterface2()
+    # MAC address of boxes in netbox.dev.fai.rezel.net
     MAC_ADDRESS1 = "88:C3:97:14:B9:1F"
     MAC_ADDRESS2 = "88:C3:97:69:96:69"
-    # json_data = netbox.get_raw_infos_by_mac(mac=MAC_ADDRESS2)
-    # all_interfaces = json_data["data"]["interface_list"]
-    # print(json.dumps(netbox._NetboxInterface__get_map_wlan_tag_to_ssid(all_interfaces), indent=4))
-    print(json.dumps(netbox.get_infos_by_mac(MAC_ADDRESS2), indent=4, default=str))
-    # print(json.dumps(json_data, indent=4))
-    # print(create_query_interface(MAC_ADDRESS2))
+
+    print(json.dumps(netbox.get_infos_by_mac(MAC_ADDRESS2), indent=4))
