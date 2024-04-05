@@ -7,17 +7,26 @@ from MacAddress import MacAddress
 from hermes_config_building.HermesConfigBuilder import *
 
 
+
 MAC_ADDRESS2 = MacAddress("88:C3:97:69:96:69").getMac()
-netbox = NetboxInterface()
+netbox = NetboxInterface2()
 
-json_data =netbox.get_raw_infos_by_mac(mac=MAC_ADDRESS2)
+# get the infos by mac address
 json_infos_by_mac=netbox.get_infos_by_mac(MAC_ADDRESS2)
+print(json.dumps(json_infos_by_mac,indent=4))
 
 
-#get usernetworkid and password from main user
-passwords = json_infos_by_mac[1]
-first_key = list(passwords.keys())[0]
-print(passwords[first_key])
+# get the main unet id with his password
+unet_id_main_user = json_infos_by_mac["main_unet_id"]
+password_main_user = json_infos_by_mac["passwords"][unet_id_main_user]
+print(unet_id_main_user)
+print(password_main_user)
+
+# get SSID from the unet id
+SSID = unet_id_main_user.split("unet")[1]
+print(SSID) 
+
+# get wan ip address of the main user
 
 
 

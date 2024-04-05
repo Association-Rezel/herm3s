@@ -12,8 +12,14 @@ import requests
 import env
 # from pydantic import ValidationError #TO ADD WHEN THE ERRORS WILL BE HANDLED
 
-from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField
-from query_generator import create_query_interface, create_query_ip
+#to avoid import error with communication_deamon
+from communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField
+from communication_netbox.query_generator import create_query_interface, create_query_ip
+
+# from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField
+# from query_generator import create_query_interface, create_query_ip
+
+
 
 class NetboxInterface2:
     """Gets and validates informations from Netbox using its GraphQL API"""
