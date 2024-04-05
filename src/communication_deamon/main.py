@@ -21,7 +21,7 @@ app.add_middleware(
 async def get_file_config_init(mac: str):
     mac_box = MacAddress(mac)
     file = "test.txt"
-    if not mac_box.getMac() is None:
+    if mac_box.getMac() is not None:
         return FileResponse(file, filename=file)
     else:
         raise HTTPException(404, {"Erreur": "invalid mac address"})
