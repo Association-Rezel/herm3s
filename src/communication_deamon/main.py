@@ -3,6 +3,7 @@ from fastapi.responses import FileResponse
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from MacAddress import MacAddress
+from test_mainUser_configFile import create_main_user_config_file
  
 
 app = FastAPI()
@@ -20,8 +21,8 @@ app.add_middleware(
 @app.get("/box/{mac}/config",)
 async def get_file_config_init(mac: str):
     mac_box = MacAddress(mac)
-    file = "test.txt"
     if mac_box.getMac() is not None:
-        return FileResponse(file, filename=file)
+        config_file = create_main_user_config_file(mac_box.getMac())
+        return config_file
     else:
         raise HTTPException(404, {"Erreur": "invalid mac address"})
