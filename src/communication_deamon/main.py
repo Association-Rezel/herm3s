@@ -22,7 +22,7 @@ app.add_middleware(
 async def get_file_config_init(mac: str):
     mac_box = MacAddress(mac)
     if mac_box.getMac() is not None:
-        config_file = create_main_user_config_file(mac_box.getMac())
-        return config_file
+        create_main_user_config_file(mac_box.getMac())
+        return FileResponse("configfile.txt", filename="configfile.txt")
     else:
         raise HTTPException(404, {"Erreur": "invalid mac address"})

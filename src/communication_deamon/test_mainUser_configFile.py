@@ -39,9 +39,9 @@ def create_main_user_config_file(MAC_ADDRESS:str):
         MAC_ADDRESS (str) : the mac address of the main user
 
     Returns: 
-        config_file (dict) : the configuration file of the main user"""
-
-    config_file = {}
+        """
+    
+    
 
     netbox = NetboxInterface2()
 
@@ -103,21 +103,20 @@ def create_main_user_config_file(MAC_ADDRESS:str):
     default_config=defconf,
     default_router=UCI.IPAddress(default_router_ip_address))
 
+
     main_user.build_network(Netconf)
-    config_file["network"] = Netconf.build()
-
     main_user.build_firewall(Fireconf)
-    config_file["firewall"] = Fireconf.build()
-
     main_user.build_dhcp(Dhcpconf)
-    config_file["dhcp"] = Dhcpconf.build()
-
     main_user.build_wireless(Wirelessconf)
-    config_file["wireless"] = Wirelessconf.build()
 
-    config_file["dropbear"] = Dropbearconf.build()
+    #add to the config_file
+    with open ("configfile.txt","w") as file:
+        file.write(Netconf.build()+Fireconf.build()+Dhcpconf.build()+Wirelessconf.build()+Dropbearconf.build())
+        
+    
+    
 
-    return config_file
+    
     
 # print(json.dumps(create_main_user_config_file(MAC_ADDRESS2),indent = 4))
 
