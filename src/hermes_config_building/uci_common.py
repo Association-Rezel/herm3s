@@ -2,7 +2,7 @@ import re
 from netaddr import IPAddress, IPNetwork
 
 class Attribute:
-    """Object used to store the name of an attribute"""
+    """Intrerface for attribute of UCIConfig objects"""
 
     value: str
 
@@ -14,7 +14,7 @@ class Attribute:
         return self.value
 
 
-class UNetId:
+class UNetId(Attribute):
     """Object used to store the name of a user network id"""
 
     value: str
@@ -29,13 +29,9 @@ class UNetId:
             raise ValueError("Invalid UNetId")
         self.value = unetid
 
-    def __str__(self) -> str:
-        """Return the string representation of the UNetId object"""
-        return self.value
-
 
 class UCISectionName:
-    """Object used to store the name of a network object"""
+    """Object used to store the name of a UCIConfig section"""
 
     value: str
 
@@ -53,29 +49,9 @@ class UCISectionName:
         """Return the string representation of the UCISectionName object"""
         return self.value
 
-
-class UCINetworkPorts:
-    """Object used to store the ports of a network object"""
-
-    ports: str
-
-    def __init__(self, ports: str):
-        """Initialize the UCINetworkPorts object
-
-        Args:
-            ports (str): The ports of the network object
-        """
-        if re.match(r"^[A-z0-9\-_\.]+(?:\s+[A-z0-9\-_\.]+)*$", ports) is None:
-            raise ValueError("Invalid Ports")
-        self.ports = ports
-
-    def __str__(self) -> str:
-        """Return the string representation of the UCINetworkPorts object"""
-        return self.ports
-
-
 class UCISectionNamePrefix:
-    """Object used to store the name prefix of a network object"""
+    """Object used to store the prefi of a UCIConfig section
+    e.g. Rezel_ or wifi_ """
 
     value: str
 
@@ -94,8 +70,30 @@ class UCISectionNamePrefix:
         return self.value
 
 
+class UCINetworkPorts:
+    """Object used to store the UCI Network ports
+    e.g. 'eth0 eth1' or 'eth0.1 eth0.2' or '0t 1'
+    """
+    ports: str
+
+    def __init__(self, ports: str):
+        """Initialize the UCINetworkPorts object
+
+        Args:
+            ports (str): The ports of the network object
+        """
+        if re.match(r"^[A-z0-9\-_\.]+(?:\s+[A-z0-9\-_\.]+)*$", ports) is None:
+            raise ValueError("Invalid Ports")
+        self.ports = ports
+
+    def __str__(self) -> str:
+        """Return the string representation of the UCINetworkPorts object"""
+        return self.ports
+
+
 class UCIConfig:
-    """Mother class implementing the UCIConfig interface"""
+    """Interface (almost) for UCI configuration objects
+    """
 
     name: UCISectionName
     optional_uci_commands: str
@@ -159,6 +157,61 @@ class Device:
             str: The string representation of the Device object.
         """
         return self.name
+
+class UCISimpleDevice(Device):
+    """Object used to store the name of a device"""
+
+    def __init__(self, name: str):
+        """Initialize the UCISimpleDevice object
+
+        Args:
+            name (str): The name of the device.
+
+        Raises:
+            ValueError: If the device name is invalid.
+        """
+        if re.match(r"^[A-z0-9\.]+$", name) is None:
+            raise ValueError("Invalid Device")
+        self.name = name
+
+
+class UCIBridge(UCIConfig, Device):
+    """Represents a network bridge in uci
+    See https://openwrt.org/docs/guide-user/network/network_configuration#section_device
+    """
+
+    ports: UCINetworkPorts
+
+    def __init__(
+        self,
+        unetid: UNetId,
+        name_prefix: UCISectionNamePrefix,
+        ports: UCINetworkPorts = None,
+    ):
+        """Initialize the UCIBridge object
+
+        Args:
+            unetid (UNetId): The UNetId object.
+            name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
+            ports (UCINetworkPorts, optional): The ports of the bridge. Defaults to None.
+        """
+        super().__init__(name_prefix.__str__() + unetid.__str__())
+        self.ports = ports
+
+    def uci_build_string(self):
+        """Build the UCI configuration string for UCIBridge
+
+        Returns:
+            str: The UCI configuration string.
+        """
+        string = f"""uci set network.{self}=device
+uci set network.{self}.proto='bridge'
+uci set network.{self}.name='{self}'
+"""
+        if self.ports is not None:
+            string += f"""uci set network.{self}.ports='{self.ports}'
+"""
+        return string
 
 
 class UCINetGlobals(UCIConfig):
@@ -224,62 +277,6 @@ uci set network.{self}.enable_vlan='1'
         return string
 
 
-class UCISimpleDevice(Device):
-    """Object used to store the name of a device"""
-
-    def __init__(self, name: str):
-        """Initialize the UCISimpleDevice object
-
-        Args:
-            name (str): The name of the device.
-
-        Raises:
-            ValueError: If the device name is invalid.
-        """
-        if re.match(r"^[A-z0-9\.]+$", name) is None:
-            raise ValueError("Invalid Device")
-        self.name = name
-
-
-class UCIBridge(UCIConfig, Device):
-    """Represents a network bridge in uci
-    See https://openwrt.org/docs/guide-user/network/network_configuration#section_device
-    """
-
-    ports: UCINetworkPorts
-
-    def __init__(
-        self,
-        unetid: UNetId,
-        name_prefix: UCISectionNamePrefix,
-        ports: UCINetworkPorts = None,
-    ):
-        """Initialize the UCIBridge object
-
-        Args:
-            unetid (UNetId): The UNetId object.
-            name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
-            ports (UCINetworkPorts, optional): The ports of the bridge. Defaults to None.
-        """
-        super().__init__(name_prefix.__str__() + unetid.__str__())
-        self.ports = ports
-
-    def uci_build_string(self):
-        """Build the UCI configuration string for UCIBridge
-
-        Returns:
-            str: The UCI configuration string.
-        """
-        string = f"""uci set network.{self}=device
-uci set network.{self}.proto='bridge'
-uci set network.{self}.name='{self}'
-"""
-        if self.ports is not None:
-            string += f"""uci set network.{self}.ports='{self.ports}'
-"""
-        return string
-
-
 class UCIInterface(UCIConfig):
     """Represents a network interface in uci
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_interface
@@ -302,8 +299,8 @@ class UCIInterface(UCIConfig):
         Args:
             unetid (UNetId): The UNetId object.
             name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
-            ip (IPAddress): The IP address.
-            mask (IPAddress): The subnet mask.
+            ip (IPAddress): The IP address e.g. 192.168.1.1.
+            mask (IPAddress): The subnet mask e.g. 255.255.255.0.
             proto (InterfaceProto): The InterfaceProto object.
             device (Device, optional): The Device object. Defaults to None.
         """
@@ -381,7 +378,7 @@ class UCINoIPInterface(UCIConfig):
 
         Args:
             name (UCISectionName): The name of the interface.
-            device (Device): The Device object.
+            device (Device): The Device object (SimpleDevice or Bridge).
         """
         super().__init__(name)
         self.device = device
@@ -687,6 +684,18 @@ class UCIWifiIface(UCIConfig):
         passphrase: WifiPassphrase,
         disabled: int = 0,
     ):
+        """Create a wifi interface with password and SSID
+
+        Args:
+            unetid (UNetId): UNetId of the attached user
+            device (UCIWifiDevice): WIfi device to attach to
+            network (UCIInterface): Network to attach to (lan, wan, ...)
+            mode (Mode): mostly ap
+            ssid (SSID): SSID of the wifi
+            encryption (Encryption): Type of encryption (none, wep, psk, psk2, psk-mixed, sae)
+            passphrase (WifiPassphrase): Password of the wifi 8-63 characters printable ASCII
+            disabled (int, optional): Is the iface disabled ?. Defaults to 0.
+        """
         super().__init__(f"wifi_{unetid}_{device}")
         self.device = device
         self.network = network
@@ -1139,7 +1148,9 @@ uci set firewall.{self}.proto='all'
 #                                     DHCP                                     #
 # ---------------------------------------------------------------------------- #
 class DnsServers(Attribute):
-    """Object used to store the DNS servers of a DHCP server"""
+    """Object used to store the DNS servers served by a DHCP server
+    Its value is a list of IP addresses 
+    """
 
     def __init__(self, value: list[IPAddress]):
         """
