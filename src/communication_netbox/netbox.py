@@ -13,15 +13,15 @@ import env
 # from pydantic import ValidationError #TO ADD WHEN THE ERRORS WILL BE HANDLED
 
 #to avoid import error with communication_deamon
-from communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField
-from communication_netbox.query_generator import create_query_interface, create_query_ip
+# from communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField
+# from communication_netbox.query_generator import create_query_interface, create_query_ip
 
-# from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField
-# from query_generator import create_query_interface, create_query_ip
+from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
+from query_generator import create_query_interface, create_query_ip
 
 
 
-class NetboxInterface2:
+class NetboxInterface:
     """Gets and validates informations from Netbox using its GraphQL API"""
 
     def __init__(self):
@@ -82,6 +82,17 @@ class NetboxInterface2:
             - interfaces (list[Interface]): list of all the interfaces with a given mac"""
         wlans = [inter.wireless_lans[0] for inter in interfaces if inter.wireless_lans]
         return wlans
+    
+    def __get_wlan_ssid_by_id(self, wlan_id : int, interfaces : list[Interface]) -> str:
+        """Return the ssid of the wlan with the given id
+        
+        Args :
+            - wlan_id (int) : id of the wlan
+            - interfaces (list[Interface]): list of all the interfaces with a given mac"""
+        wlans = self.__get_wlans(interfaces)
+        #TODO : traiter le cas d'erreur où il n'y a pas exactement un wlan avec cet id
+        wlan = [wlan for wlan in wlans if wlan.id == wlan_id][0]
+        return wlan.ssid
 
     def _get_unet_ids(self, interfaces : list[Interface]) -> list[str] :
         """Return the UNet Ids contained in the list of interface
@@ -101,11 +112,17 @@ class NetboxInterface2:
         
         Args :
             - interfaces (list[Interface]): list of all the interfaces with a given mac"""
-        res = []
+        all_unet_ids = self._get_unet_ids(interfaces)
+        res = {unet_id : [] for unet_id in all_unet_ids}
         interfaces_with_ip_addresses = [inter for inter in interfaces if inter.ip_addresses]
         for interface in interfaces_with_ip_addresses :
             for ip_wrapper in interface.ip_addresses :
-                res.append({
+                custom_fields = IpAddressCustomField.model_validate_json(ip_wrapper.custom_field_data)
+                #TODO : traiter les cas d'erreur de validation
+                linked_wlan_id = custom_fields.Linked_WLAN
+                linked_wlan_ssid = self.__get_wlan_ssid_by_id(linked_wlan_id, interfaces)
+                unet_id = self.__get_unet_id_from_ssid(linked_wlan_ssid)
+                res[unet_id].append({
                     "name" : interface.name,
                     "ip_address" : ip_wrapper.address,
                     "nat_inside_ip" : ip_wrapper.nat_inside.address if ip_wrapper.nat_inside else None
@@ -168,7 +185,7 @@ class NetboxInterface2:
                          ip_adresses = True,
                          passwords = True,
                          pat_rules = True,
-                         main_unet_id=True):
+                         main_unet_id=True) -> dict[str, any]:
         """Return a dictionnary with keys :
         - "ip_addresses"
         - "passwords"
@@ -195,9 +212,11 @@ class NetboxInterface2:
         return result
 
 if __name__ == "__main__":
-    netbox = NetboxInterface2()
+    netbox = NetboxInterface()
     # MAC address of boxes in netbox.dev.fai.rezel.net
     MAC_ADDRESS1 = "88:C3:97:14:B9:1F"
     MAC_ADDRESS2 = "88:C3:97:69:96:69"
-
+    # interfaces_raw = netbox.get_interfaces_by_mac(MAC_ADDRESS1)
+    # for inter in interfaces_raw:
+    #     print(json.dumps(inter.model_dump(), indent=4))
     print(json.dumps(netbox.get_infos_by_mac(MAC_ADDRESS2), indent=4))
