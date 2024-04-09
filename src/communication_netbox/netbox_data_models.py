@@ -46,6 +46,11 @@ class PATCustomField(BaseModel) :
     """Data model of : custom field of service PAT"""
     inside_port : int
     inside_ip_address : int
+    PAT_linked_WLAN : int
+
+class IpAddressCustomField(BaseModel):
+    """Data model of :  custom field in IP address"""
+    Linked_WLAN : int
 
 if __name__ == "__main__":
     test_json = """{

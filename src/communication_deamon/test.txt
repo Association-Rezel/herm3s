@@ -1,6 +1,0 @@
-Spécification communication deamon:
-
-La box (le deamon) fait un requête http à hermes avec en paramètre sa mac pour l'endpoint par exemple: /box/{mac}/config
-
-En réponse de la requête http de la box on envoie un fichier avec toute les commandes uci dedans et le deamon pourra alors lire le fichier et appliquer les commandes
-
