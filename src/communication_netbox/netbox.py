@@ -13,11 +13,11 @@ import env
 # from pydantic import ValidationError #TO ADD WHEN THE ERRORS WILL BE HANDLED
 
 #to avoid import error with communication_deamon
-from communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
-from communication_netbox.query_generator import create_query_interface, create_query_ip
+# from communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
+# from communication_netbox.query_generator import create_query_interface, create_query_ip
 
-# from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
-# from query_generator import create_query_interface, create_query_ip
+from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
+from query_generator import create_query_interface, create_query_ip
 
 
 
@@ -162,6 +162,7 @@ class NetboxInterface:
         - "inside_port": (ex: 25)
         - "outside_ip": (ex: "137.194.8.2/22")
         - "outside_port": (ex: 80),
+        - "unet_id": unet id of the owner if the outside ip (ex: "Thorium")
         - "protocol": ("tcp" | "udp")
 
         Args :
@@ -172,11 +173,14 @@ class NetboxInterface:
         for s in pat_services :
             #TODO : check that there exactly one outside ip and port
             custom_fields = PATCustomField.model_validate_json(s.custom_field_data)
+            wlan_ssid = self.__get_wlan_ssid_by_id(custom_fields.PAT_linked_WLAN, interfaces)
+            unet_id = self.__get_unet_id_from_ssid(wlan_ssid)
             pat_rules.append({
                 "inside_ip" : self.__get_ip_by_id(str(custom_fields.inside_ip_address)),
                 "inside_port" : custom_fields.inside_port,
                 "outside_ip" : s.ipaddresses[0].address,
                 "outside_port" : s.ports[0],
+                "unet_id" : unet_id,
                 "protocol" : s.protocol.lower()
             })
         return pat_rules
