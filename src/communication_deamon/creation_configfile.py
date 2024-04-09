@@ -91,6 +91,34 @@ def create_configfile(mac_address:str):
             main_user.build_firewall(Fireconf)
             main_user.build_dhcp(Dhcpconf)
             main_user.build_wireless(Wirelessconf)
+
+            #create port forwarding for the main user
+            for dico in json_infos_by_mac["pat_rules"]:
+                if dico["unet_id"] == key:
+                    
+                    #get source port 
+                    outside_port = dico["outside_port"]
+                  
+
+                    #get dest port and ip
+                    inside_port = dico["inside_port"]
+                    inside_ip = dico["inside_ip"][:-3]
+
+                    protocol = dico["protocol"]
+
+
+                    main_port_forwarding = HermesPortForwarding(
+                    unetid=UCI.UNetId(key),
+                    name=UCI.UCISectionName("http_to_internal"),
+                    desc=UCI.Description("HTTP forwarding"),
+                    src=main_user.wan_zone, 
+                    src_dport=UCI.TCPUDPPort(outside_port),
+                    dest=main_user.lan_zone,
+                    dest_ip=UCI.IPAddress(inside_ip),
+                    dest_port=UCI.TCPUDPPort(inside_port),
+                    proto=UCI.Protocol(protocol),
+                    )
+                    main_port_forwarding.build_firewall(Fireconf) 
         
         else:
             #get passord of the main user
@@ -134,6 +162,33 @@ def create_configfile(mac_address:str):
             other_user.build_firewall(Fireconf)
             other_user.build_dhcp(Dhcpconf)
             other_user.build_wireless(Wirelessconf)
+
+            #create port forwarding for the other user
+            for dico in json_infos_by_mac["pat_rules"]:
+                if dico["unet_id"] == key:
+                    
+                    #get source port 
+                    outside_port = dico["outside_port"]
+
+                    #get dest port and ip
+                    inside_port = dico["inside_port"]
+                    inside_ip = dico["inside_ip"][:-3]
+
+                    protocol = dico["protocol"]
+
+
+                    main_port_forwarding = HermesPortForwarding(
+                    unetid=UCI.UNetId(key),
+                    name=UCI.UCISectionName("http_to_internal"),
+                    desc=UCI.Description("HTTP forwarding"),
+                    src=main_user.wan_zone,
+                    src_dport=UCI.TCPUDPPort(outside_port),
+                    dest=main_user.lan_zone,
+                    dest_ip=UCI.IPAddress(inside_ip),
+                    dest_port=UCI.TCPUDPPort(inside_port),
+                    proto=UCI.Protocol(protocol),
+                    )
+                    main_port_forwarding.build_firewall(Fireconf) 
             
 
     #add to the configfile
@@ -148,9 +203,11 @@ if __name__ == "__main__":
 
     # # get the infos by mac address
     json_infos_by_mac=netbox.get_infos_by_mac(mac_address)
+    create_configfile(mac_address)
     print(json.dumps(json_infos_by_mac,indent=4))
     print(IPNetwork(json_infos_by_mac["ip_addresses"]["unet_id_666_1"][0]["nat_inside_ip"]).cidr)
     print(str(IPNetwork(json_infos_by_mac["ip_addresses"]["unet_id_666_0"][1]["ip_address"]).netmask))
+
 
 
 
