@@ -27,7 +27,7 @@ class UCINetworkConfig(UCITypeConfig):
         self.commands = ""
 
     def build(self) -> str:
-        return self.commands + "service network restart\n"
+        return self.commands + "uci commit\nservice network restart\n"
 
 
 class UCIFirewallConfig(UCITypeConfig):
@@ -37,7 +37,7 @@ class UCIFirewallConfig(UCITypeConfig):
         self.commands = ""
 
     def build(self) -> str:
-        return self.commands + "service firewall restart\n"
+        return self.commands + "uci commit\nservice firewall restart\n"
 
 
 class UCIDHCPConfig(UCITypeConfig):
@@ -47,7 +47,7 @@ class UCIDHCPConfig(UCITypeConfig):
         self.commands = ""
 
     def build(self) -> str:
-        return self.commands + "service dnsmasq restart\n"
+        return self.commands + "uci commit\nservice dnsmasq restart\n"
 
 
 class UCIWirelessConfig(UCITypeConfig):
@@ -57,7 +57,7 @@ class UCIWirelessConfig(UCITypeConfig):
         self.commands = ""
 
     def build(self) -> str:
-        return self.commands + "wifi reload\n"
+        return self.commands + "uci commit\nwifi reload\n"
 
 
 class UCIDropbearConfig(UCITypeConfig):
@@ -67,7 +67,7 @@ class UCIDropbearConfig(UCITypeConfig):
         self.commands = ""
 
     def build(self) -> str:
-        return self.commands + "service dropbear restart\n"
+        return self.commands + "uci commit\nservice dropbear restart\n"
 
 
 class HermesConfigBuilder:
@@ -119,6 +119,16 @@ class HermesDefaultConfig(HermesConfigBuilder):
     """Mother class for the default configuration of the router
     Herits from HermesConfigBuilder
     """
+
+    loopback: UCI.UCIInterface
+    switch0: UCI.UCISwitch
+    vlan_1: UCI.UCISwitchVlan
+    vlan_65: UCI.UCISwitchVlan
+    vlan_101: UCI.UCISwitchVlan
+    vlan_102: UCI.UCISwitchVlan
+    management: UCI.UCINoIPInterface
+    radio0: UCI.UCIWifiDevice
+    radio1: UCI.UCIWifiDevice
 
 
 class HermesAC2350DefaultConfig(HermesDefaultConfig):
@@ -266,7 +276,7 @@ class HermesMainUser(HermesConfigBuilder):
         # Network Configuration
         self.br_lan = UCI.UCIBridge(
             unetid=unetid,
-            name_prefix=UCI.UCISectionNamePrefix("br-lan_"),
+            name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
             ports=UCI.UCISimpleDevice("eth0.1"),
         )
         self.network_commands.append(self.br_lan)
@@ -331,37 +341,39 @@ class HermesMainUser(HermesConfigBuilder):
         self.dhcp_commands.append(self.dhcp)
 
         # Firewall Configuration
-        self.forwarding = UCI.UCIForwarding(src=self.lan_int, dest=self.wan_int)
-        self.firewall_commands.append(self.forwarding)
-
-        self.firewall_commands.append(
-            UCI.UCIZone(
+        self.lan_zone = UCI.UCIZone(
                 network=self.lan_int,
                 _input=UCI.InOutForw("ACCEPT"),
                 output=UCI.InOutForw("ACCEPT"),
                 forward=UCI.InOutForw("REJECT"),
-            )
-        )
-        self.firewall_commands.append(
-            UCI.UCIZone(
+                )
+        self.firewall_commands.append(self.lan_zone)
+        self.wan_zone = UCI.UCIZone(
                 network=self.wan_int,
                 _input=UCI.InOutForw("REJECT"),
                 output=UCI.InOutForw("ACCEPT"),
                 forward=UCI.InOutForw("REJECT"),
-            )
-        )
+                )
+        self.firewall_commands.append(self.wan_zone)
+        self.forwarding = UCI.UCIForwarding(src=self.lan_zone, dest=self.wan_zone)
+        self.firewall_commands.append(self.forwarding)
         self.ping_rule = UCI.UCIRule(
             unetid=unetid,
             name=UCI.UCISectionName("wan_allow_ping"),
             desc=UCI.Description("Allow ping to WAN"),
-            src=self.wan_int,
+            src=self.wan_zone,
             proto=UCI.Protocol("icmp"),
             icmp_type="echo-request",
             target=UCI.Target("ACCEPT"),
             family="ipv4",
         )
         self.firewall_commands.append(self.ping_rule)
-        self.snat = UCI.UCISnat(wan_interface=self.wan_int, lan_interface=self.lan_int)
+        self.snat = UCI.UCISnat(
+            wan_zone=self.wan_zone,
+            lan_zone=self.lan_zone,
+            wan_interface=self.wan_int,
+            lan_interface=self.lan_int,
+            )
         self.firewall_commands.append(self.snat)
 
 
@@ -409,7 +421,7 @@ class HermesSecondaryUser(HermesMainUser):
         )
         self.br_lan = UCI.UCIBridge(
             unetid=unetid,
-            name_prefix=UCI.UCISectionNamePrefix("br-lan_"),
+            name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
         )
 
 
@@ -425,9 +437,9 @@ class HermesPortForwarding(HermesConfigBuilder):
         unetid: UCI.UNetId,
         name: UCI.UCISectionName,
         desc: UCI.Description,
-        src: UCI.UCIInterface,
+        src: UCI.UCIZone,
         src_dport: UCI.TCPUDPPort,
-        dest: UCI.UCIInterface,
+        dest: UCI.UCIZone,
         dest_ip: UCI.IPAddress,
         dest_port: UCI.TCPUDPPort,
         proto: UCI.Protocol,
@@ -439,9 +451,9 @@ class HermesPortForwarding(HermesConfigBuilder):
             unetid (UCI.UNetId): The user netid
             name (UCI.UCISectionName): The name of the port forwarding
             desc (UCI.Description): The description of the port forwarding
-            src (UCI.UCIInterface): The source interface
+            src (UCI.UCIZone): The source interface
             src_dport (UCI.TCPUDPPort): The source port
-            dest (UCI.UCIInterface): The destination interface
+            dest (UCI.UCIZone): The destination interface
             dest_ip (UCI.IPAddress): The destination IP
             dest_port (UCI.TCPUDPPort): The destination port
             proto (UCI.Protocol): The protocol
@@ -481,7 +493,7 @@ if __name__ == "__main__":
 
     main_user = HermesMainUser(
         unetid=UCI.UNetId("main"),
-        ssid=UCI.SSID("Rezel", "MyWifi"),
+        ssid=UCI.SSID("Rezel_", "main"),
         wan_address=UCI.IPAddress("137.194.8.2"),
         wan_netmask=UCI.IPAddress("255.255.255.0"),
         lan_address=UCI.IPAddress("192.168.0.1"),
@@ -499,7 +511,7 @@ if __name__ == "__main__":
 
     secondary_user = HermesSecondaryUser(
         unetid=UCI.UNetId("secondary"),
-        ssid=UCI.SSID("Rezel", "MyWifi"),
+        ssid=UCI.SSID("Rezel_", "secondary"),
         wan_address=UCI.IPAddress("195.14.28.2"),
         wan_netmask=UCI.IPAddress("255.255.255.0"),
         lan_address=UCI.IPAddress("192.168.1.1"),
@@ -533,18 +545,19 @@ if __name__ == "__main__":
 
     main_port_forwarding = HermesPortForwarding(
         unetid=UCI.UNetId("main"),
-        name=UCI.UCISectionName("http-to-internal"),
+        name=UCI.UCISectionName("http_to_internal"),
         desc=UCI.Description("HTTP forwarding"),
-        src=main_user.wan_int,
+        src=main_user.wan_zone,
         src_dport=UCI.TCPUDPPort(80),
-        dest=main_user.lan_int,
+        dest=main_user.lan_zone,
         dest_ip=UCI.IPAddress("192.168.0.5"),
         dest_port=UCI.TCPUDPPort(80),
         proto=UCI.Protocol("tcp"),
     )
-    main_port_forwarding.build_firewall(Fireconf)
+    main_port_forwarding.build_firewall(Fireconf) 
 
     print(Netconf.build())
     print(Fireconf.build())
     print(Dhcpconf.build())
     print(Wirelessconf.build())
+    print(Dropbearconf.build())
