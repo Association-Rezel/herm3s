@@ -1,6 +1,7 @@
 import re
 from netaddr import IPAddress, IPNetwork
 
+
 class Attribute:
     """Intrerface for attribute of UCIConfig objects"""
 
@@ -49,9 +50,10 @@ class UCISectionName:
         """Return the string representation of the UCISectionName object"""
         return self.value
 
+
 class UCISectionNamePrefix:
     """Object used to store the prefi of a UCIConfig section
-    e.g. Rezel_ or wifi_ """
+    e.g. Rezel_ or wifi_"""
 
     value: str
 
@@ -74,6 +76,7 @@ class UCINetworkPorts:
     """Object used to store the UCI Network ports
     e.g. 'eth0 eth1' or 'eth0.1 eth0.2' or '0t 1'
     """
+
     ports: str
 
     def __init__(self, ports: str):
@@ -92,8 +95,7 @@ class UCINetworkPorts:
 
 
 class UCIConfig:
-    """Interface (almost) for UCI configuration objects
-    """
+    """Interface (almost) for UCI configuration objects"""
 
     name: UCISectionName
     optional_uci_commands: str
@@ -121,6 +123,7 @@ class UCIConfig:
     def __str__(self) -> str:
         """Return the name of the network object"""
         return self.name.value
+
 
 # ---------------------------------------------------------------------------- #
 #                                    Network                                   #
@@ -157,6 +160,7 @@ class Device:
             str: The string representation of the Device object.
         """
         return self.name
+
 
 class UCISimpleDevice(Device):
     """Object used to store the name of a device"""
@@ -216,7 +220,7 @@ uci set network.{self.name}.name='{self.name}'
 
 class UCINetGlobals(UCIConfig):
     """Used to create a global network configuration
-    See https://openwrt.org/docs/guide-user/network/network_configuration#section_globals 
+    See https://openwrt.org/docs/guide-user/network/network_configuration#section_globals
     """
 
     ula_prefix: IPNetwork
@@ -281,6 +285,7 @@ class UCIInterface(UCIConfig):
     """Represents a network interface in uci
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_interface
     """
+
     ip: IPAddress
     mask: IPAddress
     device: Device
@@ -441,6 +446,7 @@ uci set network.{self.name}.ports='{self.ports}'
 #                                   Wireless                                   #
 # ---------------------------------------------------------------------------- #
 
+
 class Path(Attribute):
     """Object used to store the path of a device"""
 
@@ -588,9 +594,7 @@ class Encryption(Attribute):
 
 
 class WifiPassphrase(Attribute):
-    """Object used to store the key of a wifi interface
-    
-    """
+    """Object used to store the key of a wifi interface"""
 
     def __init__(self, value: str):
         """
@@ -716,6 +720,7 @@ uci set wireless.{self.name}.key='{self.key}'
 uci set wireless.{self.name}.disabled='{self.disabled}'
 """
         return string
+
 
 # ---------------------------------------------------------------------------- #
 #                                   Firewall                                   #
@@ -856,6 +861,7 @@ uci set firewall.{self.name}.forward='REJECT'
 """
         return string
 
+
 class UCIZone(UCIConfig):
     """Used to create a firewall zone
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#zones
@@ -904,6 +910,7 @@ class UCIRedirect4(UCIConfig):
     """Used to create a port redirection
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#redirects
     """
+
     desc: Description
     src: UCIZone
     src_ip: IPAddress
@@ -912,7 +919,7 @@ class UCIRedirect4(UCIConfig):
     dest_ip: IPAddress
     dest_port: TCPUDPPort
     proto: Protocol
-    
+
     def __init__(
         self,
         unetid: UNetId,
@@ -1008,6 +1015,7 @@ class UCIRule(UCIConfig):
     """Used to create a firewall rule
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#rules
     """
+
     desc: Description
     proto: Protocol
     src: UCIZone
@@ -1149,12 +1157,13 @@ uci set firewall.{self.name}.proto='all'
 
         return string
 
+
 # ---------------------------------------------------------------------------- #
 #                                     DHCP                                     #
 # ---------------------------------------------------------------------------- #
 class DnsServers(Attribute):
     """Object used to store the DNS servers served by a DHCP server
-    Its value is a list of IP addresses 
+    Its value is a list of IP addresses
     """
 
     def __init__(self, value: list[IPAddress]):
@@ -1185,7 +1194,7 @@ class UCIdnsmasq(UCIConfig):
         Initialize the UCIdnsmasq object.
 
         Parameters:
-        - dns_servers (DnsServers): An instance of the DnsServers 
+        - dns_servers (DnsServers): An instance of the DnsServers
         class representing the DNS servers.
 
         Raises:
@@ -1274,7 +1283,7 @@ class UCIDHCP(UCIConfig):
         Initialize the UCIDHCP object.
 
         Parameters:
-        - interface (UCIInterface): An instance of the UCIInterface 
+        - interface (UCIInterface): An instance of the UCIInterface
         class representing the DHCP interface.
         - start (int): The starting IP address for the DHCP range.
         - limit (int): The maximum number of IP addresses in the DHCP range.
@@ -1307,9 +1316,11 @@ uci set dhcp.{self.name}.leasetime='{self.leasetime}'
 """
         return string
 
+
 # ---------------------------------------------------------------------------- #
 #                                   Dropbear                                   #
 # ---------------------------------------------------------------------------- #
+
 
 class UCIDropbear(UCIConfig):
     """Used to create a Dropbear configuration"""

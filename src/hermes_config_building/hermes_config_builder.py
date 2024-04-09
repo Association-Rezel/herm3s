@@ -1,5 +1,6 @@
-# import uci_common as UCI  
-import hermes_config_building.uci_common as UCI # to import from communication_deamon
+# import uci_common as UCI
+import hermes_config_building.uci_common as UCI  # to import from communication_deamon
+
 
 class UCITypeConfig:
     """Mother class reprensenting a config block uci
@@ -227,6 +228,7 @@ class HermesAC2350DefaultConfig(HermesDefaultConfig):
         # Dropbear Configuration
         self.dropbear_commands.append(UCI.UCIDropbear())
 
+
 class HermesUser(HermesConfigBuilder):
     br_lan: UCI.UCIBridge
     lan_int: UCI.UCIInterface
@@ -329,18 +331,18 @@ class HermesUser(HermesConfigBuilder):
 
         # Firewall Configuration
         self.lan_zone = UCI.UCIZone(
-                network=self.lan_int,
-                _input=UCI.InOutForw("ACCEPT"),
-                output=UCI.InOutForw("ACCEPT"),
-                forward=UCI.InOutForw("REJECT"),
-                )
+            network=self.lan_int,
+            _input=UCI.InOutForw("ACCEPT"),
+            output=UCI.InOutForw("ACCEPT"),
+            forward=UCI.InOutForw("REJECT"),
+        )
         self.firewall_commands.append(self.lan_zone)
         self.wan_zone = UCI.UCIZone(
-                network=self.wan_int,
-                _input=UCI.InOutForw("REJECT"),
-                output=UCI.InOutForw("ACCEPT"),
-                forward=UCI.InOutForw("REJECT"),
-                )
+            network=self.wan_int,
+            _input=UCI.InOutForw("REJECT"),
+            output=UCI.InOutForw("ACCEPT"),
+            forward=UCI.InOutForw("REJECT"),
+        )
         self.firewall_commands.append(self.wan_zone)
         self.forwarding = UCI.UCIForwarding(src=self.lan_zone, dest=self.wan_zone)
         self.firewall_commands.append(self.forwarding)
@@ -360,13 +362,15 @@ class HermesUser(HermesConfigBuilder):
             lan_zone=self.lan_zone,
             wan_interface=self.wan_int,
             lan_interface=self.lan_int,
-            )
+        )
         self.firewall_commands.append(self.snat)
+
 
 class HermesMainUser(HermesUser):
     """Represents the main user configuration for the router
     Herits from HermesConfigBuilder
     """
+
     def __init__(
         self,
         unetid: UCI.UNetId,
@@ -417,7 +421,9 @@ class HermesMainUser(HermesUser):
 
 class HermesSecondaryUser(HermesUser):
     """Same as HermesMainUser but with a different default bridge"""
-    lan_switch_vlan : UCI.UCISwitchVlan
+
+    lan_switch_vlan: UCI.UCISwitchVlan
+
     def __init__(
         self,
         unetid: UCI.UNetId,
@@ -605,7 +611,7 @@ if __name__ == "__main__":
         dest_port=UCI.TCPUDPPort(80),
         proto=UCI.Protocol("tcp"),
     )
-    main_port_forwarding.build_firewall(Fireconf) 
+    main_port_forwarding.build_firewall(Fireconf)
 
     print(Netconf.build())
     print(Fireconf.build())
