@@ -205,11 +205,11 @@ class UCIBridge(UCIConfig, Device):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self.name}=device
-uci set network.{self.name}.proto='bridge'
+uci set network.{self.name}.type='bridge'
 uci set network.{self.name}.name='{self.name}'
 """
         if self.ports is not None:
-            string += f"""uci set network.{self.name}.ports='{self.ports}'
+            string += f"""uci add_list network.{self.name}.ports='{self.ports}'
 """
         return string
 

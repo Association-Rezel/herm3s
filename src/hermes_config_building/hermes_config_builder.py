@@ -227,12 +227,7 @@ class HermesAC2350DefaultConfig(HermesDefaultConfig):
         # Dropbear Configuration
         self.dropbear_commands.append(UCI.UCIDropbear())
 
-
-class HermesMainUser(HermesConfigBuilder):
-    """Represents the main user configuration for the router
-    Herits from HermesConfigBuilder
-    """
-
+class HermesUser(HermesConfigBuilder):
     br_lan: UCI.UCIBridge
     lan_int: UCI.UCIInterface
     wan_int: UCI.UCIInterface
@@ -273,13 +268,6 @@ class HermesMainUser(HermesConfigBuilder):
         super().__init__()
 
         # Network Configuration
-        self.br_lan = UCI.UCIBridge(
-            unetid=unetid,
-            name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
-            ports=UCI.UCISimpleDevice("eth0.1"),
-        )
-        self.network_commands.append(self.br_lan)
-
         self.lan_int = UCI.UCIInterface(
             name_prefix="lan_",
             ip=lan_address,
@@ -375,10 +363,10 @@ class HermesMainUser(HermesConfigBuilder):
             )
         self.firewall_commands.append(self.snat)
 
-
-class HermesSecondaryUser(HermesMainUser):
-    """Same as HermesMainUser but with a different default bridge"""
-
+class HermesMainUser(HermesUser):
+    """Represents the main user configuration for the router
+    Herits from HermesConfigBuilder
+    """
     def __init__(
         self,
         unetid: UCI.UNetId,
@@ -389,6 +377,58 @@ class HermesSecondaryUser(HermesMainUser):
         lan_network: UCI.IPNetwork,
         wifi_passphrase: UCI.WifiPassphrase,
         wan_vlan: int,
+        default_config: HermesDefaultConfig,
+        default_router: UCI.IPAddress,
+    ):
+        """Create a main user configuration
+
+        Args:
+            unetid (UCI.UNetId): The user netid
+            ssid (UCI.SSID): The SSID of the user
+            wan_address (UCI.IPAddress): The WAN address
+            wan_netmask (UCI.IPAddress): The WAN netmask
+            lan_address (UCI.IPAddress): The LAN address
+            lan_network (UCI.IPNetwork): The LAN network
+            wifi_passphrase (UCI.WifiPassphrase): The wifi passphrase
+            wan_vlan (int): The WAN VLAN
+            default_config (HermesDefaultConfig): The default configuration
+            default_router (UCI.IPAddress): The default router
+        """
+        self.br_lan = UCI.UCIBridge(
+            unetid=unetid,
+            name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
+            ports=UCI.UCISimpleDevice("eth0.1"),
+        )
+
+        super().__init__(
+            unetid,
+            ssid,
+            wan_address,
+            wan_netmask,
+            lan_address,
+            lan_network,
+            wifi_passphrase,
+            wan_vlan,
+            default_config,
+            default_router,
+        )
+        self.network_commands.append(self.br_lan)
+
+
+class HermesSecondaryUser(HermesUser):
+    """Same as HermesMainUser but with a different default bridge"""
+    lan_switch_vlan : UCI.UCISwitchVlan
+    def __init__(
+        self,
+        unetid: UCI.UNetId,
+        ssid: UCI.SSID,
+        wan_address: UCI.IPAddress,
+        wan_netmask: UCI.IPAddress,
+        lan_address: UCI.IPAddress,
+        lan_network: UCI.IPNetwork,
+        wifi_passphrase: UCI.WifiPassphrase,
+        wan_vlan: int,
+        lan_vlan: int,
         default_config: HermesDefaultConfig,
         default_router: UCI.IPAddress,
     ):
@@ -403,9 +443,21 @@ class HermesSecondaryUser(HermesMainUser):
             lan_network (UCI.IPNetwork): The LAN network
             wifi_passphrase (UCI.WifiPassphrase): The wifi passphrase
             wan_vlan (int): The WAN VLAN
+            lan_vlan (int): The LAN VLAN
             default_config (HermesDefaultConfig): The default configuration
             default_router (UCI.IPAddress): The default router
         """
+        self.lan_switch_vlan = UCI.UCISwitchVlan(
+            name=UCI.UCISectionName(f"switch_vlan_{unetid}"),
+            device=default_config.switch0,
+            vid=lan_vlan,
+            ports=UCI.UCINetworkPorts("0t"),
+        )
+        self.br_lan = UCI.UCIBridge(
+            unetid=unetid,
+            name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
+            ports=UCI.UCISimpleDevice(f"eth0.{lan_vlan}"),
+        )
         super().__init__(
             unetid,
             ssid,
@@ -418,10 +470,8 @@ class HermesSecondaryUser(HermesMainUser):
             default_config,
             default_router,
         )
-        self.br_lan = UCI.UCIBridge(
-            unetid=unetid,
-            name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
-        )
+        self.network_commands.append(self.lan_switch_vlan)
+        self.network_commands.append(self.br_lan)
 
 
 class HermesPortForwarding(HermesConfigBuilder):
@@ -517,6 +567,7 @@ if __name__ == "__main__":
         lan_network=UCI.IPNetwork("192.168.1.0/24"),
         wifi_passphrase=UCI.WifiPassphrase("password"),
         wan_vlan=102,
+        lan_vlan=2,
         default_config=defconf,
         default_router=UCI.IPAddress("195.14.28.1"),
     )
@@ -534,6 +585,7 @@ if __name__ == "__main__":
         lan_network=UCI.IPNetwork("192.168.2.0/24"),
         wifi_passphrase=UCI.WifiPassphrase("password"),
         wan_vlan=101,
+        lan_vlan=3,
         default_config=defconf,
         default_router=UCI.IPAddress("137.194.8.1"),
     )
