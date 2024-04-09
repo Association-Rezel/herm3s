@@ -528,11 +528,11 @@ if __name__ == "__main__":
 
     tertiary_user = HermesSecondaryUser(
         unetid=UCI.UNetId("tertiary"),
-        ssid=UCI.SSID("Rezel", "MyWifi"),
+        ssid=UCI.SSID("Rezel_", "tertiary"),
         wan_address=UCI.IPAddress("137.194.8.3"),
         wan_netmask=UCI.IPAddress("255.255.255.0"),
         lan_address=UCI.IPAddress("192.168.2.1"),
-        lan_network=UCI.IPNetwork("255.255.255.0"),
+        lan_network=UCI.IPNetwork("192.168.2.0/24"),
         wifi_passphrase=UCI.WifiPassphrase("password"),
         wan_vlan=101,
         default_config=defconf,
