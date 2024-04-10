@@ -26,3 +26,8 @@ async def get_file_config_init(mac: str):
         return FileResponse("configfile.txt", filename="configfile.txt")
     else:
         raise HTTPException(404, {"Erreur": "invalid mac address"})
+
+#download default conf file   
+@app.get("/default/config")
+async def get_default_config():
+    return FileResponse("defaultConfigfile.txt", filename="defaultConfigfile.txt")

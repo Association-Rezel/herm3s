@@ -195,7 +195,36 @@ def create_configfile(mac_address:str):
     with open ("configfile.txt","w") as file:
         file.write(Netconf.build()+"/--SEPARATOR--/\n"+Fireconf.build()+"/--SEPARATOR--/\n"+Dhcpconf.build()+"/--SEPARATOR--/\n"+Wirelessconf.build()+"/--SEPARATOR--/\n"+Dropbearconf.build())
         
+
+def create_default_configfile():
+    """create configuration file for all users
+     Args:
+        void
+    return:
+        void
+    """
+
+
+    Netconf = UCINetworkConfig()
+    Fireconf = UCIFirewallConfig()
+    Dhcpconf = UCIDHCPConfig()
+    Wirelessconf = UCIWirelessConfig()
+    Dropbearconf = UCIDropbearConfig()
+
+    # create the default configuration
+    defconf = HermesAC2350DefaultConfig(UCI.DnsServers([UCI.IPAddress("8.8.8.8")]))
+
+    defconf.build_network(Netconf)
+    defconf.build_firewall(Fireconf)
+    defconf.build_dhcp(Dhcpconf)
+    defconf.build_wireless(Wirelessconf)
+    defconf.build_dropbear(Dropbearconf)
+
     
+    with open ("defaultConfigfile.txt","w") as file:
+        file.write(Netconf.build()+"/--SEPARATOR--/\n"+Fireconf.build()+"/--SEPARATOR--/\n"+Dhcpconf.build()+"/--SEPARATOR--/\n"+Wirelessconf.build()+"/--SEPARATOR--/\n"+Dropbearconf.build())
+        
+
     
 if __name__ == "__main__":
     mac_address = MacAddress("88:C3:97:69:96:69").getMac()
@@ -204,6 +233,7 @@ if __name__ == "__main__":
     # # get the infos by mac address
     json_infos_by_mac=netbox.get_infos_by_mac(mac_address)
     create_configfile(mac_address)
+    create_default_configfile()
     print(json.dumps(json_infos_by_mac,indent=4))
     print(IPNetwork(json_infos_by_mac["ip_addresses"]["unet_id_666_1"][0]["nat_inside_ip"]).cidr)
     print(str(IPNetwork(json_infos_by_mac["ip_addresses"]["unet_id_666_0"][1]["ip_address"]).netmask))
