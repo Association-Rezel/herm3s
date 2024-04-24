@@ -42,6 +42,7 @@ class WirelessLAN(Type):
     id = str
     ssid = str
     auth_psk = str
+    custom_field_data = str
 
 
 class Service(Type):
@@ -119,6 +120,7 @@ def create_query_interface(mac: str) -> str:
     interfaces.wireless_lans.id()
     interfaces.wireless_lans.ssid()
     interfaces.wireless_lans.auth_psk()
+    interfaces.wireless_lans.custom_field_data()
     interfaces.device()
     interfaces.device.services()
     interfaces.device.services.name()
