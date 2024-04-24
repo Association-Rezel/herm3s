@@ -16,6 +16,7 @@ class WirelessLAN(BaseModel):
     id : int
     ssid: str
     auth_psk: str
+    custom_field_data: str
 
 class Service(BaseModel):
     """Data model of : Service"""
@@ -51,6 +52,10 @@ class PATCustomField(BaseModel) :
 class IpAddressCustomField(BaseModel):
     """Data model of :  custom field in IP address"""
     Linked_WLAN : int
+
+class WirelessLANCustomField(BaseModel):
+    """Data model of :  custom field in Wireless LAN"""
+    unet_id : str
 
 if __name__ == "__main__":
     test_json = """{

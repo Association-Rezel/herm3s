@@ -13,8 +13,8 @@ import communication_netbox.env
 # from pydantic import ValidationError #TO ADD WHEN THE ERRORS WILL BE HANDLED
 
 #to avoid import error with communication_deamon
-from communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
-from communication_netbox.query_generator import create_query_interface, create_query_ip
+from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField, WirelessLANCustomField
+from query_generator import create_query_interface, create_query_ip
 
 # from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
 # from query_generator import create_query_interface, create_query_ip
@@ -32,12 +32,15 @@ class NetboxInterface:
             "Accept": "application/json",
         }
 
-    def __get_unet_id_from_ssid(self, ssid: str):
+    def __get_unet_id_from_ssid(self,interfaces : list[Interface],  ssid: str) -> str:
         """extract the user network id from the ssid of the wlan
 
         Args :
             ssid (str) : ssid of the wlan"""
-        return ssid.split("-")[1]
+        wlans = self.__get_wlans(interfaces)
+        wlan = [wlan for wlan in wlans if wlan.ssid == ssid][0]
+        wlan_custom_fields = WirelessLANCustomField.model_validate_json(wlan.custom_field_data)
+        return wlan_custom_fields.unet_id
 
     def __request_netbox(self, query: str) -> dict:
         """execute query against the Netbox Graphql API and returns the result as a dict
@@ -71,8 +74,7 @@ class NetboxInterface:
         """
         query = create_query_interface(mac)
         json_response = self.__request_netbox(query)
-        #TODO : GESTION DES ERREURS DE VALIDATION
-        interface_response : InterfaceResponse = InterfaceResponse.model_validate(json_response['data'])
+        interface_response = InterfaceResponse.model_validate(json_response['data'])
         return interface_response.interface_list
 
     def __get_wlans(self, interfaces : list[Interface]) -> list[WirelessLAN]:
@@ -94,14 +96,14 @@ class NetboxInterface:
         wlan = [wlan for wlan in wlans if wlan.id == wlan_id][0]
         return wlan.ssid
 
-    def _get_unet_ids(self, interfaces : list[Interface]) -> list[str] :
+    def __get_unet_ids(self, interfaces : list[Interface]) -> list[str] :
         """Return the UNet Ids contained in the list of interface
         
         Args :
             - interfaces (list[Interface]): list of all the interfaces with a given mac"""
         wlans = self.__get_wlans(interfaces)
         ssids = [wlan.ssid for wlan in wlans]
-        unet_ids = [self.__get_unet_id_from_ssid(ssid) for ssid in ssids]
+        unet_ids = [self.__get_unet_id_from_ssid(interfaces, ssid) for ssid in ssids]
         return unet_ids
 
     def __get_ip_addresses(self, interfaces : list[Interface]) :
@@ -112,7 +114,7 @@ class NetboxInterface:
         
         Args :
             - interfaces (list[Interface]): list of all the interfaces with a given mac"""
-        all_unet_ids = self._get_unet_ids(interfaces)
+        all_unet_ids = self.__get_unet_ids(interfaces)
         res = {unet_id : [] for unet_id in all_unet_ids}
         interfaces_with_ip_addresses = [inter for inter in interfaces if inter.ip_addresses]
         for interface in interfaces_with_ip_addresses :
@@ -121,7 +123,7 @@ class NetboxInterface:
                 #TODO : traiter les cas d'erreur de validation
                 linked_wlan_id = custom_fields.Linked_WLAN
                 linked_wlan_ssid = self.__get_wlan_ssid_by_id(linked_wlan_id, interfaces)
-                unet_id = self.__get_unet_id_from_ssid(linked_wlan_ssid)
+                unet_id = self.__get_unet_id_from_ssid(interfaces, linked_wlan_ssid)
                 res[unet_id].append({
                     "name" : interface.name,
                     "ip_address" : ip_wrapper.address,
@@ -136,7 +138,7 @@ class NetboxInterface:
             - interfaces (list[Interface]): list of all the interfaces with a given mac"""
         wlans : list[WirelessLAN] = self.__get_wlans(interfaces)
         return {
-            self.__get_unet_id_from_ssid(wlan.ssid) : wlan.auth_psk
+            self.__get_unet_id_from_ssid(interfaces, wlan.ssid) : wlan.auth_psk
             for wlan in wlans
         }
 
@@ -153,7 +155,7 @@ class NetboxInterface:
         ]
         #TODO : traiter le cas d'erreur où il n'y a pas exactement un "wlan0"
         main_ssid = interfaces_named_wlan0[0].wireless_lans[0].ssid
-        main_unet_id = self.__get_unet_id_from_ssid(main_ssid)
+        main_unet_id = self.__get_unet_id_from_ssid(interfaces, main_ssid)
         return main_unet_id
 
     def __get_pat_rules(self, interfaces : list[Interface]) -> list[dict[str : str | int]] :
@@ -174,7 +176,7 @@ class NetboxInterface:
             #TODO : check that there exactly one outside ip and port
             custom_fields = PATCustomField.model_validate_json(s.custom_field_data)
             wlan_ssid = self.__get_wlan_ssid_by_id(custom_fields.PAT_linked_WLAN, interfaces)
-            unet_id = self.__get_unet_id_from_ssid(wlan_ssid)
+            unet_id = self.__get_unet_id_from_ssid(interfaces, wlan_ssid)
             pat_rules.append({
                 "inside_ip" : self.__get_ip_by_id(str(custom_fields.inside_ip_address)),
                 "inside_port" : custom_fields.inside_port,
@@ -185,22 +187,38 @@ class NetboxInterface:
             })
         return pat_rules
 
+    def __get_ssids(self, interfaces : list[Interface]) -> list[str]:
+        """Return a dict mapping the unet_ids to the SSIDs
+        
+        Args :
+            - interfaces (list[Interface]): list of all the interfaces with a given mac"""
+        wlans = self.__get_wlans(interfaces)
+        unet_id_to_ssid = {}
+        for wlan in wlans:
+            wlan_custom_fields = WirelessLANCustomField.model_validate_json(wlan.custom_field_data)
+            unet_id_to_ssid[wlan_custom_fields.unet_id] = wlan.ssid
+        return unet_id_to_ssid
+
+
     def get_infos_by_mac(self, mac: str,
                          ip_adresses = True,
                          passwords = True,
                          pat_rules = True,
-                         main_unet_id=True) -> dict[str, any]:
+                         main_unet_id=True,
+                         ssids=True) -> dict[str, any]:
         """Return a dictionnary with keys :
         - "ip_addresses"
         - "passwords"
         - "pat_rules"
         - "main_unet_id"
+        - "ssids"
 
         Args :
             mac (str) : mac address of the box
             ip_adresses (bool) : if True, return the ip adresses by unet_id
             passwords (bool) : if True, return the passwords by unet_id
             pat_rules (bool) : if True, return the pat rules
+            main_unet_id (bool) : if True, return the main unet id
         """
         interfaces : list[Interface] = self.get_interfaces_by_mac(mac)
 
@@ -213,6 +231,8 @@ class NetboxInterface:
             result["pat_rules"] = self.__get_pat_rules(interfaces)
         if main_unet_id:
             result["main_unet_id"] = self.__get_main_unet_id(interfaces)
+        if ssids:
+            result["ssids"] = self.__get_ssids(interfaces)
         return result
 
 if __name__ == "__main__":
