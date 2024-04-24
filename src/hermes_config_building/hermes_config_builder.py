@@ -1,5 +1,5 @@
 # import uci_common as UCI
-import hermes_config_building.uci_common as UCI  # to import from communication_deamon
+import uci_common as UCI  # to import from communication_deamon
 
 
 class UCITypeConfig:
@@ -547,7 +547,7 @@ if __name__ == "__main__":
     defconf.build_dropbear(Dropbearconf)
 
     main_user = HermesMainUser(
-        unetid=UCI.UNetId("main"),
+        unetid=UCI.UNetId("aaaaaaaa"),
         ssid=UCI.SSID("Rezel_", "main"),
         wan_address=UCI.IPAddress("137.194.8.2"),
         wan_netmask=UCI.IPAddress("255.255.255.0"),
@@ -565,7 +565,7 @@ if __name__ == "__main__":
     main_user.build_wireless(Wirelessconf)
 
     secondary_user = HermesSecondaryUser(
-        unetid=UCI.UNetId("secondary"),
+        unetid=UCI.UNetId("bbbbbbbb"),
         ssid=UCI.SSID("Rezel_", "secondary"),
         wan_address=UCI.IPAddress("195.14.28.2"),
         wan_netmask=UCI.IPAddress("255.255.255.0"),
@@ -583,7 +583,7 @@ if __name__ == "__main__":
     secondary_user.build_wireless(Wirelessconf)
 
     tertiary_user = HermesSecondaryUser(
-        unetid=UCI.UNetId("tertiary"),
+        unetid=UCI.UNetId("cccccccc"),
         ssid=UCI.SSID("Rezel_", "tertiary"),
         wan_address=UCI.IPAddress("137.194.8.3"),
         wan_netmask=UCI.IPAddress("255.255.255.0"),
@@ -601,7 +601,7 @@ if __name__ == "__main__":
     tertiary_user.build_wireless(Wirelessconf)
 
     main_port_forwarding = HermesPortForwarding(
-        unetid=UCI.UNetId("main"),
+        unetid=UCI.UNetId("aaaaaaaa"),
         name=UCI.UCISectionName("http_to_internal"),
         desc=UCI.Description("HTTP forwarding"),
         src=main_user.wan_zone,

@@ -26,7 +26,7 @@ class UNetId(Attribute):
         Args:
             unetid (str): The name of the user network id
         """
-        if re.match(r"^[A-z0-9_\-]+$", unetid) is None:
+        if re.match(r"^[a-z0-9]{8}$", unetid) is None:
             raise ValueError("Invalid UNetId")
         self.value = unetid
 
@@ -309,7 +309,10 @@ class UCIInterface(UCIConfig):
             proto (InterfaceProto): The InterfaceProto object.
             device (Device, optional): The Device object. Defaults to None.
         """
-        super().__init__(f"{name_prefix}{unetid}")
+        if unetid is not None:
+            super().__init__(f"{name_prefix}{unetid}")
+        else:
+            super().__init__(f"{name_prefix}")
         self.ip = ip
         self.mask = mask
         self.proto = proto
