@@ -7,6 +7,7 @@ from MacAddress import MacAddress
 from hermes_config_building.hermes_config_builder import *
 from Config import Config
 from netaddr import IPNetwork
+import re 
 
 
 # function to create the configuration file of the main user
@@ -33,6 +34,7 @@ def create_configfile(mac_address:str):
     defconf.build_dropbear(Dropbearconf)
 
     netbox = NetboxInterface()
+    
     # get the infos by mac address
     json_infos_by_mac=netbox.get_infos_by_mac(mac_address)
 
@@ -40,9 +42,12 @@ def create_configfile(mac_address:str):
     unet_id_main_user = json_infos_by_mac["main_unet_id"]
 
     for key in json_infos_by_mac["ip_addresses"].keys():
+        
+        #check if  the unet_id has the good form
+        if re.match(r"^[a-z0-9]{8}$", key) is None: 
+            raise ValueError("Invalid UNetId")
 
         indice = 0
-
         #config file main user
         if key==unet_id_main_user:
             for i in range(len(json_infos_by_mac["ip_addresses"][key])):
@@ -54,7 +59,7 @@ def create_configfile(mac_address:str):
             password_main_user = json_infos_by_mac["passwords"][key]
 
             # get SSID from the unet id
-            SSID = unet_id_main_user
+            SSID = key
             
             # get wan ip address of the main user
             wan_ip_address = json_infos_by_mac["ip_addresses"][key][indice]["ip_address"][:-3]

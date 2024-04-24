@@ -16,7 +16,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 #download file from hermes to box
 @app.get("/box/{mac}/config",)
 async def get_file_config_init(mac: str):
