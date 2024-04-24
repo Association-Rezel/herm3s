@@ -3,9 +3,9 @@ import sys
 import json
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from communication_netbox.netbox import *
-from MacAddress import MacAddress
+from src.communication_deamon.MacAddress import MacAddress
 from hermes_config_building.hermes_config_builder import *
-from Config import Config
+from src.communication_deamon.Config import Config
 from netaddr import IPNetwork
 import re 
 

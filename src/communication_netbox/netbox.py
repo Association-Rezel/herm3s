@@ -9,7 +9,7 @@ unet_id : user network id
 
 import json
 import requests
-import env
+import communication_netbox.env
 # from pydantic import ValidationError #TO ADD WHEN THE ERRORS WILL BE HANDLED
 
 #to avoid import error with communication_deamon
@@ -26,7 +26,7 @@ class NetboxInterface:
 
     def __init__(self):
         self.__url = "http://netbox.dev.fai.rezel.net/graphql/"
-        self.__token = env.TOKEN_NETBOX
+        self.__token = communication_netbox.env.TOKEN_NETBOX
         self.__headers = {
             "Authorization": "Token " + self.__token,
             "Accept": "application/json",
