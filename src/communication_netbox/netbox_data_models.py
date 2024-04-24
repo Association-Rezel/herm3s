@@ -55,7 +55,6 @@ class IpAddressCustomField(BaseModel):
 
 class WirelessLANCustomField(BaseModel):
     """Data model of :  custom field in Wireless LAN"""
-    local_id : int #legacy custom field
     unet_id : str
 
 if __name__ == "__main__":

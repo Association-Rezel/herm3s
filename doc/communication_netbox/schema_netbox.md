@@ -35,3 +35,7 @@ On remplit les champs ainsi :
 * ports : uniquement le port public
 * Inside IP Address (dans les customs fields) : l'adress ip privée
 * Inside Port (dans les customs fields) : le port privé
+
+## A SUPPRIMER
+
+Le custom field `local id` sur les wireless lans était présent et required mais jamais utilisé. Il faut absolument le supprimer sans quoi la validation de données va échouer.
