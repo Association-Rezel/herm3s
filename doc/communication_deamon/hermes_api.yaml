@@ -25,6 +25,15 @@ paths:
               schema:
                 type: "string"
                 format: "binary"
+        '500':
+          description: "Internal server error"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  Erreur:
+                    type: "string"
         '404':
           description: "Invalid MAC address"
           content:
@@ -34,3 +43,17 @@ paths:
                 properties:
                   Erreur:
                     type: "string"
+  /default/config:
+    get:
+      summary: "Download default config file from Hermes"
+      description: "Endpoint to download default config file from Hermes"
+      responses:
+        '200':
+          description: "File downloaded successfully"
+          content:
+            application/octet-stream:
+              schema:
+                type: "string"
+                format: "binary"
+        
+       
