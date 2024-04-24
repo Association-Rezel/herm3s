@@ -16,9 +16,9 @@ Chaque box présente plusieurs interfaces :
 
 ## Lien entre wlans et ip
 
-Chaque utilisateur possède un wlan qui lui est propre avec un ssid (ex : "Rezel-Thorium") contenant son User Network ID (ex : "Thorium").
+Chaque utilisateur possède un wlan qui lui est propre avec un custom field indiquant son User Network Id (unet_id).
 Chaque utilisateur possède également une ip publique sur le vlan 101 ou 102.
-Pour faire le lien entre le wlan et l'adresse ip, on met dans le custom field "Linked WLAN" de l'adresse ip le wlan associé. Ceci doit être fait pour TOUTES les adresses ip (pas rétro-compatible)
+Pour faire le lien entre le wlan et l'adresse ip, on met dans le custom field "Linked WLAN" de l'adresse ip le wlan associé. Ceci doit être fait pour TOUTES les adresses ip **(pas rétro-compatible)**
 
 ## NAT
 
