@@ -561,19 +561,18 @@ class Mode(Attribute):
 class SSID(Attribute):
     """Object used to store the ssid of a wifi interface"""
 
-    def __init__(self, ssid_prefix: str, ssid_suffix: str):
+    def __init__(self, ssid: str):
         """
         Initialize a SSID object.
 
         Args:
-            ssid_prefix (str): The prefix of the SSID.
-            ssid_suffix (str): The suffix of the SSID.
+            ssid (str): The SSID.
 
         Raises:
             ValueError: If the SSID is invalid.
         """
-        value = ssid_prefix + ssid_suffix
-        if re.match(r"^[A-z0-9_]{1,32}$", value) is None:
+        value = ssid
+        if re.match(r"^[A-z0-9_\-]{1,32}$", value) is None:
             raise ValueError("Invalid SSID")
         self.value = value
 
@@ -854,8 +853,7 @@ class UCIFirewallDefaults(UCIConfig):
         Returns:
             str: The UCI string representation of the defaults configuration.
         """
-        string = f"""uci set firewall.{self.name}=defaults
-uci set firewall.{self.name}.syn_flood='1'
+        string = f"""uci set firewall.{self.name}.synflood_protect='1'
 uci set firewall.{self.name}.flow_offloading='1'
 uci set firewall.{self.name}.flow_offloading_hw='1'
 uci set firewall.{self.name}.input='ACCEPT'
@@ -876,6 +874,7 @@ class UCIZone(UCIConfig):
         _input: InOutForw,
         output: InOutForw,
         forward: InOutForw,
+        is_wan_zone: bool = False,
     ):
         """
         Initialize a UCIZone object.
@@ -885,12 +884,14 @@ class UCIZone(UCIConfig):
             _input (InOutForw): The input value.
             output (InOutForw): The output value.
             forward (InOutForw): The forward value.
+            is_wan_zone (bool): True if its a wan zone (for masq). Defaults to False.
         """
         super().__init__(f"zone_{network.name}")
         self.network = network
         self.input = _input
         self.output = output
         self.forward = forward
+        self.is_wan_zone = is_wan_zone
 
     def uci_build_string(self):
         """
@@ -906,6 +907,9 @@ uci set firewall.{self.name}.input='{self.input}'
 uci set firewall.{self.name}.output='{self.output}'
 uci set firewall.{self.name}.forward='{self.forward}'
 """
+        if self.is_wan_zone:
+            string+=f"""uci set firewall.{self.name}.masq='1'
+"""
         return string
 
 
@@ -917,6 +921,7 @@ class UCIRedirect4(UCIConfig):
     desc: Description
     src: UCIZone
     src_ip: IPAddress
+    src_dip: IPAddress
     src_dport: TCPUDPPort
     dest: UCIZone
     dest_ip: IPAddress
@@ -928,12 +933,13 @@ class UCIRedirect4(UCIConfig):
         unetid: UNetId,
         name: UCISectionName,
         desc: Description,
-        src: UCIZone,
         src_dport: TCPUDPPort,
         dest: UCIZone,
         dest_ip: IPAddress,
         dest_port: TCPUDPPort,
         proto: Protocol,
+        src: UCIZone = None,
+        src_dip: IPAddress = None,
         src_ip: IPAddress = None,
     ):
         """
@@ -943,17 +949,19 @@ class UCIRedirect4(UCIConfig):
             unetid (UNetId): The UNetId object.
             name (UCISectionName): The name of the redirect.
             desc (Description): The description of the redirect.
-            src (UCIZone): The source zone.
-            src_ip (IPAddress): The source IP address.
+            src (UCIZone): The source zone. Defaults to None.
+            src_dip (IPAddress): The destination IP address. Defaults to None.
+            src_ip (IPAddress): The source IP address. Defaults to None.
             src_dport (TCPUDPPort): The source destination port.
             dest (UCIZone): The destination zone.
             dest_ip (IPAddress): The destination IP address.
             dest_port (TCPUDPPort): The destination port.
-            proto (Protocol): The protocol.
+            proto (Protocol): protocol (tcp, udp...)
         """
         super().__init__(f"{unetid}_{name}")
         self.desc = desc
         self.src = src
+        self.src_dip = src_dip
         self.src_ip = src_ip
         self.src_dport = src_dport
         self.dest = dest
@@ -976,6 +984,9 @@ uci set firewall.{self.name}.src_dport='{self.src_dport}'
 uci set firewall.{self.name}.dest='{self.dest.name}'
 uci set firewall.{self.name}.dest_ip='{self.dest_ip}'
 uci set firewall.{self.name}.dest_port='{self.dest_port}'
+"""
+        if self.src_dip is not None:
+            string += f"""uci set firewall.{self.name}.src_dip='{self.src_dip}'
 """
         if self.src_ip is not None:
             string += f"""uci set firewall.{self.name}.src_ip='{self.src_ip}'

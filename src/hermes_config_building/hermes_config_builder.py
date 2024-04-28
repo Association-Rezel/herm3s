@@ -1,5 +1,5 @@
 # import uci_common as UCI
-import hermes_config_building.uci_common as UCI  # to import from communication_deamon
+import uci_common as UCI  # to import from communication_deamon
 
 
 class UCITypeConfig:
@@ -342,6 +342,7 @@ class HermesUser(HermesConfigBuilder):
             _input=UCI.InOutForw("REJECT"),
             output=UCI.InOutForw("ACCEPT"),
             forward=UCI.InOutForw("REJECT"),
+            is_wan_zone=True,
         )
         self.firewall_commands.append(self.wan_zone)
         self.forwarding = UCI.UCIForwarding(src=self.lan_zone, dest=self.wan_zone)
@@ -492,12 +493,13 @@ class HermesPortForwarding(HermesConfigBuilder):
         unetid: UCI.UNetId,
         name: UCI.UCISectionName,
         desc: UCI.Description,
-        src: UCI.UCIZone,
         src_dport: UCI.TCPUDPPort,
         dest: UCI.UCIZone,
         dest_ip: UCI.IPAddress,
         dest_port: UCI.TCPUDPPort,
         proto: UCI.Protocol,
+        src_dip: UCI.IPAddress = None,
+        src: UCI.UCIZone = None,
         src_ip: UCI.IPAddress = None,
     ):
         """Create a port forwarding configuration
@@ -519,6 +521,7 @@ class HermesPortForwarding(HermesConfigBuilder):
             name=name,
             desc=desc,
             src=src,
+            src_dip=src_dip,
             src_ip=src_ip,
             src_dport=src_dport,
             dest=dest,
@@ -548,15 +551,15 @@ if __name__ == "__main__":
 
     main_user = HermesMainUser(
         unetid=UCI.UNetId("aaaaaaaa"),
-        ssid=UCI.SSID("Rezel_", "main"),
+        ssid=UCI.SSID("Rezel-main"),
         wan_address=UCI.IPAddress("137.194.8.2"),
-        wan_netmask=UCI.IPAddress("255.255.255.0"),
+        wan_netmask=UCI.IPAddress("255.255.248.0"),
         lan_address=UCI.IPAddress("192.168.0.1"),
         lan_network=UCI.IPNetwork("192.168.0.0/24"),
         wifi_passphrase=UCI.WifiPassphrase("password"),
         wan_vlan=101,
         default_config=defconf,
-        default_router=UCI.IPAddress("137.194.8.1"),
+        default_router=UCI.IPAddress("137.194.11.254"),
     )
 
     main_user.build_network(Netconf)
@@ -566,7 +569,7 @@ if __name__ == "__main__":
 
     secondary_user = HermesSecondaryUser(
         unetid=UCI.UNetId("bbbbbbbb"),
-        ssid=UCI.SSID("Rezel_", "secondary"),
+        ssid=UCI.SSID("Rezel-secondary"),
         wan_address=UCI.IPAddress("195.14.28.2"),
         wan_netmask=UCI.IPAddress("255.255.255.0"),
         lan_address=UCI.IPAddress("192.168.1.1"),
@@ -575,7 +578,7 @@ if __name__ == "__main__":
         wan_vlan=102,
         lan_vlan=2,
         default_config=defconf,
-        default_router=UCI.IPAddress("195.14.28.1"),
+        default_router=UCI.IPAddress("195.14.28.254"),
     )
     secondary_user.build_network(Netconf)
     secondary_user.build_firewall(Fireconf)
@@ -584,16 +587,16 @@ if __name__ == "__main__":
 
     tertiary_user = HermesSecondaryUser(
         unetid=UCI.UNetId("cccccccc"),
-        ssid=UCI.SSID("Rezel_", "tertiary"),
+        ssid=UCI.SSID("Rezel-tertiary"),
         wan_address=UCI.IPAddress("137.194.8.3"),
-        wan_netmask=UCI.IPAddress("255.255.255.0"),
+        wan_netmask=UCI.IPAddress("255.255.248.0"),
         lan_address=UCI.IPAddress("192.168.2.1"),
         lan_network=UCI.IPNetwork("192.168.2.0/24"),
         wifi_passphrase=UCI.WifiPassphrase("password"),
         wan_vlan=101,
         lan_vlan=3,
         default_config=defconf,
-        default_router=UCI.IPAddress("137.194.8.1"),
+        default_router=UCI.IPAddress("137.194.11.254"),
     )
     tertiary_user.build_network(Netconf)
     tertiary_user.build_firewall(Fireconf)
