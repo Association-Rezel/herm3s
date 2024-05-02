@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from src.communication_deamon.MacAddress import MacAddress
-from src.communication_deamon.creation_configfile import create_configfile
- 
+from communication_deamon.MacAddress import MacAddress
+from communication_deamon.creation_configfile import create_configfile
+
 
 app = FastAPI()
 

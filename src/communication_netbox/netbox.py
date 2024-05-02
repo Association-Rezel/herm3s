@@ -13,8 +13,8 @@ import communication_netbox.env
 # from pydantic import ValidationError #TO ADD WHEN THE ERRORS WILL BE HANDLED
 
 #to avoid import error with communication_deamon
-from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField, WirelessLANCustomField
-from query_generator import create_query_interface, create_query_ip
+from communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField, WirelessLANCustomField
+from communication_netbox.query_generator import create_query_interface, create_query_ip
 
 # from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
 # from query_generator import create_query_interface, create_query_ip
