@@ -1,13 +1,15 @@
 import os
 import sys
 import json
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from communication_netbox.netbox import *
-from communication_deamon.MacAddress import MacAddress
-from hermes_config_building.hermes_config_builder import *
-from communication_deamon.Config import Config
 from netaddr import IPNetwork
 import re 
+
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from hermes.src.communication_netbox.netbox import *
+from hermes.src.communication_deamon.MacAddress import MacAddress
+from hermes.src.hermes_config_building.hermes_config_builder import *
+from hermes.src.communication_deamon.Config import Config
 
 
 # function to create the configuration file of the main user

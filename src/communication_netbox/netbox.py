@@ -9,12 +9,12 @@ unet_id : user network id
 
 import json
 import requests
-import communication_netbox.env
+import hermes.src.communication_netbox.env as env
 # from pydantic import ValidationError #TO ADD WHEN THE ERRORS WILL BE HANDLED
 
 #to avoid import error with communication_deamon
-from communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField, WirelessLANCustomField
-from communication_netbox.query_generator import create_query_interface, create_query_ip
+from hermes.src.communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField, WirelessLANCustomField
+from hermes.src.communication_netbox.query_generator import create_query_interface, create_query_ip
 
 # from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
 # from query_generator import create_query_interface, create_query_ip
@@ -26,7 +26,7 @@ class NetboxInterface:
 
     def __init__(self):
         self.__url = "http://netbox.dev.fai.rezel.net/graphql/"
-        self.__token = communication_netbox.env.TOKEN_NETBOX
+        self.__token = env.TOKEN_NETBOX
         self.__headers = {
             "Authorization": "Token " + self.__token,
             "Accept": "application/json",
