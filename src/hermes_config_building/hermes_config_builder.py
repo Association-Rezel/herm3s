@@ -161,13 +161,6 @@ class HermesAC2350DefaultConfig(HermesDefaultConfig):
         self.network_commands.append(UCI.UCINetGlobals("fdb2:b6c0:8430::/48"))
         self.switch0 = UCI.UCISwitch("switch0")
         self.network_commands.append(self.switch0)
-        self.vlan_1 = UCI.UCISwitchVlan(
-            UCI.UCISectionName("vlan_1"),
-            self.switch0,
-            1,
-            UCI.UCINetworkPorts("2 3 4 0t"),
-        )
-        self.network_commands.append(self.vlan_1)
         self.vlan_65 = UCI.UCISwitchVlan(
             UCI.UCISectionName("vlan_65"),
             self.switch0,
@@ -233,6 +226,8 @@ class HermesUser(HermesConfigBuilder):
     br_lan: UCI.UCIBridge
     lan_int: UCI.UCIInterface
     wan_int: UCI.UCIInterface
+    route: UCI.UCIRoute
+    route_rule: UCI.UCIRouteRule
     wifi_iface_0: UCI.UCIWifiIface
     wifi_iface_1: UCI.UCIWifiIface
     dhcp: UCI.UCIDHCP
@@ -250,6 +245,7 @@ class HermesUser(HermesConfigBuilder):
         lan_network: UCI.IPNetwork,
         wifi_passphrase: UCI.WifiPassphrase,
         wan_vlan: int,
+        lan_vlan: int,
         default_config: HermesDefaultConfig,
         default_router: UCI.IPAddress,
     ):
@@ -290,15 +286,22 @@ class HermesUser(HermesConfigBuilder):
         )
         self.network_commands.append(self.wan_int)
 
-        self.network_commands.append(
-            UCI.UCIRoute(
-                unetid=unetid,
-                name_prefix="route_default_wan_",
-                target=UCI.IPNetwork("0.0.0.0/0"),
-                gateway=default_router,
-                interface=self.wan_int,
-            )
+        self.route = UCI.UCIRoute(
+            unetid=unetid,
+            name_prefix="route_default_wan_",
+            target=UCI.IPNetwork("0.0.0.0/0"),
+            gateway=default_router,
+            interface=self.wan_int,
+            table=int(f"1{str(lan_vlan).zfill(2)}"),
         )
+        self.network_commands.append(self.route)
+
+        self.route_rule = UCI.UCIRouteRule(
+            unetid=unetid,
+            src=lan_network,
+            lookup=self.route.table,
+        )
+        self.network_commands.append(self.route_rule)
 
         # Wireless Configuration
         self.wifi_iface_0 = UCI.UCIWifiIface(
@@ -382,6 +385,7 @@ class HermesMainUser(HermesUser):
         lan_network: UCI.IPNetwork,
         wifi_passphrase: UCI.WifiPassphrase,
         wan_vlan: int,
+        lan_vlan: int,
         default_config: HermesDefaultConfig,
         default_router: UCI.IPAddress,
     ):
@@ -396,13 +400,21 @@ class HermesMainUser(HermesUser):
             lan_network (UCI.IPNetwork): The LAN network
             wifi_passphrase (UCI.WifiPassphrase): The wifi passphrase
             wan_vlan (int): The WAN VLAN
+            lan_vlan (int): The LAN VLAN
             default_config (HermesDefaultConfig): The default configuration
             default_router (UCI.IPAddress): The default router
         """
+        self.lan_switch_vlan = UCI.UCISwitchVlan(
+            UCI.UCISectionName(f"switch_vlan_{unetid}"),
+            default_config.switch0,
+            lan_vlan,
+            UCI.UCINetworkPorts("2 3 4 0t"),
+        )
+
         self.br_lan = UCI.UCIBridge(
             unetid=unetid,
             name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
-            ports=UCI.UCISimpleDevice("eth0.1"),
+            ports=UCI.UCISimpleDevice(f"eth0.{lan_vlan}"),
         )
 
         super().__init__(
@@ -414,9 +426,11 @@ class HermesMainUser(HermesUser):
             lan_network,
             wifi_passphrase,
             wan_vlan,
+            lan_vlan,
             default_config,
             default_router,
         )
+        self.network_commands.append(self.lan_switch_vlan)
         self.network_commands.append(self.br_lan)
 
 
@@ -474,6 +488,7 @@ class HermesSecondaryUser(HermesUser):
             lan_network,
             wifi_passphrase,
             wan_vlan,
+            lan_vlan,
             default_config,
             default_router,
         )
@@ -558,6 +573,7 @@ if __name__ == "__main__":
         lan_network=UCI.IPNetwork("192.168.0.0/24"),
         wifi_passphrase=UCI.WifiPassphrase("password"),
         wan_vlan=101,
+        lan_vlan=1,
         default_config=defconf,
         default_router=UCI.IPAddress("137.194.11.254"),
     )
