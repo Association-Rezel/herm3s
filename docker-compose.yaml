@@ -1,5 +1,7 @@
 services:
   api_hermes:
+    # volumes:
+    #   - ./requirements.txt:/hermes/requirements.txt
     container_name: api_hermes
     build: .
     ports:

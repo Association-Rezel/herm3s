@@ -1,3 +1,5 @@
+import uvicorn
+
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
@@ -30,3 +32,7 @@ async def get_file_config_init(mac: str):
 @app.get("/default/config")
 async def get_default_config():
     return FileResponse("defaultConfigfile.txt", filename="defaultConfigfile.txt")
+
+
+if __name__ == "__main__" :
+    uvicorn.run("main:app", host="0.0.0.0", reload=True)
