@@ -10,7 +10,7 @@ linting:
     - black --check .
 
 build-tests:
-  stage: testing
+  stage: build-tests
   image: docker
   script:
     - docker build -t rezel/hermes .
