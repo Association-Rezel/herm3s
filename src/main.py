@@ -11,8 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 # sys.path.append("hermes_config_buildind")
 
 
-from hermes.src.communication_deamon.MacAddress import MacAddress
-from hermes.src.communication_deamon.creation_configfile import create_configfile,create_default_configfile
+from .MacAddress import MacAddress
+from .creation_configfile import create_configfile,create_default_configfile
 
 
 app = FastAPI()
