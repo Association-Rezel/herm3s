@@ -31,14 +31,14 @@ async def get_file_config_init(mac: str):
     mac_box = MacAddress(mac)
     if mac_box.getMac() is not None:
         create_configfile(mac_box.getMac())
-        return FileResponse("configfile.txt", filename="configfile.txt")
+        return FileResponse("/hermes/config_files/configfile.txt", filename="configfile.txt")
     else:
         raise HTTPException(404, {"Erreur": "invalid mac address"})
 
 #download default conf file   
 @app.get("/default/config")
 async def get_default_config():
-    return FileResponse("defaultConfigfile.txt", filename="defaultConfigfile.txt")
+    return FileResponse("/hermes/config_files/defaultConfigfile.txt", filename="defaultConfigfile.txt")
 
 
 if __name__ == "__main__" :
