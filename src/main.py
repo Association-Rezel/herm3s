@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 from hermes.src.communication_deamon.MacAddress import MacAddress
-from hermes.src.communication_deamon.creation_configfile import create_configfile
+from hermes.src.communication_deamon.creation_configfile import create_configfile,create_default_configfile
 
 
 app = FastAPI()
@@ -38,6 +38,7 @@ async def get_file_config_init(mac: str):
 #download default conf file   
 @app.get("/default/config")
 async def get_default_config():
+    create_default_configfile()
     return FileResponse("/hermes/config_files/defaultConfigfile.txt", filename="defaultConfigfile.txt")
 
 

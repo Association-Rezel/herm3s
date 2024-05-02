@@ -42,6 +42,9 @@ def create_configfile(mac_address:str):
 
     # get the main unet id 
     unet_id_main_user = json_infos_by_mac["main_unet_id"]
+    
+    #count lan_vlan
+    indice_lan_vlan = 1
 
     for key in json_infos_by_mac["ip_addresses"].keys():
         
@@ -61,7 +64,7 @@ def create_configfile(mac_address:str):
             password_main_user = json_infos_by_mac["passwords"][key]
 
             # get SSID from the unet id
-            SSID = key
+            SSID = json_infos_by_mac["ssids"][key]
             
             # get wan ip address of the main user
             wan_ip_address = json_infos_by_mac["ip_addresses"][key][indice]["ip_address"][:-3]
@@ -84,7 +87,7 @@ def create_configfile(mac_address:str):
             # create the main user configuration
             main_user = HermesMainUser(
             unetid=UCI.UNetId(key),
-            ssid=UCI.SSID("Rezel",SSID),
+            ssid=UCI.SSID(SSID),
             wan_address=UCI.IPAddress(wan_ip_address),
             wan_netmask=UCI.IPAddress(wan_ip_netmask),
             lan_address=UCI.IPAddress(lan_ip_address),
@@ -93,7 +96,6 @@ def create_configfile(mac_address:str):
             wan_vlan=wan_vlan_number,
             default_config=defconf, 
             default_router=UCI.IPAddress(default_router_ip_address))
-
             main_user.build_network(Netconf)
             main_user.build_firewall(Fireconf)
             main_user.build_dhcp(Dhcpconf)
@@ -132,7 +134,7 @@ def create_configfile(mac_address:str):
             password_other_user = json_infos_by_mac["passwords"][key]
 
             # get SSID from the unet id
-            SSID = key
+            SSID = json_infos_by_mac["ssids"][key]
             
             # get wan ip address of the main user
             wan_ip_address = json_infos_by_mac["ip_addresses"][key][indice]["ip_address"][:-3]
@@ -155,11 +157,12 @@ def create_configfile(mac_address:str):
             # create the other user configuration
             other_user = HermesSecondaryUser(
             unetid=UCI.UNetId(key),
-            ssid=UCI.SSID("Rezel_",SSID),
+            ssid=UCI.SSID(SSID),
             wan_address=UCI.IPAddress(wan_ip_address),
             wan_netmask=UCI.IPAddress(wan_ip_netmask),
             lan_address=UCI.IPAddress(lan_ip_address),
             lan_network=UCI.IPNetwork(lan_ip_network),
+            lan_vlan = indice_lan_vlan,
             wifi_passphrase=UCI.WifiPassphrase(password_other_user),
             wan_vlan=wan_vlan_number,
             default_config=defconf,
@@ -196,10 +199,12 @@ def create_configfile(mac_address:str):
                     proto=UCI.Protocol(protocol),
                     )
                     main_port_forwarding.build_firewall(Fireconf) 
-            
+
+        #update lan_vlan
+        indice_lan_vlan+=1        
 
     #add to the configfile
-    with open ("configfile.txt","w") as file:
+    with open ("/hermes/config_files/configfile.txt","w") as file:
         file.write(Netconf.build()+"/--SEPARATOR--/\n"+Fireconf.build()+"/--SEPARATOR--/\n"+Dhcpconf.build()+"/--SEPARATOR--/\n"+Wirelessconf.build()+"/--SEPARATOR--/\n"+Dropbearconf.build())
         
 
@@ -228,7 +233,7 @@ def create_default_configfile():
     defconf.build_dropbear(Dropbearconf)
 
     
-    with open ("defaultConfigfile.txt","w") as file:
+    with open ("/hermes/config_files/defaultConfigfile.txt","w") as file:
         file.write(Netconf.build()+"/--SEPARATOR--/\n"+Fireconf.build()+"/--SEPARATOR--/\n"+Dhcpconf.build()+"/--SEPARATOR--/\n"+Wirelessconf.build()+"/--SEPARATOR--/\n"+Dropbearconf.build())
         
 
