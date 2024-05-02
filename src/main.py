@@ -1,11 +1,18 @@
 import uvicorn
-
+import sys
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from communication_deamon.MacAddress import MacAddress
-from communication_deamon.creation_configfile import create_configfile
+
+
+# sys.path.append("communication_deamon")
+# sys.path.append("communication_netbox")
+# sys.path.append("hermes_config_buildind")
+
+
+from hermes.src.communication_deamon.MacAddress import MacAddress
+from hermes.src.communication_deamon.creation_configfile import create_configfile
 
 
 app = FastAPI()
