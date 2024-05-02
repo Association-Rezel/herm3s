@@ -553,7 +553,7 @@ if __name__ == "__main__":
         unetid=UCI.UNetId("aaaaaaaa"),
         ssid=UCI.SSID("Rezel-main"),
         wan_address=UCI.IPAddress("137.194.8.2"),
-        wan_netmask=UCI.IPAddress("255.255.248.0"),
+        wan_netmask=UCI.IPAddress("255.255.252.0"),
         lan_address=UCI.IPAddress("192.168.0.1"),
         lan_network=UCI.IPNetwork("192.168.0.0/24"),
         wifi_passphrase=UCI.WifiPassphrase("password"),
@@ -578,7 +578,7 @@ if __name__ == "__main__":
         wan_vlan=102,
         lan_vlan=2,
         default_config=defconf,
-        default_router=UCI.IPAddress("195.14.28.254"),
+        default_router=UCI.IPAddress("195.14.28.1"),
     )
     secondary_user.build_network(Netconf)
     secondary_user.build_firewall(Fireconf)
@@ -589,7 +589,7 @@ if __name__ == "__main__":
         unetid=UCI.UNetId("cccccccc"),
         ssid=UCI.SSID("Rezel-tertiary"),
         wan_address=UCI.IPAddress("137.194.8.3"),
-        wan_netmask=UCI.IPAddress("255.255.248.0"),
+        wan_netmask=UCI.IPAddress("255.255.252.0"),
         lan_address=UCI.IPAddress("192.168.2.1"),
         lan_network=UCI.IPNetwork("192.168.2.0/24"),
         wifi_passphrase=UCI.WifiPassphrase("password"),
