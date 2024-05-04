@@ -3,13 +3,6 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
-
-# sys.path.append("communication_deamon")
-# sys.path.append("communication_netbox")
-# sys.path.append("hermes_config_buildind")
-
-
 from .MacAddress import MacAddress
 from .creation_configfile import create_configfile, create_default_configfile
 
@@ -23,6 +16,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/")
+async def root():
+    """
+    Return 200 code
+    """
+    return {"status": "OK"}
 
 
 # download file from hermes to box
