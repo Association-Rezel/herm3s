@@ -1,12 +1,21 @@
 from netaddr import EUI
-#class to check if the mac address is valid and store it
+
+
+# class to check if the mac address is valid and store it
 class MacAddress:
     """Class to check if the mac address is valid and store it"""
-    mac : str = None;
-    def __init__(self, mac:str):
+
+    mac: str = None
+
+    def __init__(self, mac: str):
         try:
-            self.mac = str(EUI(mac)).replace("-", ":")
+            self.___mac = str(EUI(mac)).replace("-", ":")
         except Exception as e:
-            None 
+            print(e)
+            self.___mac = None
+
     def getMac(self):
-        return self.mac
+        """
+        Return the mac address
+        """
+        return self.___mac
