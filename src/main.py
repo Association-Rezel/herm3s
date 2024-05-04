@@ -1,5 +1,4 @@
 import uvicorn
-import sys
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
@@ -12,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 from .MacAddress import MacAddress
-from .creation_configfile import create_configfile,create_default_configfile
+from .creation_configfile import create_configfile, create_default_configfile
 
 
 app = FastAPI()
@@ -25,22 +24,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#download file from hermes to box
-@app.get("/box/{mac}/config",)
+
+# download file from hermes to box
+@app.get("/v1/config/ac2350/{mac}")
 async def get_file_config_init(mac: str):
-    mac_box = MacAddress(mac)
-    if mac_box.getMac() is not None:
-        create_configfile(mac_box.getMac())
-        return FileResponse("/hermes/config_files/configfile.txt", filename="configfile.txt")
+    """
+    Download the configuration file for the box with the mac address mac
+    args:
+        mac: str: mac address of the box
+    """
+    mac_box = MacAddress(mac).getMac()
+    if mac_box is not None:
+        create_configfile(mac_box)
+        return FileResponse(
+            "{Config.default_path_files_saving}configfile_" + mac_box + ".txt",
+            filename="configfile.txt",
+        )
     else:
         raise HTTPException(404, {"Erreur": "invalid mac address"})
 
-#download default conf file   
-@app.get("/default/config")
+
+# download default conf file
+@app.get("/v1/config/ac2350/default/file")
 async def get_default_config():
+    """
+    Download the default configuration file
+    """
     create_default_configfile()
-    return FileResponse("/hermes/config_files/defaultConfigfile.txt", filename="defaultConfigfile.txt")
+    return FileResponse(
+        "{Config.default_path_files_saving}defaultConfigfile.txt",
+        filename="defaultConfigfile.txt",
+    )
 
 
-if __name__ == "__main__" :
+if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", reload=True)

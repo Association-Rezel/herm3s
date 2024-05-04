@@ -205,7 +205,7 @@ def create_configfile(mac_address:str):
         indice_lan_vlan+=1        
 
     #add to the configfile
-    with open ("/hermes/config_files/configfile.txt","w") as file:
+    with open ("{Config.default_path_files_saving}configfile_"+mac_address+".txt","w") as file:
         file.write(Netconf.build()+"/--SEPARATOR--/\n"+Fireconf.build()+"/--SEPARATOR--/\n"+Dhcpconf.build()+"/--SEPARATOR--/\n"+Wirelessconf.build()+"/--SEPARATOR--/\n"+Dropbearconf.build())
         
 
@@ -216,8 +216,6 @@ def create_default_configfile():
     return:
         void
     """
-
-
     Netconf = hcb.UCINetworkConfig()
     Fireconf = hcb.UCIFirewallConfig()
     Dhcpconf = hcb.UCIDHCPConfig()
@@ -234,7 +232,7 @@ def create_default_configfile():
     defconf.build_dropbear(Dropbearconf)
 
     
-    with open ("/hermes/config_files/defaultConfigfile.txt","w") as file:
+    with open ("{Config.default_path_files_saving}defaultConfigfile.txt","w") as file:
         file.write(Netconf.build()+"/--SEPARATOR--/\n"+Fireconf.build()+"/--SEPARATOR--/\n"+Dhcpconf.build()+"/--SEPARATOR--/\n"+Wirelessconf.build()+"/--SEPARATOR--/\n"+Dropbearconf.build())
         
 
