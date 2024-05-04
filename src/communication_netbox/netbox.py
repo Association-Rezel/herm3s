@@ -9,12 +9,12 @@ unet_id : user network id
 
 import json
 import requests
-import hermes.src.communication_netbox.env as env
+from . import env
 # from pydantic import ValidationError #TO ADD WHEN THE ERRORS WILL BE HANDLED
 
 #to avoid import error with communication_deamon
-from hermes.src.communication_netbox.netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField, WirelessLANCustomField
-from hermes.src.communication_netbox.query_generator import create_query_interface, create_query_ip
+from .netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField, WirelessLANCustomField
+from .query_generator import create_query_interface, create_query_ip
 
 # from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
 # from query_generator import create_query_interface, create_query_ip
