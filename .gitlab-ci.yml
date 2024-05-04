@@ -1,0 +1,16 @@
+stages:
+  - linting
+  - build-tests
+
+linting:
+  stage: linting
+  image: python
+  script:
+    - pip install black
+    - black --check .
+
+build-tests:
+  stage: build-tests
+  image: docker
+  script:
+    - docker build -t rezel/hermes .

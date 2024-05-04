@@ -4,12 +4,12 @@ import json
 from netaddr import IPNetwork
 import re 
 
+from .communication_netbox import NetboxInterface
+from .MacAddress import MacAddress
+from .hermes_config_building import hermes_config_builder as hcb
+from .hermes_config_building import uci_common as UCI
+from .Config import Config
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from hermes.src.communication_netbox.netbox import *
-from hermes.src.communication_deamon.MacAddress import MacAddress
-from hermes.src.hermes_config_building.hermes_config_builder import *
-from hermes.src.communication_deamon.Config import Config
 
 
 # function to create the configuration file of the main user
@@ -20,14 +20,14 @@ def create_configfile(mac_address:str):
     return:
         void
         """
-    Netconf = UCINetworkConfig()
-    Fireconf = UCIFirewallConfig()
-    Dhcpconf = UCIDHCPConfig()
-    Wirelessconf = UCIWirelessConfig()
-    Dropbearconf = UCIDropbearConfig()
+    Netconf = hcb.UCINetworkConfig()
+    Fireconf = hcb.UCIFirewallConfig()
+    Dhcpconf = hcb.UCIDHCPConfig()
+    Wirelessconf = hcb.UCIWirelessConfig()
+    Dropbearconf = hcb.UCIDropbearConfig()
 
     # create the default configuration
-    defconf = HermesAC2350DefaultConfig(UCI.DnsServers([UCI.IPAddress("8.8.8.8")]))
+    defconf = hcb.HermesAC2350DefaultConfig(UCI.DnsServers([UCI.IPAddress("8.8.8.8")]))
 
     defconf.build_network(Netconf)
     defconf.build_firewall(Fireconf)
@@ -85,7 +85,7 @@ def create_configfile(mac_address:str):
             default_router_ip_address = Config.default_router_ip_address_vlan[wan_vlan_number]
 
             # create the main user configuration
-            main_user = HermesMainUser(
+            main_user = hcb.HermesMainUser(
             unetid=UCI.UNetId(key),
             ssid=UCI.SSID(SSID),
             wan_address=UCI.IPAddress(wan_ip_address),
@@ -94,6 +94,7 @@ def create_configfile(mac_address:str):
             lan_network=UCI.IPNetwork(lan_ip_network),
             wifi_passphrase=UCI.WifiPassphrase(password_main_user),
             wan_vlan=wan_vlan_number,
+            lan_vlan=indice_lan_vlan,
             default_config=defconf, 
             default_router=UCI.IPAddress(default_router_ip_address))
             main_user.build_network(Netconf)
@@ -116,7 +117,7 @@ def create_configfile(mac_address:str):
                     protocol = dico["protocol"]
 
 
-                    main_port_forwarding = HermesPortForwarding(
+                    main_port_forwarding = hcb.HermesPortForwarding(
                     unetid=UCI.UNetId(key),
                     name=UCI.UCISectionName("http_to_internal"),
                     desc=UCI.Description("HTTP forwarding"),
@@ -155,7 +156,7 @@ def create_configfile(mac_address:str):
             default_router_ip_address = Config.default_router_ip_address_vlan[wan_vlan_number]
 
             # create the other user configuration
-            other_user = HermesSecondaryUser(
+            other_user = hcb.HermesSecondaryUser(
             unetid=UCI.UNetId(key),
             ssid=UCI.SSID(SSID),
             wan_address=UCI.IPAddress(wan_ip_address),
@@ -187,7 +188,7 @@ def create_configfile(mac_address:str):
                     protocol = dico["protocol"]
 
 
-                    main_port_forwarding = HermesPortForwarding(
+                    main_port_forwarding = hcb.HermesPortForwarding(
                     unetid=UCI.UNetId(key),
                     name=UCI.UCISectionName("http_to_internal"),
                     desc=UCI.Description("HTTP forwarding"),
@@ -217,14 +218,14 @@ def create_default_configfile():
     """
 
 
-    Netconf = UCINetworkConfig()
-    Fireconf = UCIFirewallConfig()
-    Dhcpconf = UCIDHCPConfig()
-    Wirelessconf = UCIWirelessConfig()
-    Dropbearconf = UCIDropbearConfig()
+    Netconf = hcb.UCINetworkConfig()
+    Fireconf = hcb.UCIFirewallConfig()
+    Dhcpconf = hcb.UCIDHCPConfig()
+    Wirelessconf = hcb.UCIWirelessConfig()
+    Dropbearconf = hcb.UCIDropbearConfig()
 
     # create the default configuration
-    defconf = HermesAC2350DefaultConfig(UCI.DnsServers([UCI.IPAddress("8.8.8.8")]))
+    defconf = hcb.HermesAC2350DefaultConfig(UCI.DnsServers([UCI.IPAddress("8.8.8.8")]))
 
     defconf.build_network(Netconf)
     defconf.build_firewall(Fireconf)

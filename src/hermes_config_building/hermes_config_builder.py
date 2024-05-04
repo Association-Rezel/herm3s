@@ -1,6 +1,4 @@
-# import uci_common as UCI
-import hermes.src.hermes_config_building.uci_common as UCI  # to import from communication_deamon
-
+from .uci_common import uci_common as UCI
 
 class UCITypeConfig:
     """Mother class reprensenting a config block uci
