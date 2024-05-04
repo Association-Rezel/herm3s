@@ -6,8 +6,8 @@ import re
 
 from .communication_netbox import NetboxInterface
 from .MacAddress import MacAddress
-from .hermes_config_builder import hermes_config_builder as hcb
-from .hermes_config_builder import uci_common as UCI
+from .hermes_config_building import hermes_config_builder as hcb
+from .hermes_config_building import uci_common as UCI
 from .Config import Config
 
 
