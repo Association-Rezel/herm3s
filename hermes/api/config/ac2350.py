@@ -2,12 +2,12 @@ import json
 from netaddr import IPNetwork
 import re
 
-from .communication_netbox import NetboxInterface
-from .MacAddress import MacAddress
-from .hermes_command_building import common_command_builder as ccb
-from .hermes_command_building import ac2350
-from .hermes_command_building import uci_common as UCI
-from .Config import Config
+from ...communication_netbox import NetboxInterface
+from ..MacAddress import MacAddress
+from ...hermes_command_building import common_command_builder as ccb
+from ...hermes_command_building import ac2350
+from ...hermes_command_building import uci_common as UCI
+from ...config import Config
 
 
 # function to create the configuration file of the main user
@@ -234,7 +234,7 @@ def create_configfile(mac_address: str):
 
     # add to the configfile
     with open(
-        "{Config.default_path_files_saving}configfile_" + mac_address + ".txt", "w"
+        f"{Config.default_path_files_saving}configfile_" + mac_address + ".txt", "w"
     ) as file:
         file.write(
             Netconf.build()
@@ -271,7 +271,7 @@ def create_default_configfile():
     defconf.build_wireless(Wirelessconf)
     defconf.build_dropbear(Dropbearconf)
 
-    with open("{Config.default_path_files_saving}defaultConfigfile.txt", "w") as file:
+    with open(f"{Config.default_path_files_saving}defaultConfigfile.txt", "w") as file:
         file.write(
             Netconf.build()
             + "/--SEPARATOR--/\n"

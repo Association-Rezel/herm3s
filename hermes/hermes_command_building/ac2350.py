@@ -419,6 +419,7 @@ class HermesPortForwarding(ccb.HermesConfigBuilder):
 
 if __name__ == "__main__":
     # Testing the HermesConfigBuilder
+    # To run in standalone mode python -m hermes.hermes_command_building.ac2350
 
     Netconf = ccb.UCINetworkConfig()
     Fireconf = ccb.UCIFirewallConfig()
