@@ -94,9 +94,7 @@ def create_configfile(mac_address: str):
             )
 
             # get the default router ip address
-            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[
-                wan_vlan_number
-            ]
+            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[wan_vlan_number]
 
             # create the main user configuration
             main_user = ac2350.HermesMainUser(
@@ -180,9 +178,7 @@ def create_configfile(mac_address: str):
             )
 
             # cf si IP de dodo/ptero et si c le même selon si c un télécommien ou non (faire condition sur vlan sinon)
-            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[
-                wan_vlan_number
-            ]
+            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[wan_vlan_number]
 
             # create the other user configuration
             other_user = ac2350.HermesSecondaryUser(

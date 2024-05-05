@@ -41,7 +41,6 @@ class NetboxInterface:
         print(self.__url)
         print(self.__token)
 
-
     def __get_unet_id_from_ssid(self, interfaces: list[Interface], ssid: str) -> str:
         """extract the user network id from the ssid of the wlan
 

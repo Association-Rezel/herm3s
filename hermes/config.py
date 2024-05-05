@@ -11,14 +11,14 @@ if "CONFIG_PATH" in os.environ and os.path.exists(os.environ["CONFIG_PATH"]):
 
 if "DEF_ROUTER_IP_VLAN" in os.environ:
     DEF_ROUTER_IP_VLAN = json.loads(os.environ["DEF_ROUTER_IP_VLAN"])
-elif config_file_exists and "DEF_ROUTER_IP_VLAN" in config['api']:
-    DEF_ROUTER_IP_VLAN = config['api']['DEF_ROUTER_IP_VLAN']
+elif config_file_exists and "DEF_ROUTER_IP_VLAN" in config["api"]:
+    DEF_ROUTER_IP_VLAN = config["api"]["DEF_ROUTER_IP_VLAN"]
 else:
     DEF_ROUTER_IP_VLAN = {101: "10.121.0.1", 102: "10.122.0.1"}
 
 if "FILE_SAVING_PATH" in os.environ:
     FILE_SAVING_PATH = os.environ["FILE_SAVING_PATH"]
-elif config_file_exists and "FILE_SAVING_PATH" in config['api']:
-    FILE_SAVING_PATH = config['api']['FILE_SAVING_PATH']
+elif config_file_exists and "FILE_SAVING_PATH" in config["api"]:
+    FILE_SAVING_PATH = config["api"]["FILE_SAVING_PATH"]
 else:
     FILE_SAVING_PATH = "/dev/shm/"

@@ -39,7 +39,7 @@ async def get_file_config_init(mac: str):
     if mac_box is not None:
         return config.DEF_ROUTER_IP_VLAN
         ac2350.create_configfile(mac_box)
-        
+
         return FileResponse(
             f"{config.FILE_SAVING_PATH}configfile_" + mac_box + ".txt",
             filename="configfile.txt",
