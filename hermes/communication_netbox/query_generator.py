@@ -14,7 +14,8 @@ from sgqlc.operation import Operation
 
 
 # Declaration of the data types corresponding to the GraphQL schema of Netbox
-#(only the types needed for the queries are declared)
+# (only the types needed for the queries are declared)
+
 
 class NatIpAddressType(Type):
     """WARNING : THIS IS NOT A REAL TYPE IN THE GRAPHQL SCHEMA OF NETBOX
@@ -22,13 +23,16 @@ class NatIpAddressType(Type):
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
+
     address = str
+
 
 class IpAddressType(Type):
     """IP address in Netbox
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
+
     address = str
     custom_field_data = str
     nat_inside = NatIpAddressType
@@ -39,6 +43,7 @@ class WirelessLAN(Type):
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
+
     id = str
     ssid = str
     auth_psk = str
@@ -50,35 +55,42 @@ class Service(Type):
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
+
     name = str
     ipaddresses = list_of(IpAddressType)
     ports = list_of(int)
     protocol = str
     custom_field_data = str
 
+
 class Device(Type):
     """Device in Netbox
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
+
     services = list_of(Service)
+
 
 class Interface(Type):
     """Interface in Netbox (can be a physical interface or a virtual one like a VLAN)
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
+
     name = str
     device = Device
     ip_addresses = list_of(IpAddressType)
     wireless_lans = list_of(WirelessLAN)
+
 
 class Query(Type):
     """encompasses all the queries that can be made on the Netbox API
 
     Args:
         Type (Type): MotherClass to create type of objects in Netbox"""
-    ip_address = Field(IpAddressType, args={"id":int})
+
+    ip_address = Field(IpAddressType, args={"id": int})
     interface_list = Field(list_of("Interface"), args={"mac_address": str})
 
 
@@ -133,13 +145,14 @@ def create_query_interface(mac: str) -> str:
     snakified_query = camel_to_snake(str(query))
     return snakified_query
 
-def create_query_ip(ip_id : int) :
+
+def create_query_ip(ip_id: int):
     """create a query string to get the ip address bearing a certain IP
 
     Args :
         id (int) : id of the ip"""
     query = Operation(Query)
-    ip_address = query.ip_address(id = ip_id)
+    ip_address = query.ip_address(id=ip_id)
     ip_address.address()
     snakified_query = camel_to_snake(str(query))
     return snakified_query

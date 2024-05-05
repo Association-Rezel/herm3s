@@ -9,20 +9,22 @@ Nathan Roos
 from sgqlc.endpoint.http import HTTPEndpoint
 from sgqlc.types import Type, Field, list_of
 from sgqlc.operation import Operation
-import re #pour transformer les noms de champs de camelCase en snake_case
+import re  # pour transformer les noms de champs de camelCase en snake_case
 import json
 
 url = "http://netbox.dev.fai.rezel.net/graphql/"
 token_netbox = "91a0e80dd5c290ba0d7f7d070a9f3fd80a61e6ea"
 headers = {
-    'Authorization': 'Token ' + token_netbox,
-    'Accept': 'application/json',
+    "Authorization": "Token " + token_netbox,
+    "Accept": "application/json",
 }
 
-def camel_to_snake(string : str):
+
+def camel_to_snake(string: str):
     """Convertit une chaine de caractère de camelCase en snake_case"""
-    pattern = re.compile(r'(?<!^)(?=[A-Z])')
-    return pattern.sub('_', string).lower()
+    pattern = re.compile(r"(?<!^)(?=[A-Z])")
+    return pattern.sub("_", string).lower()
+
 
 endpoint = HTTPEndpoint(url, headers)
 
@@ -32,13 +34,16 @@ class IpAddressType(Type):
     id = int
     address = str
 
+
 class Site(Type):
     id = int
     name = str
 
+
 class Rack(Type):
     id = int
     name = str
+
 
 class Device(Type):
     id = int
@@ -48,13 +53,14 @@ class Device(Type):
     primary_ip4 = Field(IpAddressType)
     primary_ip6 = Field(IpAddressType)
 
+
 class Query(Type):
-    device_list = Field(list_of('Device'), args={'role': str})
+    device_list = Field(list_of("Device"), args={"role": str})
 
 
-#construction de la requête
+# construction de la requête
 query = Operation(Query)
-devices = query.device_list(role='box')
+devices = query.device_list(role="box")
 devices.id()
 devices.name()
 devices.site()
@@ -70,7 +76,7 @@ print("=======")
 print(snakified_query)
 
 
-#execution de la requete et afficahe des données
+# execution de la requete et afficahe des données
 data = endpoint(snakified_query)
 print("\n==========")
 print("RESULTAT :")

@@ -1,6 +1,7 @@
 from .uci_common import uci_common as UCI
 from . import common_command_builder as ccb
 
+
 class HermesDefaultConfig(ccb.HermesDefaultConfig):
     """
     Represents the default configuration for the Hermes AC2350 router.

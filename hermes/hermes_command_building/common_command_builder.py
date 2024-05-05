@@ -1,5 +1,6 @@
 from .uci_common import uci_common as UCI
 
+
 class UCITypeConfig:
     """Mother class reprensenting a config block uci
     (e.g. network, firewall, dhcp, wireless, dropbear)
@@ -127,5 +128,3 @@ class HermesDefaultConfig(HermesConfigBuilder):
     management: UCI.UCINoIPInterface
     radio0: UCI.UCIWifiDevice
     radio1: UCI.UCIWifiDevice
-
-
