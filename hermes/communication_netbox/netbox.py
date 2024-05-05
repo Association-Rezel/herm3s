@@ -32,12 +32,15 @@ class NetboxInterface:
     """Gets and validates informations from Netbox using its GraphQL API"""
 
     def __init__(self):
-        self.__url = "http://netbox.dev.fai.rezel.net/graphql/"
+        self.__url = env.URL_NETBOX
         self.__token = env.TOKEN_NETBOX
         self.__headers = {
             "Authorization": "Token " + self.__token,
             "Accept": "application/json",
         }
+        print(self.__url)
+        print(self.__token)
+
 
     def __get_unet_id_from_ssid(self, interfaces: list[Interface], ssid: str) -> str:
         """extract the user network id from the ssid of the wlan

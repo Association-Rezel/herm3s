@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .api.MacAddress import MacAddress
 from .api.config import ac2350
-from .config import Config
+from . import config
 
 
 app = FastAPI()
@@ -37,9 +37,11 @@ async def get_file_config_init(mac: str):
     """
     mac_box = MacAddress(mac).getMac()
     if mac_box is not None:
+        return config.DEF_ROUTER_IP_VLAN
         ac2350.create_configfile(mac_box)
+        
         return FileResponse(
-            f"{Config.default_path_files_saving}configfile_" + mac_box + ".txt",
+            f"{config.FILE_SAVING_PATH}configfile_" + mac_box + ".txt",
             filename="configfile.txt",
         )
     else:
@@ -54,7 +56,7 @@ async def get_default_config():
     """
     ac2350.create_default_configfile()
     return FileResponse(
-        f"{Config.default_path_files_saving}defaultConfigfile.txt",
+        f"{config.FILE_SAVING_PATH}defaultConfigfile.txt",
         filename="defaultConfigfile.txt",
     )
 
