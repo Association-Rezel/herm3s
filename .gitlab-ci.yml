@@ -8,11 +8,3 @@ linting:
   script:
     - pip install black
     - black --check .
-
-build-tests:
-  stage: build-tests
-  image: docker
-  script:
-    - unset DOCKER_HOST
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-    - docker compose build
