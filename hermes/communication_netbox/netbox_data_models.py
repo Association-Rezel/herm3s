@@ -1,61 +1,79 @@
 """
 Defines classes to format the data received from the Netbox API
 """
+
 from __future__ import annotations
 from pydantic import BaseModel
 
 
 class IpAddress(BaseModel):
     """Data model of :  IP address in Netbox"""
+
     address: str
     nat_inside: IpAddress | None = None
     custom_field_data: str = ""
 
+
 class WirelessLAN(BaseModel):
-    """Data model of :  Wireless LAN """
-    id : int
+    """Data model of :  Wireless LAN"""
+
+    id: int
     ssid: str
     auth_psk: str
     custom_field_data: str
 
+
 class Service(BaseModel):
     """Data model of : Service"""
-    name : str = ""
+
+    name: str = ""
     ipaddresses: list[IpAddress]
     ports: list[int]
     protocol: str
     custom_field_data: str = ""
 
+
 class Device(BaseModel):
     """Data model of : Device"""
+
     services: list[Service]
+
 
 class Interface(BaseModel):
     """Data model of : Interface
     (can be a physical interface or a virtual one like a VLAN)"""
-    name : str
-    ip_addresses : list[IpAddress] = []
-    wireless_lans : list[WirelessLAN] = []
-    device : Device
+
+    name: str
+    ip_addresses: list[IpAddress] = []
+    wireless_lans: list[WirelessLAN] = []
+    device: Device
+
 
 class InterfaceResponse(BaseModel):
     """Data model of : Respnse from netbox when queried for interfaces"""
-    interface_list : list[Interface]
+
+    interface_list: list[Interface]
 
 
-class PATCustomField(BaseModel) :
+class PATCustomField(BaseModel):
     """Data model of : custom field of service PAT"""
-    inside_port : int
-    inside_ip_address : int
-    PAT_linked_WLAN : int
+
+    inside_port: int
+    inside_ip_address: int
+    PAT_linked_WLAN: int
+
 
 class IpAddressCustomField(BaseModel):
     """Data model of :  custom field in IP address"""
-    Linked_WLAN : int
+
+    Linked_WLAN: int
+
 
 class WirelessLANCustomField(BaseModel):
     """Data model of :  custom field in Wireless LAN"""
-    unet_id : str
+
+    unet_id: str
+
 
 if __name__ == "__main__":
     test_json = """{
