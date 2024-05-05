@@ -13,4 +13,4 @@ build-tests:
   stage: build-tests
   image: docker
   script:
-    - docker build -t rezel/hermes .
+    - docker compose build
