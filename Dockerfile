@@ -10,7 +10,8 @@ RUN  pip install -r /hermes/requirements.txt
 
 COPY ./hermes /hermes
 
-EXPOSE 80 443 8000
+
+EXPOSE 8000
 
 #entry point for "uvicorn main:app --reload"
 # CMD ["ls /"]

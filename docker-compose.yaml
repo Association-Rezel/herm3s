@@ -5,6 +5,4 @@ services:
     container_name: api_hermes
     build: .
     ports:
-      - "443:443"
-      - "80:80"
-      - "8000:8000"
+      - "80:8000"
