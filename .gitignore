@@ -3,7 +3,7 @@ __pycache__
 .env
 configfile.txt
 temp
+config_files/*
 
 # Config files
-docker-compose.yaml
 config.yaml
