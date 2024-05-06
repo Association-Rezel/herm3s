@@ -7,7 +7,7 @@ from ..MacAddress import MacAddress
 from ...hermes_command_building import common_command_builder as ccb
 from ...hermes_command_building import ac2350
 from ...hermes_command_building import uci_common as UCI
-from ...config import Config
+from ... import config
 
 
 # function to create the configuration file of the main user
@@ -94,9 +94,7 @@ def create_configfile(mac_address: str):
             )
 
             # get the default router ip address
-            default_router_ip_address = Config.default_router_ip_address_vlan[
-                wan_vlan_number
-            ]
+            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
 
             # create the main user configuration
             main_user = ac2350.HermesMainUser(
@@ -180,9 +178,7 @@ def create_configfile(mac_address: str):
             )
 
             # cf si IP de dodo/ptero et si c le même selon si c un télécommien ou non (faire condition sur vlan sinon)
-            default_router_ip_address = Config.default_router_ip_address_vlan[
-                wan_vlan_number
-            ]
+            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
 
             # create the other user configuration
             other_user = ac2350.HermesSecondaryUser(
@@ -234,7 +230,7 @@ def create_configfile(mac_address: str):
 
     # add to the configfile
     with open(
-        f"{Config.default_path_files_saving}configfile_" + mac_address + ".txt", "w"
+        f"{config.FILE_SAVING_PATH}configfile_" + mac_address + ".txt", "w"
     ) as file:
         file.write(
             Netconf.build()
@@ -271,7 +267,7 @@ def create_default_configfile():
     defconf.build_wireless(Wirelessconf)
     defconf.build_dropbear(Dropbearconf)
 
-    with open(f"{Config.default_path_files_saving}defaultConfigfile.txt", "w") as file:
+    with open(f"{config.FILE_SAVING_PATH}defaultConfigfile.txt", "w") as file:
         file.write(
             Netconf.build()
             + "/--SEPARATOR--/\n"
