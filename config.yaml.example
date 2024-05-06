@@ -1,0 +1,8 @@
+communication_netbox:
+  TOKEN_NETBOX: your_token
+  URL_NETBOX: http://netbox:8000
+api:
+  FILE_SAVING_PATH: /dev/shm
+  DEF_ROUTER_IP_VLAN:
+    - 101: "10.101.0.1"
+    - 102: "10.102.0.1"

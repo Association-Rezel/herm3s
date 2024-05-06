@@ -1,8 +1,14 @@
 services:
   api_hermes:
-    # volumes:
-    #   - ./requirements.txt:/hermes/requirements.txt
+    volumes:
+      - ./config.yaml.example:/config.yaml
     container_name: api_hermes
     build: .
+    environment:
+      - CONFIG_PATH=/config.yaml
+      - TOKEN_NETBOX=91a0e80dd5c290ba0d7f7d070a9f3fd80a61e6ea
+      - URL_NETBOX=http://netbox.dev.fai.rezel.net/graphql/
+      - DEF_ROUTER_IP_VLAN={"101":"137.194.8.1","102":"195.14.28.1"}
+      - FILE_SAVING_PATH=/dev/shm
     ports:
       - "80:8000"
