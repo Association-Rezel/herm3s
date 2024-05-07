@@ -6,7 +6,22 @@ info:
 servers:
   - url: "http://localhost:8000"
 paths:
-  /box/{mac}/config:
+  /:
+    get:
+      summary: "Root path"
+      description: "Root path of the API"
+      responses:
+        '200':
+          description: "Root path"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+
+  /v1/config/ac2350/{mac}:
     get:
       summary: "Download config file from Hermes to box"
       description: "Endpoint to download config file from Hermes to box based on MAC address"
@@ -43,7 +58,7 @@ paths:
                 properties:
                   Erreur:
                     type: "string"
-  /default/config:
+  /v1/config/ac2350/default/file:
     get:
       summary: "Download default config file from Hermes"
       description: "Endpoint to download default config file from Hermes"
