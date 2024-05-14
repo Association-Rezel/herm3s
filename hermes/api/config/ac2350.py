@@ -233,14 +233,15 @@ def create_configfile(mac_address: str):
         f"{config.FILE_SAVING_PATH}configfile_" + mac_address + ".txt", "w"
     ) as file:
         file.write(
-            Netconf.build()
-            + "/--SEPARATOR--/\n"
+            "/-- SEPARATOR network --/\n"
+            +Netconf.build()
+            + "/-- SEPARATOR firewall --/\n"
             + Fireconf.build()
-            + "/--SEPARATOR--/\n"
+            + "/-- SEPARATOR dhcp --/\n"
             + Dhcpconf.build()
-            + "/--SEPARATOR--/\n"
+            + "/-- SEPARATOR wireless --/\n"
             + Wirelessconf.build()
-            + "/--SEPARATOR--/\n"
+            + "/-- SEPARATOR dropbear --/\n"
             + Dropbearconf.build()
         )
 
@@ -269,14 +270,15 @@ def create_default_configfile():
 
     with open(f"{config.FILE_SAVING_PATH}defaultConfigfile.txt", "w") as file:
         file.write(
-            Netconf.build()
-            + "/--SEPARATOR--/\n"
+            "/-- SEPARATOR network --/\n"
+            +Netconf.build()
+            + "/-- SEPARATOR firewall --/\n"
             + Fireconf.build()
-            + "/--SEPARATOR--/\n"
+            + "/-- SEPARATOR dhcp --/\n"
             + Dhcpconf.build()
-            + "/--SEPARATOR--/\n"
+            + "/-- SEPARATOR wireless --/\n"
             + Wirelessconf.build()
-            + "/--SEPARATOR--/\n"
+            + "/-- SEPARATOR dropbear --/\n"
             + Dropbearconf.build()
         )
 
