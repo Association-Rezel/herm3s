@@ -12,3 +12,8 @@ services:
       - FILE_SAVING_PATH=/dev/shm
     ports:
       - "80:8000"
+
+  unit_tests:
+    container_name: unit_tests
+    build:
+      context: ./tests
