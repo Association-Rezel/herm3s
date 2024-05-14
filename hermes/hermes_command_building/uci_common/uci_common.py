@@ -617,6 +617,7 @@ class SSID(Attribute):
             raise ValueError("Invalid SSID")
         self.value = value
 
+
 class Channel(Attribute):
     """Object used to store the channel of a wifi interface"""
 
@@ -633,6 +634,7 @@ class Channel(Attribute):
         if re.match(r"^[0-9]{1,3}$", value) is None and value != "auto":
             raise ValueError("Invalid Channel")
         self.value = value
+
 
 class Channels(Attribute):
     """Object used to store the list of available channels of a wifi interface"""
