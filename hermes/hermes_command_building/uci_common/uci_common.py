@@ -617,6 +617,40 @@ class SSID(Attribute):
             raise ValueError("Invalid SSID")
         self.value = value
 
+class Channel(Attribute):
+    """Object used to store the channel of a wifi interface"""
+
+    def __init__(self, value: str):
+        """
+        Initialize a Channel object.
+
+        Args:
+            value (str): The channel of the wifi interface.
+
+        Raises:
+            ValueError: If the channel is invalid.
+        """
+        if re.match(r"^[0-9]{1,3}$", value) is None and value != "auto":
+            raise ValueError("Invalid Channel")
+        self.value = value
+
+class Channels(Attribute):
+    """Object used to store the list of available channels of a wifi interface"""
+
+    def __init__(self, value: str):
+        """
+        Initialize a Channels object.
+
+        Args:
+            value (str): The channel of the wifi interface.
+
+        Raises:
+            ValueError: If the channel is invalid.
+        """
+        if re.match(r"^[0-9]{1,3}( [0-9]{1,3})*$", value) is None:
+            raise ValueError("Invalid Channels")
+        self.value = value
+
 
 class Encryption(Attribute):
     """Object used to store the encryption of a wifi interface"""
@@ -661,7 +695,8 @@ class UCIWifiDevice(UCIConfig):
 
     path: Path
     type: WifiDeviceType
-    channel: int
+    channel: Channel
+    channels: Channels
     htmode: Htmode
     country: Country
     band: Band
@@ -672,11 +707,12 @@ class UCIWifiDevice(UCIConfig):
         name: UCISectionName,
         path: Path,
         device_type: WifiDeviceType,
-        channel: int,
+        channel: Channel,
         htmode: Htmode,
         country: Country,
         band: Band,
         disabled: int = 0,
+        channels: Channels = None,
     ):
         """Create a wifi device
 
@@ -684,10 +720,11 @@ class UCIWifiDevice(UCIConfig):
             name (str): radio0 or radio1 (for 2.4 and 5GHz)
             path (str): Path to the physical wifi device
             device_type (str): _description_
-            channel (int): Wifi Channel number (Maybe be dynamic in the future)
+            channel (Channel): Wifi Channel number
             htmode (str): htmode see documentation
             country (str): FR, US, ...
             band (str): 5 or 2.4
+            channels (Channels, optional): List of available channels. Defaults to None.
             disabled (str, optional): Defaults to "0".
 
         Raises:
@@ -700,6 +737,7 @@ class UCIWifiDevice(UCIConfig):
         self.htmode = htmode
         self.country = country
         self.band = band
+        self.channels = channels
         self.disabled = disabled
 
     def uci_build_string(self):
@@ -711,6 +749,9 @@ uci set wireless.{self.name}.htmode='{self.htmode}'
 uci set wireless.{self.name}.country='{self.country}'
 uci set wireless.{self.name}.band='{self.band}'
 uci set wireless.{self.name}.disabled='{self.disabled}'
+"""
+        if self.channels is not None:
+            string += f"""uci set wireless.{self.name}.channels='{self.channels}'
 """
         return string
 
