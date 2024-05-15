@@ -16,6 +16,7 @@ services:
         app_net:
             ipv6_address: fe80::5
 
+# commande to ping : ping6 fe80::5%eth0
   test_ipv6:
     container_name: test_ipv6
     build: ./test_ipv6
