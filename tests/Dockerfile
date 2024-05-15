@@ -14,3 +14,4 @@ RUN dos2unix unit_tests.sh
 
 # Run the script when the container starts
 CMD ["./unit_tests.sh"]
+# CMD ["sleep", "infinity"]
