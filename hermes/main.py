@@ -43,7 +43,7 @@ async def get_file_config_init(mac: str):
             filename="configfile.txt",
         )
     else:
-        raise HTTPException(404, {"Erreur": "invalid mac address"})
+        raise HTTPException(400, {"Erreur": "invalid mac address"})
 
 
 # download default conf file
