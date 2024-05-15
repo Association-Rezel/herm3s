@@ -3,7 +3,7 @@ FROM alpine:latest
 
 
 # Install necessary dependencies
-RUN apk update && apk add --no-cache bash && apk add --no-cache curl 
+RUN apk update && apk add --no-cache bash && apk add --no-cache curl && apk add --no-cache jq
 
 # Copy the script to the container
 COPY unit_tests.sh .

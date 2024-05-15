@@ -15,5 +15,7 @@ services:
 
   unit_tests:
     container_name: unit_tests
+    depends_on:
+      - api_hermes
     build:
       context: ./tests
