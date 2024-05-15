@@ -40,6 +40,7 @@ else
 fi
 
 # ----------------------------------------
-# Unit tests 3
+# Unit tests 3: ping ipv6 of hermes
 # ----------------------------------------
 
+echo -e "${YELLOW}Running unit test 3: ping ipv6 of hermes${NC}"
