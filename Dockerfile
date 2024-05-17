@@ -8,6 +8,9 @@ COPY ./requirements.txt /hermes/requirements.txt
 RUN  pip install --upgrade pip 
 RUN  pip install -r /hermes/requirements.txt
 
+#for health check
+RUN apt update && apt install -y curl 
+
 COPY ./hermes /hermes
 
 

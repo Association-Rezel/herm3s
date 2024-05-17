@@ -12,6 +12,11 @@ services:
       - FILE_SAVING_PATH=/dev/shm
     ports:
       - "80:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://api_hermes:8000/"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
     # networks:
     #     app_net:
     #         ipv6_address: fe80::5
@@ -21,7 +26,8 @@ services:
   unit_tests:
     container_name: unit_tests
     depends_on:
-      - api_hermes
+       api_hermes:
+          condition: service_healthy
     build:
       context: ./tests
     # networks:
