@@ -1,14 +1,13 @@
 #!/bin/bash
 
+BLUE='\033[0;34m'
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
 
-echo -e "Beginning unit tests..."
-
-sleep 3
+echo -e "${BLUE}Beginning unit tests...${NC}"
 
 # ----------------------------------------
 # Unit tests 1: curl on '/'
@@ -42,6 +41,9 @@ fi
 # ----------------------------------------
 # Unit tests 3:
 # ----------------------------------------
+
+
+
 
 
 
