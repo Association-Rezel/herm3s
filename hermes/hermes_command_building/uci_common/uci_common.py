@@ -288,6 +288,7 @@ class UCIInterface(UCIConfig):
 
     ip: IPAddress
     mask: IPAddress
+    ip6: IPAddress
     device: Device
 
     def __init__(
@@ -296,6 +297,7 @@ class UCIInterface(UCIConfig):
         ip: IPAddress,
         mask: IPAddress,
         proto: InterfaceProto,
+        ip6: IPAddress = None,
         unetid: UNetId = None,
         device: Device = None,
     ):
@@ -315,6 +317,7 @@ class UCIInterface(UCIConfig):
             super().__init__(f"{name_prefix}")
         self.ip = ip
         self.mask = mask
+        self.ip6 = ip6
         self.proto = proto
         self.device = device
 
@@ -331,6 +334,9 @@ uci set network.{self.name}.netmask='{self.mask}'
 """
         if self.device is not None:
             string += f"""uci set network.{self.name}.device='{self.device.name}'
+"""
+        if self.ip6 is not None:
+            string += f"""uci set network.{self.name}.ip6addr='{self.ip6}'
 """
         return string
 
@@ -407,6 +413,52 @@ class UCIRoute(UCIConfig):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self.name}=route
+uci set network.{self.name}.target='{self.target}'
+uci set network.{self.name}.gateway='{self.gateway}'
+uci set network.{self.name}.interface='{self.interface.name}'
+"""
+        if self.table is not None:
+            string += f"""uci set network.{self.name}.table='{self.table}'
+"""
+        return string
+
+class UCIRoute6(UCIConfig):
+    """Used to create a network route
+    See https://openwrt.org/docs/guide-user/network/routing/routes_configuration#static_routes
+    """
+
+    def __init__(
+        self,
+        unetid: UNetId,
+        name_prefix: UCISectionNamePrefix,
+        target: IPNetwork,
+        gateway: IPAddress,
+        interface: UCIInterface,
+        table: int = None,
+    ):
+        """Initialize the UCIRoute6 object
+
+        Args:
+            unetid (UNetId): The UNetId object.
+            name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
+            target (IPNetwork): The target IP network.
+            gateway (IPAddress): The gateway IP address.
+            interface (UCIInterface): The UCIInterface object.
+            table (int, optional): The routing table to use. Defaults to None.
+        """
+        super().__init__(f"{name_prefix}{unetid}")
+        self.target = target
+        self.gateway = gateway
+        self.interface = interface
+        self.table = table
+
+    def uci_build_string(self):
+        """Build the UCI configuration string for UCIRoute
+
+        Returns:
+            str: The UCI configuration string.
+        """
+        string = f"""uci set network.{self.name}=route6
 uci set network.{self.name}.target='{self.target}'
 uci set network.{self.name}.gateway='{self.gateway}'
 uci set network.{self.name}.interface='{self.interface.name}'
