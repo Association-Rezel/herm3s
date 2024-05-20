@@ -422,6 +422,7 @@ uci set network.{self.name}.interface='{self.interface.name}'
 """
         return string
 
+
 class UCIRoute6(UCIConfig):
     """Used to create a network route
     See https://openwrt.org/docs/guide-user/network/routing/routes_configuration#static_routes
