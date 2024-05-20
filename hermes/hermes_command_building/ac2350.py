@@ -437,6 +437,17 @@ if __name__ == "__main__":
     defconf.build_wireless(Wirelessconf)
     defconf.build_dropbear(Dropbearconf)
 
+    # Print the default configuration
+    PRINTDEF = False
+    if PRINTDEF is True:
+        print("------ DEFAULT CONFIGURATION ------")
+        print(Netconf.build())
+        print(Fireconf.build())
+        print(Dhcpconf.build())
+        print(Wirelessconf.build())
+        print(Dropbearconf.build())
+        print("------ END DEFAULT CONFIGURATION ------")
+
     main_user = HermesMainUser(
         unetid=UCI.UNetId("aaaaaaaa"),
         ssid=UCI.SSID("Rezel-main"),
