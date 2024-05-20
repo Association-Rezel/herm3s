@@ -284,6 +284,7 @@ uci set network.{self.name}.enable_vlan='1'
 class UCIInterface(UCIConfig):
     """Represents a network interface in uci
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_interface
+    And for IPv6 https://openwrt.org/docs/guide-user/network/ipv6/configuration
     """
 
     ip: IPAddress
@@ -294,10 +295,13 @@ class UCIInterface(UCIConfig):
     def __init__(
         self,
         name_prefix: UCISectionNamePrefix,
-        ip: IPAddress,
-        mask: IPAddress,
         proto: InterfaceProto,
-        ip6: IPAddress = None,
+        ip: IPAddress = None,
+        mask: IPAddress = None,
+        ip6addr: IPNetwork = None,
+        ip6gw: IPAddress = None,
+        ip6prefix: IPNetwork = None,
+        ip6assign: int = None,
         unetid: UNetId = None,
         device: Device = None,
     ):
@@ -308,6 +312,10 @@ class UCIInterface(UCIConfig):
             name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
             ip (IPAddress): The IP address e.g. 192.168.1.1.
             mask (IPAddress): The subnet mask e.g. 255.255.255.0.
+            ip6addr (IPNetwork): The IPv6 address e.g. 2001:db8::1/64.
+            ip6gw (IPAddress): The IPv6 gateway e.g. 2001:db8::1.
+            ip6prefix (IPNetwork): The IPv6 prefix for downstream interfaces e.g. 2001:db8::/64.
+            ip6assign (int): The IPv6 prefix assignment number for the interface e.g. 64.
             proto (InterfaceProto): The InterfaceProto object.
             device (Device, optional): The Device object. Defaults to None.
         """
@@ -317,7 +325,10 @@ class UCIInterface(UCIConfig):
             super().__init__(f"{name_prefix}")
         self.ip = ip
         self.mask = mask
-        self.ip6 = ip6
+        self.ip6addr = ip6addr
+        self.ip6gw = ip6gw
+        self.ip6prefix = ip6prefix
+        self.ip6assign = ip6assign
         self.proto = proto
         self.device = device
 
@@ -329,15 +340,29 @@ class UCIInterface(UCIConfig):
         """
         string = f"""uci set network.{self.name}=interface
 uci set network.{self.name}.proto='{self.proto}'
-uci set network.{self.name}.ipaddr='{self.ip}'
-uci set network.{self.name}.netmask='{self.mask}'
+"""
+        if self.ip is not None:
+            string += f"""uci set network.{self.name}.ipaddr='{self.ip}'
+"""
+        if self.mask is not None:
+            string += f"""uci set network.{self.name}.netmask='{self.mask}'
+"""
+        if self.ip6addr is not None:
+            string += f"""uci set network.{self.name}.ip6addr='{self.ip6addr}'
+"""
+        if self.ip6gw is not None:
+            string += f"""uci set network.{self.name}.ip6gw='{self.ip6gw}'
+"""
+        if self.ip6prefix is not None:
+            string += f"""uci set network.{self.name}.ip6prefix='{self.ip6prefix}'
+"""
+        if self.ip6assign is not None:
+            string += f"""uci set network.{self.name}.ip6assign='{self.ip6assign}'
 """
         if self.device is not None:
             string += f"""uci set network.{self.name}.device='{self.device.name}'
 """
-        if self.ip6 is not None:
-            string += f"""uci set network.{self.name}.ip6addr='{self.ip6}'
-"""
+
         return string
 
 
