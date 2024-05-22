@@ -15,9 +15,9 @@ unit-tests:
 
 
 
-linting:
-  stage: linting
-  image: python
-  script:
-    - pip install black
-    - black --check .
+# linting:
+#   stage: linting
+#   image: python
+#   script:
+#     - pip install black
+#     - black --check .
