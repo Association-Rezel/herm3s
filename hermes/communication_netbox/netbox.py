@@ -18,15 +18,11 @@ from .netbox_data_models import (
     InterfaceResponse,
     Interface,
     WirelessLAN,
-    PATCustomField,
+    PFCustomField,
     IpAddressCustomField,
     WirelessLANCustomField,
 )
 from .query_generator import create_query_interface, create_query_ip
-
-# from netbox_data_models import InterfaceResponse, Interface, WirelessLAN, PATCustomField, IpAddressCustomField
-# from query_generator import create_query_interface, create_query_ip
-
 
 class NetboxInterface:
     """Gets and validates informations from Netbox using its GraphQL API"""
@@ -179,10 +175,10 @@ class NetboxInterface:
         main_unet_id = self.__get_unet_id_from_ssid(interfaces, main_ssid)
         return main_unet_id
 
-    def __get_pat_rules(
+    def __get_pf_rules(
         self, interfaces: list[Interface]
     ) -> list[dict[str : str | int]]:
-        """Return a list of dict(representing the pat rules) with keys :
+        """Return a list of dict(representing the pf rules) with keys :
         - "inside_ip" (ex: "192.168.0.0/24")
         - "inside_port": (ex: 25)
         - "outside_ip": (ex: "137.194.8.2/22")
@@ -193,17 +189,17 @@ class NetboxInterface:
         Args :
             - interfaces (list[Interface]): list of all the interfaces with a given mac
         """
-        pat_rules: list[dict] = []
+        pf_rules: list[dict] = []
         services = interfaces[0].device.services
-        pat_services = [s for s in services if s.name == "PAT" and s.custom_field_data]
-        for s in pat_services:
+        pf_services = [s for s in services if s.name == "PF" and s.custom_field_data]
+        for s in pf_services:
             # TODO : check that there exactly one outside ip and port
             custom_fields = s.custom_field_data
             wlan_ssid = self.__get_wlan_ssid_by_id(
-                custom_fields.PAT_linked_WLAN, interfaces
+                custom_fields.PF_linked_WLAN, interfaces
             )
             unet_id = self.__get_unet_id_from_ssid(interfaces, wlan_ssid)
-            pat_rules.append(
+            pf_rules.append(
                 {
                     "inside_ip": self.__get_ip_by_id(
                         str(custom_fields.inside_ip_address)
@@ -215,7 +211,7 @@ class NetboxInterface:
                     "protocol": s.protocol.lower(),
                 }
             )
-        return pat_rules
+        return pf_rules
 
     def __get_ssids(self, interfaces: list[Interface]) -> list[str]:
         """Return a dict mapping the unet_ids to the SSIDs
@@ -234,14 +230,14 @@ class NetboxInterface:
         mac: str,
         ip_adresses=True,
         passwords=True,
-        pat_rules=True,
+        pf_rules=True,
         main_unet_id=True,
         ssids=True,
     ) -> dict[str, any]:
         """Return a dictionnary with keys :
         - "ip_addresses"
         - "passwords"
-        - "pat_rules"
+        - "pf_rules"
         - "main_unet_id"
         - "ssids"
 
@@ -249,7 +245,7 @@ class NetboxInterface:
             mac (str) : mac address of the box
             ip_adresses (bool) : if True, return the ip adresses by unet_id
             passwords (bool) : if True, return the passwords by unet_id
-            pat_rules (bool) : if True, return the pat rules
+            pf_rules (bool) : if True, return the pf rules
             main_unet_id (bool) : if True, return the main unet id
         """
         interfaces: list[Interface] = self.get_interfaces_by_mac(mac)
@@ -259,8 +255,8 @@ class NetboxInterface:
             result["ip_addresses"] = self.__get_ip_addresses(interfaces)
         if passwords:
             result["passwords"] = self.__get_passwords(interfaces)
-        if pat_rules:
-            result["pat_rules"] = self.__get_pat_rules(interfaces)
+        if pf_rules:
+            result["pf_rules"] = self.__get_pf_rules(interfaces)
         if main_unet_id:
             result["main_unet_id"] = self.__get_main_unet_id(interfaces)
         if ssids:
