@@ -19,6 +19,7 @@ if [ $http_code -eq 200 ]; then
     echo -e "${GREEN}Unit test 1 passed with code ${http_code} !${NC}"
 else
     echo -e "${RED}Unit test 1 failed with code ${http_code} !${NC}"
+    exit 1
 fi
 
 # ----------------------------------------
@@ -37,6 +38,7 @@ if [ $http_code -eq 400 ]; then
     echo -e "${GREEN}Unit test 2 passed with with code: ${http_code} and message: ${message} !${NC}"
 else
     echo -e "${RED}Unit test 2 failed with code: ${http_code} and message: ${message} !${NC}"
+    exit 1
 fi
 
 # ----------------------------------------
@@ -52,6 +54,7 @@ if [ $http_code -eq 200 ]; then
     echo -e "${GREEN}Unit test 3 passed with code ${http_code} !${NC}"
 else
     echo -e "${RED}Unit test 3 failed with code ${http_code} !${NC}"
+    exit 1
 fi
 
 # ----------------------------------------
@@ -68,6 +71,7 @@ if [ -f ${PATH_DEFAULT_CONFIG_FILE_TEST}${NAME_DEFAULT_CONFIG_FILE_TEST} ]; then
     echo -e "${GREEN}Unit test 4 passed: ${NAME_DEFAULT_CONFIG_FILE_TEST} received !${NC}"
 else
     echo -e "${RED}Unit test 4 failed: no file received !${NC}"
+    exit 1
 fi
 
 # ----------------------------------------
@@ -83,6 +87,7 @@ if diff ${PATH_DEFAULT_CONFIG_FILE}${NAME_DEFAULT_CONFIG_FILE} ${PATH_DEFAULT_CO
 else
     echo -e "${RED}Unit test 5 failed: ${NAME_DEFAULT_CONFIG_FILE_TEST} is different from ${NAME_DEFAULT_CONFIG_FILE} !${NC}"
     echo -e "$(cat /result)${NC}"
+    exit 1
 fi
 
 
@@ -99,6 +104,40 @@ if [ $http_code -eq 200 ]; then
     echo -e "${GREEN}Unit test 6 passed with code ${http_code} !${NC}"
 else
     echo -e "${RED}Unit test 6 failed with code ${http_code} !${NC}"
+    exit 1
+fi
+
+# ----------------------------------------
+# Unit tests 7: test receive default config file
+# ----------------------------------------
+
+echo -e "${YELLOW}Running unit test 7: test if ${NAME_CONFIG_FILE_TEST} is received${NC}"
+
+echo -e "wget on ${URL}${ENDPOINT_CONFIG}${MAC}..."
+
+wget -q -O - ${URL}${ENDPOINT_CONFIG}${MAC} > ${PATH_CONFIG_FILE_TEST}${NAME_CONFIG_FILE_TEST}
+
+if [ -f ${PATH_CONFIG_FILE_TEST}${NAME_CONFIG_FILE_TEST} ]; then
+    echo -e "${GREEN}Unit test 7 passed: ${NAME_CONFIG_FILE_TEST} received !${NC}"
+else
+    echo -e "${RED}Unit test 7 failed: no file received !${NC}"
+    exit 1
+fi
+
+# ----------------------------------------
+# Unit tests 8: test content of default config file
+# ----------------------------------------
+
+echo -e "${YELLOW}Running unit test 8: test content of ${NAME_CONFIG_FILE_TEST} ${NC}"
+
+echo -e "diff between ${NAME_CONFIG_FILE} and ${NAME_CONFIG_FILE_TEST}..."
+
+if diff ${PATH_CONFIG_FILE}${NAME_CONFIG_FILE} ${PATH_CONFIG_FILE_TEST}${NAME_CONFIG_FILE_TEST} > /result ; then
+    echo -e "${GREEN}Unit test 8 passed: ${NAME_CONFIG_FILE_TEST} is the same as ${NAME_CONFIG_FILE} !${NC}"
+else
+    echo -e "${RED}Unit test 8 failed: ${NAME_CONFIG_FILE_TEST} is different from ${NAME_CONFIG_FILE} !${NC}"
+    echo -e "$(cat /result)${NC}"
+    exit 1
 fi
 
 
