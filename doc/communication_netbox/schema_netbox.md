@@ -76,7 +76,7 @@ Il faut ensuite ajouter/éditer les interfaces suivantes :
          1. Device : le device 
          2. 
 
-1. etho.65
+1. eth0.65
    1. MAC Address
    2. Définir une Ip Address puis l'ajouter à l'interface. Pour définir l'Ip
       1. Address : adresse ipv6 ou v4 (avec mask)
