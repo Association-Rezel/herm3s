@@ -289,8 +289,13 @@ class UCIInterface(UCIConfig):
 
     ip: IPAddress
     mask: IPAddress
-    ip6: IPAddress
+    proto: InterfaceProto
     device: Device
+    ip6addr: IPNetwork
+    ip6gw: IPAddress
+    ip6prefix: IPNetwork
+    ip6class: UCISectionName
+    ip6assign: int
 
     def __init__(
         self,
@@ -298,12 +303,13 @@ class UCIInterface(UCIConfig):
         proto: InterfaceProto,
         ip: IPAddress = None,
         mask: IPAddress = None,
+        unetid: UNetId = None,
+        device: Device = None,
         ip6addr: IPNetwork = None,
         ip6gw: IPAddress = None,
         ip6prefix: IPNetwork = None,
+        ip6class: UCISectionName = None,
         ip6assign: int = None,
-        unetid: UNetId = None,
-        device: Device = None,
     ):
         """Initialize the UCIInterface object
 
@@ -312,12 +318,13 @@ class UCIInterface(UCIConfig):
             name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
             ip (IPAddress): The IP address e.g. 192.168.1.1.
             mask (IPAddress): The subnet mask e.g. 255.255.255.0.
+            proto (InterfaceProto): The InterfaceProto object.
+            device (Device, optional): The Device object. Defaults to None.
             ip6addr (IPNetwork): The IPv6 address e.g. 2001:db8::1/64.
             ip6gw (IPAddress): The IPv6 gateway e.g. 2001:db8::1.
             ip6prefix (IPNetwork): The IPv6 prefix for downstream interfaces e.g. 2001:db8::/64.
+            ip6class (UCISectionName): Interface where the assigned prefix come from e.g. wan_unetid
             ip6assign (int): The IPv6 prefix assignment number for the interface e.g. 64.
-            proto (InterfaceProto): The InterfaceProto object.
-            device (Device, optional): The Device object. Defaults to None.
         """
         if unetid is not None:
             super().__init__(f"{name_prefix}{unetid}")
@@ -325,12 +332,13 @@ class UCIInterface(UCIConfig):
             super().__init__(f"{name_prefix}")
         self.ip = ip
         self.mask = mask
+        self.proto = proto
+        self.device = device
         self.ip6addr = ip6addr
         self.ip6gw = ip6gw
         self.ip6prefix = ip6prefix
+        self.ip6class = ip6class
         self.ip6assign = ip6assign
-        self.proto = proto
-        self.device = device
 
     def uci_build_string(self):
         """Build the UCI configuration string for UCIInterface
@@ -347,6 +355,9 @@ uci set network.{self.name}.proto='{self.proto}'
         if self.mask is not None:
             string += f"""uci set network.{self.name}.netmask='{self.mask}'
 """
+        if self.device is not None:
+            string += f"""uci set network.{self.name}.device='{self.device.name}'
+"""
         if self.ip6addr is not None:
             string += f"""uci set network.{self.name}.ip6addr='{self.ip6addr}'
 """
@@ -356,11 +367,11 @@ uci set network.{self.name}.proto='{self.proto}'
         if self.ip6prefix is not None:
             string += f"""uci set network.{self.name}.ip6prefix='{self.ip6prefix}'
 """
+        if self.ip6class is not None:
+            string += f"""uci set network.{self.name}.ip6class='{self.ip6class}'
+"""
         if self.ip6assign is not None:
             string += f"""uci set network.{self.name}.ip6assign='{self.ip6assign}'
-"""
-        if self.device is not None:
-            string += f"""uci set network.{self.name}.device='{self.device.name}'
 """
 
         return string
@@ -373,7 +384,7 @@ class UCIRouteRule(UCIConfig):
 
     def __init__(
         self,
-        unetid: UNetId,
+        name: UCISectionName,
         src: IPNetwork,
         lookup: int,
     ):
@@ -384,7 +395,7 @@ class UCIRouteRule(UCIConfig):
             src (IPNetwork): The source IP network.
             lookup (int): The routing table to use.
         """
-        super().__init__(f"route_rule_{unetid}")
+        super().__init__(name)
         self.src = src
         self.lookup = lookup
 
