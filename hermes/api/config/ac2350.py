@@ -116,7 +116,7 @@ def create_configfile(mac_address: str):
             main_user.build_wireless(Wirelessconf)
 
             # create port forwarding for the main user
-            for dico in json_infos_by_mac["pat_rules"]:
+            for dico in json_infos_by_mac["pf_rules"]:
                 if dico["unet_id"] == key:
 
                     # get source port
@@ -200,7 +200,7 @@ def create_configfile(mac_address: str):
             other_user.build_wireless(Wirelessconf)
 
             # create port forwarding for the other user
-            for dico in json_infos_by_mac["pat_rules"]:
+            for dico in json_infos_by_mac["pf_rules"]:
                 if dico["unet_id"] == key:
 
                     # get source port
