@@ -38,8 +38,6 @@ class NetboxInterface:
             "Authorization": "Token " + self.__token,
             "Accept": "application/json",
         }
-        print(self.__url)
-        print(self.__token)
 
     def __get_unet_id_from_ssid(self, interfaces: list[Interface], ssid: str) -> str:
         """extract the user network id from the ssid of the wlan
@@ -48,9 +46,7 @@ class NetboxInterface:
             ssid (str) : ssid of the wlan"""
         wlans = self.__get_wlans(interfaces)
         wlan = [wlan for wlan in wlans if wlan.ssid == ssid][0]
-        wlan_custom_fields = WirelessLANCustomField.model_validate_json(
-            wlan.custom_field_data
-        )
+        wlan_custom_fields = wlan.custom_field_data
         return wlan_custom_fields.unet_id
 
     def __request_netbox(self, query: str) -> dict:
@@ -58,9 +54,9 @@ class NetboxInterface:
 
         Args :
             query (str) : query string"""
-        json_data_to_send = {"query": "query " + query}
+        json_data_to_send = {"query": "query "+  query}
         timeout = 999999
-        response = requests.get(
+        response = requests.post(
             url=self.__url,
             headers=self.__headers,
             json=json_data_to_send,
@@ -136,11 +132,7 @@ class NetboxInterface:
         ]
         for interface in interfaces_with_ip_addresses:
             for ip_wrapper in interface.ip_addresses:
-                custom_fields = IpAddressCustomField.model_validate_json(
-                    ip_wrapper.custom_field_data
-                )
-                # TODO : traiter les cas d'erreur de validation
-                linked_wlan_id = custom_fields.Linked_WLAN
+                linked_wlan_id = ip_wrapper.custom_field_data.linked_wlan
                 linked_wlan_ssid = self.__get_wlan_ssid_by_id(
                     linked_wlan_id, interfaces
                 )
@@ -206,7 +198,7 @@ class NetboxInterface:
         pat_services = [s for s in services if s.name == "PAT" and s.custom_field_data]
         for s in pat_services:
             # TODO : check that there exactly one outside ip and port
-            custom_fields = PATCustomField.model_validate_json(s.custom_field_data)
+            custom_fields = s.custom_field_data
             wlan_ssid = self.__get_wlan_ssid_by_id(
                 custom_fields.PAT_linked_WLAN, interfaces
             )
@@ -234,10 +226,7 @@ class NetboxInterface:
         wlans = self.__get_wlans(interfaces)
         unet_id_to_ssid = {}
         for wlan in wlans:
-            wlan_custom_fields = WirelessLANCustomField.model_validate_json(
-                wlan.custom_field_data
-            )
-            unet_id_to_ssid[wlan_custom_fields.unet_id] = wlan.ssid
+            unet_id_to_ssid[wlan.custom_field_data.unet_id] = wlan.ssid
         return unet_id_to_ssid
 
     def get_infos_by_mac(
