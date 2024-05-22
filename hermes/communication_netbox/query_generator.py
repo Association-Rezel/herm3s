@@ -143,7 +143,42 @@ def create_query_interface(mac: str) -> str:
     # Netbox API understands snake_case but the sgqlc library uses camelCase for the fields
     # so we convert it
     snakified_query = camel_to_snake(str(query))
-    return snakified_query
+    # return snakified_query
+
+    return """{
+  interface_list(filters : {mac_address: "88:C3:97:69:96:69"}) {
+    name
+    ip_addresses {
+      address
+      custom_field_data
+      nat_inside {
+        address
+      }
+    }
+    wireless_lans {
+      id
+      ssid
+      auth_psk
+      custom_field_data
+    }
+    device {
+      services {
+        name
+        protocol
+        ipaddresses {
+          address
+          custom_field_data
+          nat_inside {
+            address
+          }
+        }
+        ports
+        custom_field_data
+      }
+    }
+  }
+}"""
+
 
 
 def create_query_ip(ip_id: int):
@@ -156,3 +191,9 @@ def create_query_ip(ip_id: int):
     ip_address.address()
     snakified_query = camel_to_snake(str(query))
     return snakified_query
+
+    
+
+if __name__ == "__main__":
+    print(create_query_interface("88:C3:97:69:96:69"))
+    # print(create_query_ip(1))

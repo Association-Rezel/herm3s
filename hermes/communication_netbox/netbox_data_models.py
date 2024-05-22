@@ -6,13 +6,23 @@ from __future__ import annotations
 from pydantic import BaseModel
 
 
+class IpAddressCustomField(BaseModel):
+    """Data model of :  custom field in IP address"""
+
+    linked_wlan: int
+
+
 class IpAddress(BaseModel):
     """Data model of :  IP address in Netbox"""
 
     address: str
+    custom_field_data: IpAddressCustomField | None = None
     nat_inside: IpAddress | None = None
-    custom_field_data: str = ""
 
+class WirelessLANCustomField(BaseModel):
+    """Data model of :  custom field in Wireless LAN"""
+
+    unet_id: str
 
 class WirelessLAN(BaseModel):
     """Data model of :  Wireless LAN"""
@@ -20,18 +30,23 @@ class WirelessLAN(BaseModel):
     id: int
     ssid: str
     auth_psk: str
-    custom_field_data: str
+    custom_field_data: WirelessLANCustomField
 
+class PATCustomField(BaseModel):
+    """Data model of : custom field of service PAT"""
+
+    inside_port: int
+    inside_ip_address: int
+    PAT_linked_WLAN: int
 
 class Service(BaseModel):
     """Data model of : Service"""
 
     name: str = ""
+    protocol: str
     ipaddresses: list[IpAddress]
     ports: list[int]
-    protocol: str
-    custom_field_data: str = ""
-
+    custom_field_data: PATCustomField
 
 class Device(BaseModel):
     """Data model of : Device"""
@@ -50,29 +65,9 @@ class Interface(BaseModel):
 
 
 class InterfaceResponse(BaseModel):
-    """Data model of : Respnse from netbox when queried for interfaces"""
+    """Data model of : Response from netbox when queried for interfaces"""
 
     interface_list: list[Interface]
-
-
-class PATCustomField(BaseModel):
-    """Data model of : custom field of service PAT"""
-
-    inside_port: int
-    inside_ip_address: int
-    PAT_linked_WLAN: int
-
-
-class IpAddressCustomField(BaseModel):
-    """Data model of :  custom field in IP address"""
-
-    Linked_WLAN: int
-
-
-class WirelessLANCustomField(BaseModel):
-    """Data model of :  custom field in Wireless LAN"""
-
-    unet_id: str
 
 
 if __name__ == "__main__":
