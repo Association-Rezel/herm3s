@@ -1,10 +1,23 @@
 stages:
   - linting
   - build-tests
+  - unit-tests
 
-linting:
-  stage: linting
-  image: python
+
+#run unit-tests which launch the script ./tests/run_tests.sh and this script need docker commands
+unit-tests:
+  stage: unit-tests
+  image: docker:19.03.12
+  services:
+    - docker:19.03.12-dind
   script:
-    - pip install black
-    - black --check .
+    - ./tests/run_unit_tests.sh
+
+
+
+# linting:
+#   stage: linting
+#   image: python
+#   script:
+#     - pip install black
+#     - black --check .

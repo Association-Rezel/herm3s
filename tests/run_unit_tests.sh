@@ -4,7 +4,7 @@
 # (docker network ls -q | xargs docker network rm) > /dev/null 2>&1
 
 #run commande to up docker compose
-docker-compose up -d --force-recreate --build
+docker-compose up -d --build
 
 #wait the end of the container unit_tests
 test=$(docker ps | grep unit_tests)
