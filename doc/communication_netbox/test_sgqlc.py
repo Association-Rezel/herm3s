@@ -201,6 +201,7 @@ def camel_to_snake(string: str):
             result.append(c)
     return string[0] + "".join(result)
 
+
 def create_query_interface(mac: str) -> str:
     """create a query string to get the informations about a box from its MAC address
 
@@ -231,6 +232,7 @@ def create_query_interface(mac: str) -> str:
     # so we convert it
     snakified_query = camel_to_snake(str(query))
     return snakified_query
+
 
 def create_query_ip(ip_id: int):
     """create a query string to get the ip address bearing a certain IP
