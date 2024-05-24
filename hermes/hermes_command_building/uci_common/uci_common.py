@@ -284,20 +284,32 @@ uci set network.{self.name}.enable_vlan='1'
 class UCIInterface(UCIConfig):
     """Represents a network interface in uci
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_interface
+    And for IPv6 https://openwrt.org/docs/guide-user/network/ipv6/configuration
     """
 
     ip: IPAddress
     mask: IPAddress
+    proto: InterfaceProto
     device: Device
+    ip6addr: IPNetwork
+    ip6gw: IPAddress
+    ip6prefix: IPNetwork
+    ip6class: UCISectionName
+    ip6assign: int
 
     def __init__(
         self,
         name_prefix: UCISectionNamePrefix,
-        ip: IPAddress,
-        mask: IPAddress,
         proto: InterfaceProto,
+        ip: IPAddress = None,
+        mask: IPAddress = None,
         unetid: UNetId = None,
         device: Device = None,
+        ip6addr: IPNetwork = None,
+        ip6gw: IPAddress = None,
+        ip6prefix: IPNetwork = None,
+        ip6class: UCISectionName = None,
+        ip6assign: int = None,
     ):
         """Initialize the UCIInterface object
 
@@ -308,6 +320,11 @@ class UCIInterface(UCIConfig):
             mask (IPAddress): The subnet mask e.g. 255.255.255.0.
             proto (InterfaceProto): The InterfaceProto object.
             device (Device, optional): The Device object. Defaults to None.
+            ip6addr (IPNetwork): The IPv6 address e.g. 2001:db8::1/64.
+            ip6gw (IPAddress): The IPv6 gateway e.g. 2001:db8::1.
+            ip6prefix (IPNetwork): The IPv6 prefix for downstream interfaces e.g. 2001:db8::/64.
+            ip6class (UCISectionName): Interface where the assigned prefix come from e.g. wan_unetid
+            ip6assign (int): The IPv6 prefix assignment number for the interface e.g. 64.
         """
         if unetid is not None:
             super().__init__(f"{name_prefix}{unetid}")
@@ -317,6 +334,11 @@ class UCIInterface(UCIConfig):
         self.mask = mask
         self.proto = proto
         self.device = device
+        self.ip6addr = ip6addr
+        self.ip6gw = ip6gw
+        self.ip6prefix = ip6prefix
+        self.ip6class = ip6class
+        self.ip6assign = ip6assign
 
     def uci_build_string(self):
         """Build the UCI configuration string for UCIInterface
@@ -326,12 +348,32 @@ class UCIInterface(UCIConfig):
         """
         string = f"""uci set network.{self.name}=interface
 uci set network.{self.name}.proto='{self.proto}'
-uci set network.{self.name}.ipaddr='{self.ip}'
-uci set network.{self.name}.netmask='{self.mask}'
+"""
+        if self.ip is not None:
+            string += f"""uci set network.{self.name}.ipaddr='{self.ip}'
+"""
+        if self.mask is not None:
+            string += f"""uci set network.{self.name}.netmask='{self.mask}'
 """
         if self.device is not None:
             string += f"""uci set network.{self.name}.device='{self.device.name}'
 """
+        if self.ip6addr is not None:
+            string += f"""uci set network.{self.name}.ip6addr='{self.ip6addr}'
+"""
+        if self.ip6gw is not None:
+            string += f"""uci set network.{self.name}.ip6gw='{self.ip6gw}'
+"""
+        if self.ip6prefix is not None:
+            string += f"""uci set network.{self.name}.ip6prefix='{self.ip6prefix}'
+"""
+        if self.ip6class is not None:
+            string += f"""uci set network.{self.name}.ip6class='{self.ip6class}'
+"""
+        if self.ip6assign is not None:
+            string += f"""uci set network.{self.name}.ip6assign='{self.ip6assign}'
+"""
+
         return string
 
 
@@ -342,7 +384,7 @@ class UCIRouteRule(UCIConfig):
 
     def __init__(
         self,
-        unetid: UNetId,
+        name: UCISectionName,
         src: IPNetwork,
         lookup: int,
     ):
@@ -353,7 +395,7 @@ class UCIRouteRule(UCIConfig):
             src (IPNetwork): The source IP network.
             lookup (int): The routing table to use.
         """
-        super().__init__(f"route_rule_{unetid}")
+        super().__init__(name)
         self.src = src
         self.lookup = lookup
 
@@ -407,6 +449,53 @@ class UCIRoute(UCIConfig):
             str: The UCI configuration string.
         """
         string = f"""uci set network.{self.name}=route
+uci set network.{self.name}.target='{self.target}'
+uci set network.{self.name}.gateway='{self.gateway}'
+uci set network.{self.name}.interface='{self.interface.name}'
+"""
+        if self.table is not None:
+            string += f"""uci set network.{self.name}.table='{self.table}'
+"""
+        return string
+
+
+class UCIRoute6(UCIConfig):
+    """Used to create a network route
+    See https://openwrt.org/docs/guide-user/network/routing/routes_configuration#static_routes
+    """
+
+    def __init__(
+        self,
+        unetid: UNetId,
+        name_prefix: UCISectionNamePrefix,
+        target: IPNetwork,
+        gateway: IPAddress,
+        interface: UCIInterface,
+        table: int = None,
+    ):
+        """Initialize the UCIRoute6 object
+
+        Args:
+            unetid (UNetId): The UNetId object.
+            name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
+            target (IPNetwork): The target IP network.
+            gateway (IPAddress): The gateway IP address.
+            interface (UCIInterface): The UCIInterface object.
+            table (int, optional): The routing table to use. Defaults to None.
+        """
+        super().__init__(f"{name_prefix}{unetid}")
+        self.target = target
+        self.gateway = gateway
+        self.interface = interface
+        self.table = table
+
+    def uci_build_string(self):
+        """Build the UCI configuration string for UCIRoute
+
+        Returns:
+            str: The UCI configuration string.
+        """
+        string = f"""uci set network.{self.name}=route6
 uci set network.{self.name}.target='{self.target}'
 uci set network.{self.name}.gateway='{self.gateway}'
 uci set network.{self.name}.interface='{self.interface.name}'
