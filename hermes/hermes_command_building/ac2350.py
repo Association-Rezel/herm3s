@@ -61,6 +61,14 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         # Firewall Configuration
         self.firewall_commands.append(UCI.UCIFirewallDefaults())
 
+        self.mgt_zone = UCI.UCIZone(
+            network=self.management,
+            _input=UCI.InOutForw("REJECT"),
+            output=UCI.InOutForw("ACCEPT"),
+            forward=UCI.InOutForw("REJECT"),
+        )
+        self.firewall_commands.append(self.mgt_zone)
+
         # DHCP Configuration
         self.dhcp_commands.append(UCI.UCIdnsmasq(dns_servers))
         self.dhcp_commands.append(UCI.UCIodchp())
