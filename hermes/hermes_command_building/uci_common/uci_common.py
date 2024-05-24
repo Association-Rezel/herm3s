@@ -99,6 +99,7 @@ class UCIConfig:
 
     name: UCISectionName
     optional_uci_commands: str
+    builded_string: str
 
     def __init__(self, name: UCISectionName, optional_uci_commands: str = ""):
         """Initialize the UCIConfig object
@@ -111,6 +112,15 @@ class UCIConfig:
             name = UCISectionName(name)
         self.name = name
         self.optional_uci_commands = optional_uci_commands
+        self.builded_string = ""
+
+    def contatenate_uci_commands(self, *args: str):
+        """Concatenate the UCI commands
+
+        Args:
+            *args (str): The UCI commands to concatenate
+        """
+        self.builded_string += "\n".join(args) + "\n"
 
     def uci_build_string(self) -> str:
         """Used to create the set of uci command to use in the system
@@ -208,14 +218,17 @@ class UCIBridge(UCIConfig, Device):
         Returns:
             str: The UCI configuration string.
         """
-        string = f"""uci set network.{self.name}=device
-uci set network.{self.name}.type='bridge'
-uci set network.{self.name}.name='{self.name}'
-"""
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=device",
+            f"uci set network.{self.name}.type='bridge'",
+            f"uci set network.{self.name}.name='{self.name}'",
+        )
+
         if self.ports is not None:
-            string += f"""uci add_list network.{self.name}.ports='{self.ports}'
-"""
-        return string
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.ports='{self.ports}'"
+            )
+        return self.builded_string
 
 
 class UCINetGlobals(UCIConfig):
@@ -240,10 +253,11 @@ class UCINetGlobals(UCIConfig):
         Returns:
             str: The UCI configuration string.
         """
-        string = f"""uci set network.{self.name}=globals
-uci set network.{self.name}.ula_prefix='{self.ula_prefix}'
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=globals",
+            f"uci set network.{self.name}.ula_prefix='{self.ula_prefix}'",
+        )
+        return self.builded_string
 
 
 class UCISwitch(UCIConfig):
@@ -270,15 +284,17 @@ class UCISwitch(UCIConfig):
         Returns:
             str: The UCI configuration string.
         """
-        string = f"""uci set network.{self.name}=switch
-uci set network.{self.name}.name='{self.name}'
-uci set network.{self.name}.reset='1'
-uci set network.{self.name}.enable_vlan='1'
-"""
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=switch",
+            f"uci set network.{self.name}.name='{self.name}'",
+            f"uci set network.{self.name}.reset='1'",
+            f"uci set network.{self.name}.enable_vlan='1'",
+        )
         if self.ports is not None:
-            string += f"""uci set network.{self.name}.ports='{self.ports}'
-"""
-        return string
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.ports='{self.ports}'"
+            )
+        return self.builded_string
 
 
 class UCIInterface(UCIConfig):
@@ -346,35 +362,44 @@ class UCIInterface(UCIConfig):
         Returns:
             str: The UCI configuration string.
         """
-        string = f"""uci set network.{self.name}=interface
-uci set network.{self.name}.proto='{self.proto}'
-"""
-        if self.ip is not None:
-            string += f"""uci set network.{self.name}.ipaddr='{self.ip}'
-"""
-        if self.mask is not None:
-            string += f"""uci set network.{self.name}.netmask='{self.mask}'
-"""
-        if self.device is not None:
-            string += f"""uci set network.{self.name}.device='{self.device.name}'
-"""
-        if self.ip6addr is not None:
-            string += f"""uci set network.{self.name}.ip6addr='{self.ip6addr}'
-"""
-        if self.ip6gw is not None:
-            string += f"""uci set network.{self.name}.ip6gw='{self.ip6gw}'
-"""
-        if self.ip6prefix is not None:
-            string += f"""uci set network.{self.name}.ip6prefix='{self.ip6prefix}'
-"""
-        if self.ip6class is not None:
-            string += f"""uci set network.{self.name}.ip6class='{self.ip6class}'
-"""
-        if self.ip6assign is not None:
-            string += f"""uci set network.{self.name}.ip6assign='{self.ip6assign}'
-"""
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=interface",
+            f"uci set network.{self.name}.proto='{self.proto}'",
+        )
 
-        return string
+        if self.ip is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.ipaddr='{self.ip}'"
+            )
+        if self.mask is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.netmask='{self.mask}'"
+            )
+        if self.device is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.device='{self.device.name}'"
+            )
+        if self.ip6addr is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.ip6addr='{self.ip6addr}'"
+            )
+        if self.ip6gw is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.ip6gw='{self.ip6gw}'"
+            )
+        if self.ip6prefix is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.ip6prefix='{self.ip6prefix}'"
+            )
+        if self.ip6class is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.ip6class='{self.ip6class}'"
+            )
+        if self.ip6assign is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.ip6assign='{self.ip6assign}'"
+            )
+        return self.builded_string
 
 
 class UCIRouteRule(UCIConfig):
@@ -405,11 +430,12 @@ class UCIRouteRule(UCIConfig):
         Returns:
             str: The UCI configuration string.
         """
-        string = f"""uci set network.{self.name}=rule
-uci set network.{self.name}.src='{self.src}'
-uci set network.{self.name}.lookup='{self.lookup}'
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=rule",
+            f"uci set network.{self.name}.src='{self.src}'",
+            f"uci set network.{self.name}.lookup='{self.lookup}'",
+        )
+        return self.builded_string
 
 
 class UCIRoute(UCIConfig):
@@ -448,15 +474,17 @@ class UCIRoute(UCIConfig):
         Returns:
             str: The UCI configuration string.
         """
-        string = f"""uci set network.{self.name}=route
-uci set network.{self.name}.target='{self.target}'
-uci set network.{self.name}.gateway='{self.gateway}'
-uci set network.{self.name}.interface='{self.interface.name}'
-"""
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=route",
+            f"uci set network.{self.name}.target='{self.target}'",
+            f"uci set network.{self.name}.gateway='{self.gateway}'",
+            f"uci set network.{self.name}.interface='{self.interface.name}'",
+        )
         if self.table is not None:
-            string += f"""uci set network.{self.name}.table='{self.table}'
-"""
-        return string
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.table='{self.table}'"
+            )
+        return self.builded_string
 
 
 class UCIRoute6(UCIConfig):
@@ -495,15 +523,17 @@ class UCIRoute6(UCIConfig):
         Returns:
             str: The UCI configuration string.
         """
-        string = f"""uci set network.{self.name}=route6
-uci set network.{self.name}.target='{self.target}'
-uci set network.{self.name}.gateway='{self.gateway}'
-uci set network.{self.name}.interface='{self.interface.name}'
-"""
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=route6",
+            f"uci set network.{self.name}.target='{self.target}'",
+            f"uci set network.{self.name}.gateway='{self.gateway}'",
+            f"uci set network.{self.name}.interface='{self.interface.name}'",
+        )
         if self.table is not None:
-            string += f"""uci set network.{self.name}.table='{self.table}'
-"""
-        return string
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.table='{self.table}'"
+            )
+        return self.builded_string
 
 
 class UCINoIPInterface(UCIConfig):
@@ -527,10 +557,11 @@ class UCINoIPInterface(UCIConfig):
         Returns:
             str: The UCI configuration string.
         """
-        string = f"""uci set network.{self.name}=interface
-uci set network.{self.name}.device={self.device.name}
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=interface",
+            f"uci set network.{self.name}.device='{self.device.name}'",
+        )
+        return self.builded_string
 
 
 class UCISwitchVlan(UCIConfig):
@@ -567,12 +598,13 @@ class UCISwitchVlan(UCIConfig):
         Returns:
             str: The UCI configuration string.
         """
-        string = f"""uci set network.{self.name}=switch_vlan
-uci set network.{self.name}.device='{self.device.name}'
-uci set network.{self.name}.vlan='{self.vid}'
-uci set network.{self.name}.ports='{self.ports}'
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=switch_vlan",
+            f"uci set network.{self.name}.device='{self.device.name}'",
+            f"uci set network.{self.name}.vlan='{self.vid}'",
+            f"uci set network.{self.name}.ports='{self.ports}'",
+        )
+        return self.builded_string
 
 
 # ---------------------------------------------------------------------------- #
@@ -832,19 +864,21 @@ class UCIWifiDevice(UCIConfig):
         self.disabled = disabled
 
     def uci_build_string(self):
-        string = f"""uci set wireless.{self.name}=wifi-device
-uci set wireless.{self.name}.type='{self.type}'
-uci set wireless.{self.name}.path='{self.path}'
-uci set wireless.{self.name}.channel='{self.channel}'
-uci set wireless.{self.name}.htmode='{self.htmode}'
-uci set wireless.{self.name}.country='{self.country}'
-uci set wireless.{self.name}.band='{self.band}'
-uci set wireless.{self.name}.disabled='{self.disabled}'
-"""
+        self.contatenate_uci_commands(
+            f"uci set wireless.{self.name}=wifi-device",
+            f"uci set wireless.{self.name}.type='{self.type}'",
+            f"uci set wireless.{self.name}.path='{self.path}'",
+            f"uci set wireless.{self.name}.channel='{self.channel}'",
+            f"uci set wireless.{self.name}.htmode='{self.htmode}'",
+            f"uci set wireless.{self.name}.country='{self.country}'",
+            f"uci set wireless.{self.name}.band='{self.band}'",
+            f"uci set wireless.{self.name}.disabled='{self.disabled}'",
+        )
         if self.channels is not None:
-            string += f"""uci set wireless.{self.name}.channels='{self.channels}'
-"""
-        return string
+            self.contatenate_uci_commands(
+                f"uci set wireless.{self.name}.channels='{self.channels}'"
+            )
+        return self.builded_string
 
 
 class UCIWifiIface(UCIConfig):
@@ -885,16 +919,17 @@ class UCIWifiIface(UCIConfig):
         self.disabled = disabled
 
     def uci_build_string(self):
-        string = f"""uci set wireless.{self.name}=wifi-iface
-uci set wireless.{self.name}.device='{self.device.name}'
-uci set wireless.{self.name}.network='{self.network.name}'
-uci set wireless.{self.name}.mode='{self.mode}'
-uci set wireless.{self.name}.ssid='{self.ssid}'
-uci set wireless.{self.name}.encryption='{self.encryption}'
-uci set wireless.{self.name}.key='{self.key}'
-uci set wireless.{self.name}.disabled='{self.disabled}'
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set wireless.{self.name}=wifi-iface",
+            f"uci set wireless.{self.name}.device='{self.device.name}'",
+            f"uci set wireless.{self.name}.network='{self.network.name}'",
+            f"uci set wireless.{self.name}.mode='{self.mode}'",
+            f"uci set wireless.{self.name}.ssid='{self.ssid}'",
+            f"uci set wireless.{self.name}.encryption='{self.encryption}'",
+            f"uci set wireless.{self.name}.key='{self.key}'",
+            f"uci set wireless.{self.name}.disabled='{self.disabled}'",
+        )
+        return self.builded_string
 
 
 # ---------------------------------------------------------------------------- #
@@ -1026,14 +1061,15 @@ class UCIFirewallDefaults(UCIConfig):
         Returns:
             str: The UCI string representation of the defaults configuration.
         """
-        string = f"""uci set firewall.{self.name}.synflood_protect='1'
-uci set firewall.{self.name}.flow_offloading='1'
-uci set firewall.{self.name}.flow_offloading_hw='1'
-uci set firewall.{self.name}.input='ACCEPT'
-uci set firewall.{self.name}.output='ACCEPT'
-uci set firewall.{self.name}.forward='REJECT'
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set firewall.{self.name}.synflood_protect='1'",
+            f"uci set firewall.{self.name}.flow_offloading='1'",
+            f"uci set firewall.{self.name}.flow_offloading_hw='1'",
+            f"uci set firewall.{self.name}.input='ACCEPT'",
+            f"uci set firewall.{self.name}.output='ACCEPT'",
+            f"uci set firewall.{self.name}.forward='REJECT'",
+        )
+        return self.builded_string
 
 
 class UCIZone(UCIConfig):
@@ -1073,17 +1109,17 @@ class UCIZone(UCIConfig):
         Returns:
             str: The UCI string representation of the zone.
         """
-        string = f"""uci set firewall.{self.name}=zone
-uci set firewall.{self.name}.name='{self.name}'
-uci set firewall.{self.name}.network='{self.network.name}'
-uci set firewall.{self.name}.input='{self.input}'
-uci set firewall.{self.name}.output='{self.output}'
-uci set firewall.{self.name}.forward='{self.forward}'
-"""
+        self.contatenate_uci_commands(
+            f"uci set firewall.{self.name}=zone",
+            f"uci set firewall.{self.name}.name='{self.name}'",
+            f"uci set firewall.{self.name}.network='{self.network.name}'",
+            f"uci set firewall.{self.name}.input='{self.input}'",
+            f"uci set firewall.{self.name}.output='{self.output}'",
+            f"uci set firewall.{self.name}.forward='{self.forward}'",
+        )
         if self.is_wan_zone:
-            string += f"""uci set firewall.{self.name}.masq='1'
-"""
-        return string
+            self.contatenate_uci_commands(f"uci set firewall.{self.name}.masq='1'")
+        return self.builded_string
 
 
 class UCIRedirect4(UCIConfig):
@@ -1149,22 +1185,26 @@ class UCIRedirect4(UCIConfig):
         Returns:
             str: The UCI string representation of the redirect.
         """
-        string = f"""uci set firewall.{self.name}=redirect
-uci set firewall.{self.name}.name='{self.desc}'
-uci set firewall.{self.name}.target='DNAT'
-uci set firewall.{self.name}.src='{self.src.name}'
-uci set firewall.{self.name}.src_dport='{self.src_dport}'
-uci set firewall.{self.name}.dest='{self.dest.name}'
-uci set firewall.{self.name}.dest_ip='{self.dest_ip}'
-uci set firewall.{self.name}.dest_port='{self.dest_port}'
-"""
+        self.contatenate_uci_commands(
+            f"uci set firewall.{self.name}=redirect",
+            f"uci set firewall.{self.name}.name='{self.desc}'",
+            f"uci set firewall.{self.name}.target='DNAT'",
+            f"uci set firewall.{self.name}.src='{self.src.name}'",
+            f"uci set firewall.{self.name}.src_dport='{self.src_dport}'",
+            f"uci set firewall.{self.name}.dest='{self.dest.name}'",
+            f"uci set firewall.{self.name}.dest_ip='{self.dest_ip}'",
+            f"uci set firewall.{self.name}.dest_port='{self.dest_port}'",
+            f"uci set firewall.{self.name}.proto='{self.proto}'",
+        )
         if self.src_dip is not None:
-            string += f"""uci set firewall.{self.name}.src_dip='{self.src_dip}'
-"""
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.src_dip='{self.src_dip}'"
+            )
         if self.src_ip is not None:
-            string += f"""uci set firewall.{self.name}.src_ip='{self.src_ip}'
-"""
-        return string
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.src_ip='{self.src_ip}'"
+            )
+        return self.builded_string
 
 
 class UCIForwarding(UCIConfig):
@@ -1191,11 +1231,12 @@ class UCIForwarding(UCIConfig):
         Returns:
             str: The UCI string representation of the forwarding.
         """
-        string = f"""uci set firewall.{self.name}=forwarding
-uci set firewall.{self.name}.src='{self.src.name}'
-uci set firewall.{self.name}.dest='{self.dest.name}'
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set firewall.{self.name}=forwarding",
+            f"uci set firewall.{self.name}.src='{self.src.name}'",
+            f"uci set firewall.{self.name}.dest='{self.dest.name}'",
+        )
+        return self.builded_string
 
 
 class UCIRule(UCIConfig):
@@ -1268,34 +1309,42 @@ class UCIRule(UCIConfig):
         Returns:
             str: The UCI string representation of the rule.
         """
-        string = f"""uci set firewall.{self.name}=rule
-uci set firewall.{self.name}.name='{self.desc}'
-uci set firewall.{self.name}.proto='{self.proto}'
-uci set firewall.{self.name}.target='{self.target}'
-uci set firewall.{self.name}.family='{self.family}'
-"""
+        self.contatenate_uci_commands(
+            f"uci set firewall.{self.name}=rule",
+            f"uci set firewall.{self.name}.name='{self.desc}'",
+            f"uci set firewall.{self.name}.proto='{self.proto}'",
+            f"uci set firewall.{self.name}.target='{self.target}'",
+            f"uci set firewall.{self.name}.family='{self.family}'",
+        )
         if self.src is not None:
-            string += f"""uci set firewall.{self.name}.src='{self.src.name}'
-"""
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.src='{self.src.name}'"
+            )
         if self.src_ip is not None:
-            string += f"""uci set firewall.{self.name}.src_ip='{self.src_ip}'
-"""
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.src_ip='{self.src_ip}'"
+            )
         if self.src_port is not None:
-            string += f"""uci set firewall.{self.name}.src_port='{self.src_port}'
-"""
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.src_port='{self.src_port}'"
+            )
         if self.dest is not None:
-            string += f"""uci set firewall.{self.name}.dest='{self.dest.name}'
-"""
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.dest='{self.dest.name}'"
+            )
         if self.dest_ip is not None:
-            string += f"""uci set firewall.{self.name}.dest_ip='{self.dest_ip}'
-"""
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.dest_ip='{self.dest_ip}'"
+            )
         if self.dest_port is not None:
-            string += f"""uci set firewall.{self.name}.dest_port='{self.dest_port}'
-"""
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.dest_port='{self.dest_port}'"
+            )
         if self.icmp_type is not None:
-            string += f"""uci set firewall.{self.name}.icmp_type='{self.icmp_type}'
-"""
-        return string
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.icmp_type='{self.icmp_type}'"
+            )
+        return self.builded_string
 
 
 class UCISnat(UCIConfig):
@@ -1333,16 +1382,16 @@ class UCISnat(UCIConfig):
         Returns:
             str: The UCI string representation of the NAT rule.
         """
-        string = f"""uci set firewall.{self.name}=nat
-uci set firewall.{self.name}.name='{self.name}'
-uci set firewall.{self.name}.target='SNAT'
-uci set firewall.{self.name}.snat_ip='{self.wan_interface.ip}'
-uci set firewall.{self.name}.src='{self.lan_zone.name}'
-uci set firewall.{self.name}.src_ip='{self.lan_network}'
-uci set firewall.{self.name}.proto='all'
-"""
-
-        return string
+        self.contatenate_uci_commands(
+            f"uci set firewall.{self.name}=nat",
+            f"uci set firewall.{self.name}.name='{self.name}'",
+            f"uci set firewall.{self.name}.target='SNAT'",
+            f"uci set firewall.{self.name}.snat_ip='{self.wan_interface.ip}'",
+            f"uci set firewall.{self.name}.src='{self.lan_zone.name}'",
+            f"uci set firewall.{self.name}.src_ip='{self.lan_network}'",
+            f"uci set firewall.{self.name}.proto='all'",
+        )
+        return self.builded_string
 
 
 # ---------------------------------------------------------------------------- #
@@ -1400,29 +1449,31 @@ class UCIdnsmasq(UCIConfig):
         Raises:
         - None
         """
-        string = f"""uci set dhcp.{self.name}=dnsmasq
-uci set dhcp.{self.name}.domainneeded='1'
-uci set dhcp.{self.name}.authoritative='1'
-uci set dhcp.{self.name}.boguspriv='1'
-uci set dhcp.{self.name}.rebind_protection='1'
-uci set dhcp.{self.name}.rebind_localhost='1'
-uci set dhcp.{self.name}.localise_queries='1'
-uci set dhcp.{self.name}.filterwin2k='0'
-uci set dhcp.{self.name}.local='/lan/'
-uci set dhcp.{self.name}.domain='lan'
-uci set dhcp.{self.name}.expandhosts='1'
-uci set dhcp.{self.name}.nonegcache='0'
-uci set dhcp.{self.name}.readethers='1'
-uci set dhcp.{self.name}.leasefile='/tmp/dhcp.leases'
-uci set dhcp.{self.name}.resolvfile='/tmp/resolv.conf.d/resolv.conf.auto'
-uci set dhcp.{self.name}.nonwildcard='1'
-uci set dhcp.{self.name}.localservice='1'
-uci set dhcp.{self.name}.ednspacket_max='1232'
-"""
+        self.contatenate_uci_commands(
+            f"uci set dhcp.{self.name}=dnsmasq",
+            f"uci set dhcp.{self.name}.domainneeded='1'",
+            f"uci set dhcp.{self.name}.authoritative='1'",
+            f"uci set dhcp.{self.name}.boguspriv='1'",
+            f"uci set dhcp.{self.name}.rebind_protection='1'",
+            f"uci set dhcp.{self.name}.rebind_localhost='1'",
+            f"uci set dhcp.{self.name}.localise_queries='1'",
+            f"uci set dhcp.{self.name}.filterwin2k='0'",
+            f"uci set dhcp.{self.name}.local='/lan/'",
+            f"uci set dhcp.{self.name}.domain='lan'",
+            f"uci set dhcp.{self.name}.expandhosts='1'",
+            f"uci set dhcp.{self.name}.nonegcache='0'",
+            f"uci set dhcp.{self.name}.readethers='1'",
+            f"uci set dhcp.{self.name}.leasefile='/tmp/dhcp.leases'",
+            f"uci set dhcp.{self.name}.resolvfile='/tmp/resolv.conf.d/resolv.conf.auto'",
+            f"uci set dhcp.{self.name}.nonwildcard='1'",
+            f"uci set dhcp.{self.name}.localservice='1'",
+            f"uci set dhcp.{self.name}.ednspacket_max='1232'",
+        )
         for dns in self.dns_servers.value:
-            string += f"""uci add_list dhcp.{self.name}.server='{dns}'
-"""
-        return string
+            self.contatenate_uci_commands(
+                f"uci add_list dhcp.{self.name}.server='{dns}'"
+            )
+        return self.builded_string
 
 
 class UCIodchp(UCIConfig):
@@ -1451,13 +1502,14 @@ class UCIodchp(UCIConfig):
         Raises:
         - None
         """
-        string = f"""uci set dhcp.{self.name}=odhcpd
-uci set dhcp.{self.name}.maindhcp='0'
-uci set dhcp.{self.name}.leasefile='/tmp/hosts/odhcpd'
-uci set dhcp.{self.name}.leasetrigger='/usr/sbin/odhcpd-update'
-uci set dhcp.{self.name}.loglevel='{self.loglevel}'
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set dhcp.{self.name}=odhcpd",
+            f"uci set dhcp.{self.name}.maindhcp='0'",
+            f"uci set dhcp.{self.name}.leasefile='/tmp/hosts/odhcpd'",
+            f"uci set dhcp.{self.name}.leasetrigger='/usr/sbin/odhcpd-update'",
+            f"uci set dhcp.{self.name}.loglevel='{self.loglevel}'",
+        )
+        return self.builded_string
 
 
 class UCIDHCP(UCIConfig):
@@ -1495,13 +1547,14 @@ class UCIDHCP(UCIConfig):
         Raises:
         - None
         """
-        string = f"""uci set dhcp.{self.name}=dhcp
-uci set dhcp.{self.name}.interface='{self.interface.name}'
-uci set dhcp.{self.name}.start='{self.start}'
-uci set dhcp.{self.name}.limit='{self.limit}'
-uci set dhcp.{self.name}.leasetime='{self.leasetime}'
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set dhcp.{self.name}=dhcp",
+            f"uci set dhcp.{self.name}.interface='{self.interface.name}'",
+            f"uci set dhcp.{self.name}.start='{self.start}'",
+            f"uci set dhcp.{self.name}.limit='{self.limit}'",
+            f"uci set dhcp.{self.name}.leasetime='{self.leasetime}'",
+        )
+        return self.builded_string
 
 
 # ---------------------------------------------------------------------------- #
@@ -1534,9 +1587,10 @@ class UCIDropbear(UCIConfig):
         Raises:
         - None
         """
-        string = f"""uci set dropbear.{self.name}=dropbear
-uci set dropbear.{self.name}.PasswordAuth='off'
-uci set dropbear.{self.name}.RootPasswordAuth='off'
-uci set dropbear.{self.name}.Port='22'
-"""
-        return string
+        self.contatenate_uci_commands(
+            f"uci set dropbear.{self.name}=dropbear",
+            f"uci set dropbear.{self.name}.PasswordAuth='off'",
+            f"uci set dropbear.{self.name}.RootPasswordAuth='off'",
+            f"uci set dropbear.{self.name}.Port='22'",
+        )
+        return self.builded_string
