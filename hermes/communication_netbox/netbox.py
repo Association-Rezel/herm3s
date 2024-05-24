@@ -24,6 +24,7 @@ from .netbox_data_models import (
 )
 from .query_generator import create_query_interface, create_query_ip
 
+
 class NetboxInterface:
     """Gets and validates informations from Netbox using its GraphQL API"""
 
@@ -50,7 +51,7 @@ class NetboxInterface:
 
         Args :
             query (str) : query string"""
-        json_data_to_send = {"query": "query "+  query}
+        json_data_to_send = {"query": "query " + query}
         timeout = 999999
         response = requests.post(
             url=self.__url,

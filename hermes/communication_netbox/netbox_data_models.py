@@ -19,10 +19,12 @@ class IpAddress(BaseModel):
     custom_field_data: IpAddressCustomField | None = None
     nat_inside: IpAddress | None = None
 
+
 class WirelessLANCustomField(BaseModel):
     """Data model of :  custom field in Wireless LAN"""
 
     unet_id: str
+
 
 class WirelessLAN(BaseModel):
     """Data model of :  Wireless LAN"""
@@ -32,12 +34,14 @@ class WirelessLAN(BaseModel):
     auth_psk: str
     custom_field_data: WirelessLANCustomField
 
+
 class PFCustomField(BaseModel):
     """Data model of : custom field of service PF"""
 
     inside_port: int
     inside_ip_address: int
     PF_linked_WLAN: int
+
 
 class Service(BaseModel):
     """Data model of : Service"""
@@ -47,6 +51,7 @@ class Service(BaseModel):
     ipaddresses: list[IpAddress]
     ports: list[int]
     custom_field_data: PFCustomField
+
 
 class Device(BaseModel):
     """Data model of : Device"""
