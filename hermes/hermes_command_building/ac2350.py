@@ -112,7 +112,6 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         )
         self.firewall_commands.append(self.rule_daemon_mgt)
 
-
         # DHCP Configuration
         self.dhcp_commands.append(UCI.UCIdnsmasq(dns_servers))
         self.dhcp_commands.append(UCI.UCIodchp())
@@ -555,6 +554,7 @@ class HermesPortForwarding(ccb.HermesConfigBuilder):
         )
         self.firewall_commands.append(self.port_forwarding)
 
+
 class HermesIPv6PortOpening(ccb.HermesConfigBuilder):
     """Represents a port opening configuration for IPv6"""
 
@@ -585,6 +585,7 @@ class HermesIPv6PortOpening(ccb.HermesConfigBuilder):
             family="ipv6",
         )
         self.firewall_commands.append(self.ipv6_port_opening)
+
 
 if __name__ == "__main__":
     # Testing the HermesConfigBuilder
