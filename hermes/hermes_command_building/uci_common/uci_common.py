@@ -1077,12 +1077,20 @@ class UCIZone(UCIConfig):
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#zones
     """
 
+    network: UCIInterface
+    input: InOutForw
+    output: InOutForw
+    forward: InOutForw
+    family: Family
+    is_wan_zone: bool
+
     def __init__(
         self,
         network: UCIInterface,
         _input: InOutForw,
         output: InOutForw,
         forward: InOutForw,
+        family: Family = None,
         is_wan_zone: bool = False,
     ):
         """
@@ -1100,6 +1108,7 @@ class UCIZone(UCIConfig):
         self.input = _input
         self.output = output
         self.forward = forward
+        self.family = family
         self.is_wan_zone = is_wan_zone
 
     def uci_build_string(self):
@@ -1119,6 +1128,10 @@ class UCIZone(UCIConfig):
         )
         if self.is_wan_zone:
             self.contatenate_uci_commands(f"uci set firewall.{self.name}.masq='1'")
+        if self.family is not None:
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.family='{self.family}'"
+            )
         return self.builded_string
 
 
@@ -1553,6 +1566,7 @@ class UCIDHCP(UCIConfig):
             f"uci set dhcp.{self.name}.start='{self.start}'",
             f"uci set dhcp.{self.name}.limit='{self.limit}'",
             f"uci set dhcp.{self.name}.leasetime='{self.leasetime}'",
+            f"uci set dhcp.{self.name}.ra='server'",
         )
         return self.builded_string
 
