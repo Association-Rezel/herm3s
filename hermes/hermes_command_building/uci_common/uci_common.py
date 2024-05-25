@@ -1,5 +1,5 @@
 import re
-from netaddr import IPAddress, IPNetwork
+from netaddr import IPAddress, IPNetwork, EUI, mac_unix_expanded
 
 
 class Attribute:
@@ -984,8 +984,10 @@ class Protocol(Attribute):
         Raises:
             ValueError: If the protocol value is invalid.
         """
-        if value not in ["tcp", "udp", "udplite", "icmp", "ah", "esp", "sctp", "all"]:
-            raise ValueError("Invalid Protocol")
+
+        for val in value.split(" "): # It can be a list of protocols
+            if val not in ["tcp", "udp", "udplite", "icmp", "ah", "esp", "sctp", "all"]:
+                raise ValueError("Invalid Protocol")
         self.value = value
 
 
@@ -1430,6 +1432,23 @@ class DnsServers(Attribute):
                 raise ValueError("Invalid DNS Servers")
         self.value = value
 
+class DUid(Attribute):
+    """Object used to store the DUID of a DHCP client"""
+
+    def __init__(self, value: str):
+        """
+        Initialize a DUid object.
+
+        Args:
+            value (str): The DUID value.
+
+        Raises:
+            ValueError: If the DUID value is invalid.
+        """
+        if re.match(r"^[0-9a-f]{2}(:[0-9a-f]{2}){1,127}$", value) is None:
+            raise ValueError("Invalid DUID")
+        self.value = value
+
 
 class UCIdnsmasq(UCIConfig):
     """Used to create a DNS server
@@ -1569,6 +1588,73 @@ class UCIDHCP(UCIConfig):
             f"uci set dhcp.{self.name}.ra='server'",
         )
         return self.builded_string
+    
+class UCIHost(UCIConfig):
+    """Used to create a DHCP static lease
+    See https://openwrt.org/docs/guide-user/base-system/dhcp#static_leases
+    And https://openwrt.org/docs/guide-user/base-system/dhcp_configuration#static_leases
+    """
+    ip: IPAddress
+    mac: EUI
+    hostid: str
+    duid: DUid
+    hostname: str
+
+    def __init__(
+            self,
+            unetid: UNetId,
+            hostname: str,
+            ip: IPAddress = None,
+            mac: EUI = None,
+            hostid: str = None,
+            duid: DUid = None,
+        ):
+        """
+        Initialize the UCIHost object.
+
+        Parameters:
+        - ip (IPAddress): The IP address for the static lease.
+        - mac (EUI): The MAC address of the target. Defaults to None.
+        - hostid (str): The host ID. Defaults to None.
+        - duid (DUid): The DUID of the target. Defaults to None.
+        - hostname (str): The hostname of the target.
+        """
+        super().__init__(f"{unetid}_{hostname}")
+        self.ip = ip
+        self.mac = mac
+        self.hostid = hostid
+        self.duid = duid
+        self.hostname = hostname
+    
+    def uci_build_string(self):
+        """
+        Build the UCI configuration string for the UCIHost object.
+
+        Returns:
+        - string (str): The UCI configuration string.
+        """
+        self.contatenate_uci_commands(
+            f"uci set dhcp.{self.name}=host",
+            f"uci set dhcp.{self.name}.name='{self.hostname}'",
+        )
+        if self.ip is not None:
+            self.contatenate_uci_commands(
+                f"uci set dhcp.{self.name}.ip='{self.ip}'"
+            )
+        if self.mac is not None:
+            self.contatenate_uci_commands(
+                f"uci set dhcp.{self.name}.mac='{self.mac.format(dialect=mac_unix_expanded)}'"
+            )
+        if self.hostid is not None:
+            self.contatenate_uci_commands(
+                f"uci set dhcp.{self.name}.hostid='{self.hostid}'"
+            )
+        if self.duid is not None:
+            self.contatenate_uci_commands(
+                f"uci set dhcp.{self.name}.duid='{self.duid}'"
+            )
+        return self.builded_string
+
 
 
 # ---------------------------------------------------------------------------- #
