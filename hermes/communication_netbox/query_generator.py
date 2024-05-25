@@ -22,14 +22,18 @@ def camel_to_snake(string: str):
             result.append(c)
     return string[0] + "".join(result)
 
+
 def create_query_interface(mac: str) -> str:
     """create a query string to get the informations about a box from its MAC address
 
     Args :
         mac (str) : the MAC address of the box"""
-    query = """
+    query = (
+        """
 {
-  interface_list(filters : {mac_address: \"""" + mac + """\"}) {
+  interface_list(filters : {mac_address: \""""
+        + mac
+        + """\"}) {
     name
     ip_addresses {
       address
@@ -61,17 +65,23 @@ def create_query_interface(mac: str) -> str:
     }
   }
 }"""
+    )
     return query
+
 
 def create_query_ip(ip_id: int):
     """create a query string to get the ip address bearing a certain IP
 
     Args :
         id (int) : id of the ip"""
-    
-    query = """{
-  ip_address(id: """+str(ip_id)+""") {
+
+    query = (
+        """{
+  ip_address(id: """
+        + str(ip_id)
+        + """) {
     address
   }
 }"""
+    )
     return query

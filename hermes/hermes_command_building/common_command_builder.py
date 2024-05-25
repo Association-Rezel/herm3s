@@ -46,7 +46,10 @@ class UCIDHCPConfig(UCITypeConfig):
         self.commands = ""
 
     def build(self) -> str:
-        return self.commands + "uci commit\nservice dnsmasq restart\n"
+        return (
+            self.commands
+            + "uci commit\nservice dnsmasq restart\nservice odhcpd restart\n"
+        )
 
 
 class UCIWirelessConfig(UCITypeConfig):
