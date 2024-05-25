@@ -530,6 +530,36 @@ class HermesPortForwarding(ccb.HermesConfigBuilder):
         )
         self.firewall_commands.append(self.port_forwarding)
 
+class HermesIPv6PortOpening(ccb.HermesConfigBuilder):
+    """Represents a port opening configuration for IPv6"""
+
+    ipv6_port_opening: UCI.UCIRule
+
+    def __init__(
+        self,
+        unetid: UCI.UNetId,
+        name: UCI.UCISectionName,
+        desc: UCI.Description,
+        src: UCI.UCIZone,
+        dest: UCI.UCIZone,
+        dest_ip: UCI.IPAddress,
+        dest_port: UCI.TCPUDPPort,
+        proto: UCI.Protocol,
+    ):
+        super().__init__()
+        self.ipv6_port_opening = UCI.UCIRule(
+            unetid=unetid,
+            name=name,
+            desc=desc,
+            src=src,
+            dest=dest,
+            dest_ip=dest_ip,
+            dest_port=dest_port,
+            proto=proto,
+            target=UCI.Target("ACCEPT"),
+            family="ipv6",
+        )
+        self.firewall_commands.append(self.ipv6_port_opening)
 
 if __name__ == "__main__":
     # Testing the HermesConfigBuilder
@@ -641,6 +671,18 @@ if __name__ == "__main__":
         proto=UCI.Protocol("tcp"),
     )
     main_port_forwarding.build_firewall(Fireconf)
+
+    ipv6_port_opening = HermesIPv6PortOpening(
+        unetid=UCI.UNetId("bbbbbbbb"),
+        name=UCI.UCISectionName("http_to_internal_ipv6"),
+        desc=UCI.Description("HTTP IPv6 Opening"),
+        src=secondary_user.wan6_zone,
+        dest=secondary_user.lan_zone,
+        dest_ip=UCI.IPAddress("2a09:6847:402:0:ee2:7ff:fe59:0"),
+        dest_port=UCI.TCPUDPPort(80),
+        proto=UCI.Protocol("tcp"),
+    )
+    ipv6_port_opening.build_firewall(Fireconf)
 
     print(Netconf.build())
     print(Fireconf.build())
