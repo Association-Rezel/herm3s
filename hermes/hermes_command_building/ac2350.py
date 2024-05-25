@@ -80,13 +80,38 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         self.rule_icmpv6_mgt = UCI.UCIRule(
             unetid="managemen",
             name=UCI.UCISectionName("mgt_allow_ping"),
-            desc=UCI.Description("Allow ICMPv6 to WAN6"),
+            desc=UCI.Description("Allow ICMPv6 to MGT"),
             src=self.mgt_zone,
             proto=UCI.Protocol("icmp"),
             target=UCI.Target("ACCEPT"),
             family="ipv6",
         )
         self.firewall_commands.append(self.rule_icmpv6_mgt)
+
+        self.rule_ssh_mgt = UCI.UCIRule(
+            unetid="managemen",
+            name=UCI.UCISectionName("mgt_allow_ssh"),
+            desc=UCI.Description("Allow ssh to MGT"),
+            src=self.mgt_zone,
+            dest_port=UCI.TCPUDPPort(22),
+            proto=UCI.Protocol("tcp"),
+            target=UCI.Target("ACCEPT"),
+            family="ipv6",
+        )
+        self.firewall_commands.append(self.rule_ssh_mgt)
+
+        self.rule_daemon_mgt = UCI.UCIRule(
+            unetid="managemen",
+            name=UCI.UCISectionName("mgt_allow_daemon"),
+            desc=UCI.Description("Allow deamon to MGT"),
+            src=self.mgt_zone,
+            dest_port=UCI.TCPUDPPort(50051),
+            proto=UCI.Protocol("tcp"),
+            target=UCI.Target("ACCEPT"),
+            family="ipv6",
+        )
+        self.firewall_commands.append(self.rule_daemon_mgt)
+
 
         # DHCP Configuration
         self.dhcp_commands.append(UCI.UCIdnsmasq(dns_servers))
