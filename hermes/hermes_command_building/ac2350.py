@@ -146,6 +146,12 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
 
 
 class HermesUser(ccb.HermesConfigBuilder):
+    """Represents a user configuration for the router
+    Herits from HermesConfigBuilder
+    """
+
+    unetid: UCI.UNetId
+    lan_vlan: int
     br_lan: UCI.UCIBridge
     lan_int: UCI.UCIInterface
     wan_int: UCI.UCIInterface
@@ -198,6 +204,8 @@ class HermesUser(ccb.HermesConfigBuilder):
             default_router6 (UCI.IPAddress): The default IPv6 router
         """
         super().__init__()
+        self.unetid = unetid
+        self.lan_vlan = lan_vlan
 
         # Network Configuration
 
@@ -586,6 +594,8 @@ class HermesIPv6PortOpening(ccb.HermesConfigBuilder):
         )
         self.firewall_commands.append(self.ipv6_port_opening)
 
+
+# For the next 3 classes: its work in progress
 class HermesStaticDHCPLease(ccb.HermesConfigBuilder):
     """Represents a static DHCP lease configuration"""
 
@@ -593,12 +603,12 @@ class HermesStaticDHCPLease(ccb.HermesConfigBuilder):
 
     def __init__(
         self,
-            unetid: UCI.UNetId,
-            hostname: str,
-            ip: UCI.IPAddress = None,
-            mac: UCI.EUI = None,
-            hostid: str = None,
-            duid: UCI.DUid = None,
+        unetid: UCI.UNetId,
+        hostname: str,
+        ip: UCI.IPAddress = None,
+        mac: UCI.EUI = None,
+        hostid: str = None,
+        duid: UCI.DUid = None,
     ):
         super().__init__()
         self.static_dhcp_lease = UCI.UCIHost(
@@ -611,7 +621,8 @@ class HermesStaticDHCPLease(ccb.HermesConfigBuilder):
         )
         self.dhcp_commands.append(self.static_dhcp_lease)
 
-class HermesIPv6PrefDelegation(ccb.HermesConfigBuilder):
+
+class HermesDynIPv6PrefDelegation(ccb.HermesConfigBuilder):
     """
     Represents a IPv6 prefix delegation configuration
     See https://openwrt.org/docs/guide-user/firewall/fw3_configurations/fw3_ipv6_examples#dynamic_prefix_forwarding
@@ -620,15 +631,15 @@ class HermesIPv6PrefDelegation(ccb.HermesConfigBuilder):
     ipv6_pref_delegation: UCI.UCIRule
 
     def __init__(
-            self,
-            associated_lease: HermesStaticDHCPLease, 
-            unetid: UCI.UNetId,
-            name: UCI.UCISectionName,
-            desc: UCI.Description,
-            src: UCI.UCIZone,
-            dest: UCI.UCIZone,
-            proto: UCI.Protocol = "tcp udp icmp",
-        ):
+        self,
+        associated_lease: HermesStaticDHCPLease,
+        unetid: UCI.UNetId,
+        name: UCI.UCISectionName,
+        desc: UCI.Description,
+        src: UCI.UCIZone,
+        dest: UCI.UCIZone,
+        proto: UCI.Protocol = "tcp udp icmp",
+    ):
         super().__init__()
         self.ipv6_pref_delegation = UCI.UCIRule(
             unetid=unetid,
@@ -642,6 +653,53 @@ class HermesIPv6PrefDelegation(ccb.HermesConfigBuilder):
             family="ipv6",
         )
         self.firewall_commands.append(self.ipv6_pref_delegation)
+
+
+class HermesStaticIPv6PrefDelegation(ccb.HermesConfigBuilder):
+    """
+    Represents a static IPv6 prefix delegation configuration
+    """
+
+    def __init__(
+        self,
+        name: UCI.UCISectionName,
+        user: HermesUser,
+        dest_router: UCI.IPAddress,
+        prefix: UCI.IPNetwork,
+    ):
+        super().__init__()
+
+        self.route6 = UCI.UCIRoute(
+            unetid=user.unetid,
+            name_prefix=name,
+            target=prefix,
+            gateway=dest_router,
+            interface=user.lan_int,
+            table=int(f"7{str(user.lan_vlan).zfill(2)}"),
+        )
+        self.network_commands.append(self.route6)
+
+        self.route6_rule = UCI.UCIRouteRule(
+            name=UCI.UCISectionName(f"{user.unetid}_{name}_rule"),
+            dest=prefix,
+            lookup=self.route6.table,
+        )
+        self.network_commands.append(self.route6_rule)
+
+        self.ipset = UCI.UCIIpset(
+            name=UCI.UCISectionName(f"{user.unetid}_set_{name}"),
+            match=UCI.MatchIPSet("net_dest"),
+            entry=[UCI.IPNetwork(prefix)],
+        )
+        self.firewall_commands.append(self.ipset)
+
+        self.forwarding = UCI.UCIForwarding(
+            src=user.wan6_zone,
+            dest=user.lan_zone,
+            ipset=self.ipset,
+            optional_name_suffix=name,
+        )
+        self.firewall_commands.append(self.forwarding)
 
 
 if __name__ == "__main__":
@@ -767,23 +825,32 @@ if __name__ == "__main__":
     )
     ipv6_port_opening.build_firewall(Fireconf)
 
-    static_dhcp_lease = HermesStaticDHCPLease(
-        unetid=UCI.UNetId("bbbbbbbb"),
-        hostname="test",
-        hostid="24",
-        mac=UCI.EUI("0c:7b:2c:7e:00:00"),
-    )
-    static_dhcp_lease.build_dhcp(Dhcpconf)
+    # static_dhcp_lease = HermesStaticDHCPLease(
+    #     unetid=UCI.UNetId("bbbbbbbb"),
+    #     hostname="test",
+    #     hostid="24",
+    #     mac=UCI.EUI("0c:7b:2c:7e:00:00"),
+    # )
+    # static_dhcp_lease.build_dhcp(Dhcpconf)
 
-    ipv6_pref_delegation = HermesIPv6PrefDelegation(
-        associated_lease=static_dhcp_lease,
-        unetid=UCI.UNetId("bbbbbbbb"),
-        name=UCI.UCISectionName("ipv6_pref_delegation"),
-        desc=UCI.Description("IPv6 prefix delegation"),
-        src=secondary_user.wan6_zone,
-        dest=secondary_user.lan_zone,
+    # ipv6_pref_delegation = HermesDynIPv6PrefDelegation(
+    #     associated_lease=static_dhcp_lease,
+    #     unetid=UCI.UNetId("bbbbbbbb"),
+    #     name=UCI.UCISectionName("ipv6_pref_delegation"),
+    #     desc=UCI.Description("IPv6 prefix delegation"),
+    #     src=secondary_user.wan6_zone,
+    #     dest=secondary_user.lan_zone,
+    # )
+    # ipv6_pref_delegation.build_firewall(Fireconf)
+
+    static_ipv6_pref_delegation = HermesStaticIPv6PrefDelegation(
+        name=UCI.UCISectionName("ip6_pref_deleg_1"),
+        user=secondary_user,
+        dest_router=UCI.IPAddress("2a09:6847:402:0:ee2:7ff:fe59:0"),
+        prefix=UCI.IPNetwork("2a09:6847:0402:3::/64"),
     )
-    ipv6_pref_delegation.build_firewall(Fireconf)
+    static_ipv6_pref_delegation.build_network(Netconf)
+    static_ipv6_pref_delegation.build_firewall(Fireconf)
 
     print(Netconf.build())
     print(Fireconf.build())

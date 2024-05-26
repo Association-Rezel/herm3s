@@ -407,11 +407,16 @@ class UCIRouteRule(UCIConfig):
     See https://openwrt.org/docs/guide-user/network/routing/ip_rules
     """
 
+    src: IPNetwork
+    lookup: int
+    dest: IPNetwork
+
     def __init__(
         self,
         name: UCISectionName,
-        src: IPNetwork,
         lookup: int,
+        src: IPNetwork = None,
+        dest: IPNetwork = None,
     ):
         """Initialize the UCIRouteRule object
 
@@ -423,6 +428,7 @@ class UCIRouteRule(UCIConfig):
         super().__init__(name)
         self.src = src
         self.lookup = lookup
+        self.dest = dest
 
     def uci_build_string(self):
         """Build the UCI configuration string for UCIRouteRule
@@ -432,9 +438,16 @@ class UCIRouteRule(UCIConfig):
         """
         self.contatenate_uci_commands(
             f"uci set network.{self.name}=rule",
-            f"uci set network.{self.name}.src='{self.src}'",
             f"uci set network.{self.name}.lookup='{self.lookup}'",
         )
+        if self.src is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.src='{self.src}'"
+            )
+        if self.dest is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.dest='{self.dest}'"
+            )
         return self.builded_string
 
 
@@ -985,7 +998,7 @@ class Protocol(Attribute):
             ValueError: If the protocol value is invalid.
         """
 
-        for val in value.split(" "): # It can be a list of protocols
+        for val in value.split(" "):  # It can be a list of protocols
             if val not in ["tcp", "udp", "udplite", "icmp", "ah", "esp", "sctp", "all"]:
                 raise ValueError("Invalid Protocol")
         self.value = value
@@ -1045,6 +1058,28 @@ class Family(Attribute):
         self.value = value
 
 
+class MatchIPSet(Attribute):
+    """Object used to store the match ipset of a firewall rule"""
+
+    def __init__(self, value: str):
+        """
+        Initialize a MatchIPSet object.
+
+        Args:
+            value (str): The match ipset value.
+
+        Raises:
+            ValueError: If the match ipset value is invalid.
+        """
+        if re.match(r"^[a-z]{3,4}_[a-z]{3,4}$", value) is None:
+            raise ValueError("Invalid MatchIPSet")
+        if value.split("_")[0] not in ["ip", "port", "mac", "net", "set"]:
+            raise ValueError("Invalid MatchIPSet")
+        if value.split("_")[1] not in ["src", "dest"]:
+            raise ValueError("Invalid MatchIPSet")
+        self.value = value
+
+
 class UCIFirewallDefaults(UCIConfig):
     """Used to create a default firewall configuration
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#defaults
@@ -1071,6 +1106,52 @@ class UCIFirewallDefaults(UCIConfig):
             f"uci set firewall.{self.name}.output='ACCEPT'",
             f"uci set firewall.{self.name}.forward='REJECT'",
         )
+        return self.builded_string
+
+
+class UCIIpset(UCIConfig):
+    """Used to create a fw4 ipset
+    See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#options_fw4
+    """
+
+    def __init__(
+        self,
+        name: UCISectionName,
+        match: MatchIPSet,
+        entry: list[IPNetwork],
+        family: Family = Family("ipv6"),
+    ):
+        """
+        Initialize a UCIIpset object.
+
+        Args:
+            name (UCISectionName): The name of the ipset.
+            ipset_type (str): The type of the ipset.
+            storage (str, optional): The storage type. Defaults to "hash".
+        """
+        super().__init__(name)
+        self.match = match
+        self.entry = entry
+        self.family = family
+
+    def uci_build_string(self):
+        """
+        Build the UCI string representation of the ipset.
+
+        Returns:
+            str: The UCI string representation of the ipset.
+        """
+        self.contatenate_uci_commands(
+            f"uci set firewall.{self.name}=ipset",
+            f"uci set firewall.{self.name}.name='{self.name}'",
+            f"uci set firewall.{self.name}.match='{self.match}'",
+            f"uci set firewall.{self.name}.family='{self.family}'",
+        )
+        for entry in self.entry:
+            self.contatenate_uci_commands(
+                f"uci add_list firewall.{self.name}.entry='{entry}'"
+            )
+
         return self.builded_string
 
 
@@ -1227,7 +1308,13 @@ class UCIForwarding(UCIConfig):
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#forwardings
     """
 
-    def __init__(self, src: UCIZone, dest: UCIZone):
+    def __init__(
+        self,
+        src: UCIZone,
+        dest: UCIZone,
+        ipset: UCIIpset = None,
+        optional_name_suffix: str = "",
+    ):
         """
         Initialize a UCIForwarding object.
 
@@ -1235,9 +1322,10 @@ class UCIForwarding(UCIConfig):
             src (UCIZone): The source zone.
             dest (UCIZone): The destination zone.
         """
-        super().__init__(f"forwarding_{src.name}_{dest.name}")
+        super().__init__(f"forwarding_{src.name}_{dest.name}_{optional_name_suffix}")
         self.src = src
         self.dest = dest
+        self.ipset = ipset
 
     def uci_build_string(self):
         """
@@ -1251,6 +1339,10 @@ class UCIForwarding(UCIConfig):
             f"uci set firewall.{self.name}.src='{self.src.name}'",
             f"uci set firewall.{self.name}.dest='{self.dest.name}'",
         )
+        if self.ipset is not None:
+            self.contatenate_uci_commands(
+                f"uci set firewall.{self.name}.ipset='{self.ipset.name}'"
+            )
         return self.builded_string
 
 
@@ -1285,7 +1377,7 @@ class UCIRule(UCIConfig):
         dest: UCIZone = None,
         dest_port: TCPUDPPort = None,
         icmp_type: str = None,
-        family: Family = "ipv4",
+        family: Family = Family("ipv4"),
     ):
         """
         Initialize a UCIRule object.
@@ -1431,6 +1523,7 @@ class DnsServers(Attribute):
             if not isinstance(ip, IPAddress):
                 raise ValueError("Invalid DNS Servers")
         self.value = value
+
 
 class DUid(Attribute):
     """Object used to store the DUID of a DHCP client"""
@@ -1588,12 +1681,14 @@ class UCIDHCP(UCIConfig):
             f"uci set dhcp.{self.name}.ra='server'",
         )
         return self.builded_string
-    
+
+
 class UCIHost(UCIConfig):
     """Used to create a DHCP static lease
     See https://openwrt.org/docs/guide-user/base-system/dhcp#static_leases
     And https://openwrt.org/docs/guide-user/base-system/dhcp_configuration#static_leases
     """
+
     ip: IPAddress
     mac: EUI
     hostid: str
@@ -1601,14 +1696,14 @@ class UCIHost(UCIConfig):
     hostname: str
 
     def __init__(
-            self,
-            unetid: UNetId,
-            hostname: str,
-            ip: IPAddress = None,
-            mac: EUI = None,
-            hostid: str = None,
-            duid: DUid = None,
-        ):
+        self,
+        unetid: UNetId,
+        hostname: str,
+        ip: IPAddress = None,
+        mac: EUI = None,
+        hostid: str = None,
+        duid: DUid = None,
+    ):
         """
         Initialize the UCIHost object.
 
@@ -1625,7 +1720,7 @@ class UCIHost(UCIConfig):
         self.hostid = hostid
         self.duid = duid
         self.hostname = hostname
-    
+
     def uci_build_string(self):
         """
         Build the UCI configuration string for the UCIHost object.
@@ -1638,9 +1733,7 @@ class UCIHost(UCIConfig):
             f"uci set dhcp.{self.name}.name='{self.hostname}'",
         )
         if self.ip is not None:
-            self.contatenate_uci_commands(
-                f"uci set dhcp.{self.name}.ip='{self.ip}'"
-            )
+            self.contatenate_uci_commands(f"uci set dhcp.{self.name}.ip='{self.ip}'")
         if self.mac is not None:
             self.contatenate_uci_commands(
                 f"uci set dhcp.{self.name}.mac='{self.mac.format(dialect=mac_unix_expanded)}'"
@@ -1654,7 +1747,6 @@ class UCIHost(UCIConfig):
                 f"uci set dhcp.{self.name}.duid='{self.duid}'"
             )
         return self.builded_string
-
 
 
 # ---------------------------------------------------------------------------- #
