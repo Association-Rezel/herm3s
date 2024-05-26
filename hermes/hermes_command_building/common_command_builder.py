@@ -46,7 +46,10 @@ class UCIDHCPConfig(UCITypeConfig):
         self.commands = ""
 
     def build(self) -> str:
-        return self.commands + "uci commit\nservice dnsmasq restart\n"
+        return (
+            self.commands
+            + "uci commit\nservice dnsmasq restart\nservice odhcpd restart\n"
+        )
 
 
 class UCIWirelessConfig(UCITypeConfig):
@@ -125,6 +128,7 @@ class HermesDefaultConfig(HermesConfigBuilder):
     vlan_65: UCI.UCISwitchVlan
     vlan_101: UCI.UCISwitchVlan
     vlan_102: UCI.UCISwitchVlan
+    vlan_103: UCI.UCISwitchVlan
     management: UCI.UCINoIPInterface
     radio0: UCI.UCIWifiDevice
     radio1: UCI.UCIWifiDevice
