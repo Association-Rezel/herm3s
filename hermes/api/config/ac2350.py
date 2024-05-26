@@ -234,7 +234,7 @@ def create_configfile(mac_address: str):
     ) as file:
         file.write(
             "/-- SEPARATOR network --/\n"
-            +Netconf.build()
+            + Netconf.build()
             + "/-- SEPARATOR firewall --/\n"
             + Fireconf.build()
             + "/-- SEPARATOR dhcp --/\n"
@@ -271,7 +271,7 @@ def create_default_configfile():
     with open(f"{config.FILE_SAVING_PATH}defaultConfigfile.txt", "w") as file:
         file.write(
             "/-- SEPARATOR network --/\n"
-            +Netconf.build()
+            + Netconf.build()
             + "/-- SEPARATOR firewall --/\n"
             + Fireconf.build()
             + "/-- SEPARATOR dhcp --/\n"

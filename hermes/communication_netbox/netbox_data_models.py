@@ -19,10 +19,12 @@ class IpAddress(BaseModel):
     custom_field_data: IpAddressCustomField | None = None
     nat_inside: IpAddress | None = None
 
+
 class WirelessLANCustomField(BaseModel):
     """Data model of :  custom field in Wireless LAN"""
 
     unet_id: str
+
 
 class WirelessLAN(BaseModel):
     """Data model of :  Wireless LAN"""
@@ -32,12 +34,14 @@ class WirelessLAN(BaseModel):
     auth_psk: str
     custom_field_data: WirelessLANCustomField
 
-class PATCustomField(BaseModel):
-    """Data model of : custom field of service PAT"""
+
+class PFCustomField(BaseModel):
+    """Data model of : custom field of service PF"""
 
     inside_port: int
     inside_ip_address: int
-    PAT_linked_WLAN: int
+    PF_linked_WLAN: int
+
 
 class Service(BaseModel):
     """Data model of : Service"""
@@ -46,7 +50,8 @@ class Service(BaseModel):
     protocol: str
     ipaddresses: list[IpAddress]
     ports: list[int]
-    custom_field_data: PATCustomField
+    custom_field_data: PFCustomField
+
 
 class Device(BaseModel):
     """Data model of : Device"""
@@ -68,19 +73,3 @@ class InterfaceResponse(BaseModel):
     """Data model of : Response from netbox when queried for interfaces"""
 
     interface_list: list[Interface]
-
-
-if __name__ == "__main__":
-    test_json = """{
-            "address": "137.194.9.34/22",
-            "nat_inside": {
-              "address": "192.168.2.0/24"
-            },
-            "tags": [
-              {
-                "name": "box-kley-666-wlan-2"
-              }
-            ]
-          }"""
-    ip = IpAddress.model_validate_json(test_json)
-    print(ip)
