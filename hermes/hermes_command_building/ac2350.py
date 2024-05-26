@@ -41,7 +41,9 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         )
         self.network_commands.append(self.vlan_65)
         self.management = UCI.UCINoIPInterface(
-            UCI.UCISectionName("management"), UCI.UCISimpleDevice("eth0.65")
+            name=UCI.UCISectionName("management"),
+            device=UCI.UCISimpleDevice("eth0.65"),
+            proto=UCI.InterfaceProto("dhcpv6"),
         )
         self.network_commands.append(self.management)
         self.vlan_101 = UCI.UCISwitchVlan(

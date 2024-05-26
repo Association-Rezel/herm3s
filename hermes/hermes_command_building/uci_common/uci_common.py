@@ -554,15 +554,19 @@ class UCINoIPInterface(UCIConfig):
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_interface
     """
 
-    def __init__(self, name: UCISectionName, device: Device):
+    def __init__(
+        self, name: UCISectionName, device: Device, proto: InterfaceProto = None
+    ):
         """Initialize the UCINoIPInterface object
 
         Args:
             name (UCISectionName): The name of the interface.
             device (Device): The Device object (SimpleDevice or Bridge).
+            proto (InterfaceProto, optional): The protocol of the interface. Defaults to None.
         """
         super().__init__(name)
         self.device = device
+        self.proto = proto
 
     def uci_build_string(self):
         """Build the UCI configuration string for UCINoIPInterface
@@ -574,6 +578,10 @@ class UCINoIPInterface(UCIConfig):
             f"uci set network.{self.name}=interface",
             f"uci set network.{self.name}.device='{self.device.name}'",
         )
+        if self.proto is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.proto='{self.proto}'"
+            )
         return self.builded_string
 
 
