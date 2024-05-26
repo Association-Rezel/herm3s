@@ -1,0 +1,64 @@
+services:
+  api_hermes:
+    volumes:
+      - ./config.yaml.example:/config.yaml
+    container_name: api_hermes
+    build: .
+    environment:
+      - CONFIG_PATH=/config.yaml
+      - TOKEN_NETBOX=91a0e80dd5c290ba0d7f7d070a9f3fd80a61e6ea
+      - URL_NETBOX=http://netbox.dev.fai.rezel.net/graphql/
+      - DEF_ROUTER_IP_VLAN={"101":"137.194.8.1","102":"195.14.28.1"}
+      - FILE_SAVING_PATH=/dev/shm
+    ports:
+      - "80:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://api_hermes:8000/"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+    # networks:
+    #     app_net:
+    #         ipv6_address: fe80::5
+
+
+# commande to ping : ping6 fe80::5%eth0
+  unit_tests:
+    container_name: unit_tests
+    depends_on:
+       api_hermes:
+          condition: service_healthy
+    build:
+      context: ./tests
+    environment:
+      - PATH_DEFAULT_CONFIG_FILE=/
+      - NAME_DEFAULT_CONFIG_FILE=defaultConfigfile.txt
+
+      - PATH_DEFAULT_CONFIG_FILE_TEST=/
+      - NAME_DEFAULT_CONFIG_FILE_TEST=defaultConfigfileTest.txt
+
+      - MAC=88:C3:97:69:96:69
+      - PATH_CONFIG_FILE=/
+      - NAME_CONFIG_FILE=configfile.txt
+
+      - PATH_CONFIG_FILE_TEST=/
+      - NAME_CONFIG_FILE_TEST=configfileTest.txt
+
+      - URL=http://api_hermes:8000
+      - ENDPOINT_DEFAULT_CONFIG=/v1/config/ac2350/default/file
+      - ENDPOINT_CONFIG=/v1/config/ac2350/
+    # networks:
+    #     app_net:
+    #         ipv6_address: fe80::4
+
+
+# networks:
+#   app_net:
+#     driver: bridge
+#     enable_ipv6: true
+#     ipam:
+#       driver: default
+#       config:
+#         - subnet: "fe80::/64"
+
+ 
