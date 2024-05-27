@@ -13,8 +13,8 @@ echo -e "${BLUE}Beginning unit tests...${NC}"
 # ----------------------------------------
 # Unit tests 1: curl on '/'
 # ----------------------------------------
-echo -e "${YELLOW}Running unit ${YELLOW}test 1${YELLOW}: curl on '/'${NC}"
-http_code=$(curl -s -o /dev/null -w "%{http_code}" ${URL}/)
+echo -e "${YELLOW}Running unit ${YELLOW}test 1${YELLOW}: curl on '${ENDPOINT_STATUS}'${NC}"
+http_code=$(curl -s -o /dev/null -w "%{http_code}" ${URL}${ENDPOINT_STATUS})
 if [ $http_code -eq 200 ]; then
     echo -e "${GREEN}Unit test 1 passed with code ${http_code} !${NC}"
 else

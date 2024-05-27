@@ -19,8 +19,8 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-async def root():
+@app.get("/status")
+async def status():
     """
     Return 200 code
     """
