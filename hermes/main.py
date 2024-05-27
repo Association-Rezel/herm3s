@@ -18,6 +18,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+#For anthonin
+@app.get("/")
+async def status():
+    """
+    Return 200 code
+    """
+    return {"status": "OK"}
+
 
 @app.get("/status")
 async def status():
