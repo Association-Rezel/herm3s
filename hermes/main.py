@@ -20,7 +20,7 @@ app.add_middleware(
 
 #For anthonin
 @app.get("/")
-async def status():
+async def root():
     """
     Return 200 code
     """
