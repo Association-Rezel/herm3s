@@ -12,7 +12,7 @@ unit-tests:
   services:
     - docker:19.03.12-dind
   script:
-    - docker compose -f docker-compose.unit_tests.yaml up --build --abort-on-container-exit  
+    - docker compose up --build --abort-on-container-exit  
 
 
 
