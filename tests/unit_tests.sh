@@ -22,123 +22,123 @@ else
     exit 1
 fi
 
-# # ----------------------------------------
-# # Unit tests 2: get error 400 invalid mac
-# # ----------------------------------------
+# ----------------------------------------
+# Unit tests 2: get error 400 invalid mac
+# ----------------------------------------
 
-# echo -e "${YELLOW}Running unit ${YELLOW}test 2${YELLOW}: get error 400 invalid mac${NC}"
+echo -e "${YELLOW}Running unit ${YELLOW}test 2${YELLOW}: get error 400 invalid mac${NC}"
 
-# echo -e "curl on ${URL}${ENDPOINT_CONFIG}invalid_mac..."
-
-
-# http_code=$(curl -s -o /dev/null -w "%{http_code}" ${URL}${ENDPOINT_CONFIG}invalid_mac)
-# message=$(curl -s ${URL}${ENDPOINT_CONFIG}invalid_mac)
-
-# if [ $http_code -eq 400 ]; then
-#     echo -e "${GREEN}Unit test 2 passed with with code: ${http_code} and message: ${message} !${NC}"
-# else
-#     echo -e "${RED}Unit test 2 failed with code: ${http_code} and message: ${message} !${NC}"
-#     exit 1
-# fi
-
-# # ----------------------------------------
-# # Unit tests 3: test endpoint of default config
-# # ----------------------------------------
-
-# echo -e "${YELLOW}Running unit ${YELLOW}test 3${YELLOW}: test endpoint of default config${NC}"
-
-# echo -e "curl on ${URL}${ENDPOINT_DEFAULT_CONFIG}..."
-
-# http_code=$(curl -s -o /dev/null -w "%{http_code}" ${URL}${ENDPOINT_DEFAULT_CONFIG})
-# if [ $http_code -eq 200 ]; then
-#     echo -e "${GREEN}Unit test 3 passed with code ${http_code} !${NC}"
-# else
-#     echo -e "${RED}Unit test 3 failed with code ${http_code} !${NC}"
-#     exit 1
-# fi
-
-# # ----------------------------------------
-# # Unit tests 4: test receive default config file
-# # ----------------------------------------
-
-# echo -e "${YELLOW}Running unit test 4: test if ${NAME_DEFAULT_CONFIG_FILE_TEST} is received${NC}"
-
-# echo -e "wget on ${URL}${ENDPOINT_DEFAULT_CONFIG}..."
-
-# wget -q -O - ${URL}${ENDPOINT_DEFAULT_CONFIG} > ${PATH_DEFAULT_CONFIG_FILE_TEST}${NAME_DEFAULT_CONFIG_FILE_TEST}
-
-# if [ -f ${PATH_DEFAULT_CONFIG_FILE_TEST}${NAME_DEFAULT_CONFIG_FILE_TEST} ]; then
-#     echo -e "${GREEN}Unit test 4 passed: ${NAME_DEFAULT_CONFIG_FILE_TEST} received !${NC}"
-# else
-#     echo -e "${RED}Unit test 4 failed: no file received !${NC}"
-#     exit 1
-# fi
-
-# # ----------------------------------------
-# # Unit tests 5: test content of default config file
-# # ----------------------------------------
-
-# echo -e "${YELLOW}Running unit test 5: test content of ${NAME_DEFAULT_CONFIG_FILE_TEST} ${NC}"
-
-# echo -e "diff between ${NAME_DEFAULT_CONFIG_FILE} and ${NAME_DEFAULT_CONFIG_FILE_TEST}..."
-
-# if diff ${PATH_DEFAULT_CONFIG_FILE}${NAME_DEFAULT_CONFIG_FILE} ${PATH_DEFAULT_CONFIG_FILE_TEST}${NAME_DEFAULT_CONFIG_FILE_TEST} > /result ; then
-#     echo -e "${GREEN}Unit test 5 passed: ${NAME_DEFAULT_CONFIG_FILE_TEST} is the same as ${NAME_DEFAULT_CONFIG_FILE} !${NC}"
-# else
-#     echo -e "${RED}Unit test 5 failed: ${NAME_DEFAULT_CONFIG_FILE_TEST} is different from ${NAME_DEFAULT_CONFIG_FILE} !${NC}"
-#     echo -e "$(cat /result)${NC}"
-#     exit 1
-# fi
+echo -e "curl on ${URL}${ENDPOINT_CONFIG}invalid_mac..."
 
 
-# # ----------------------------------------
-# # Unit tests 6: test endpoint of config file
-# # ----------------------------------------
+http_code=$(curl -s -o /dev/null -w "%{http_code}" ${URL}${ENDPOINT_CONFIG}invalid_mac)
+message=$(curl -s ${URL}${ENDPOINT_CONFIG}invalid_mac)
 
-# echo -e "${YELLOW}Running unit ${YELLOW}test 6${YELLOW}: test endpoint of config file${NC}"
+if [ $http_code -eq 400 ]; then
+    echo -e "${GREEN}Unit test 2 passed with with code: ${http_code} and message: ${message} !${NC}"
+else
+    echo -e "${RED}Unit test 2 failed with code: ${http_code} and message: ${message} !${NC}"
+    exit 1
+fi
 
-# echo -e "curl on ${URL}${ENDPOINT_CONFIG}${MAC}..."
+# ----------------------------------------
+# Unit tests 3: test endpoint of default config
+# ----------------------------------------
 
-# http_code=$(curl -s -o /dev/null -w "%{http_code}" ${URL}${ENDPOINT_CONFIG}${MAC})
-# if [ $http_code -eq 200 ]; then
-#     echo -e "${GREEN}Unit test 6 passed with code ${http_code} !${NC}"
-# else
-#     echo -e "${RED}Unit test 6 failed with code ${http_code} !${NC}"
-#     exit 1
-# fi
+echo -e "${YELLOW}Running unit ${YELLOW}test 3${YELLOW}: test endpoint of default config${NC}"
 
-# # ----------------------------------------
-# # Unit tests 7: test receive default config file
-# # ----------------------------------------
+echo -e "curl on ${URL}${ENDPOINT_DEFAULT_CONFIG}..."
 
-# echo -e "${YELLOW}Running unit test 7: test if ${NAME_CONFIG_FILE_TEST} is received${NC}"
+http_code=$(curl -s -o /dev/null -w "%{http_code}" ${URL}${ENDPOINT_DEFAULT_CONFIG})
+if [ $http_code -eq 200 ]; then
+    echo -e "${GREEN}Unit test 3 passed with code ${http_code} !${NC}"
+else
+    echo -e "${RED}Unit test 3 failed with code ${http_code} !${NC}"
+    exit 1
+fi
 
-# echo -e "wget on ${URL}${ENDPOINT_CONFIG}${MAC}..."
+# ----------------------------------------
+# Unit tests 4: test receive default config file
+# ----------------------------------------
 
-# wget -q -O - ${URL}${ENDPOINT_CONFIG}${MAC} > ${PATH_CONFIG_FILE_TEST}${NAME_CONFIG_FILE_TEST}
+echo -e "${YELLOW}Running unit test 4: test if ${NAME_DEFAULT_CONFIG_FILE_TEST} is received${NC}"
 
-# if [ -f ${PATH_CONFIG_FILE_TEST}${NAME_CONFIG_FILE_TEST} ]; then
-#     echo -e "${GREEN}Unit test 7 passed: ${NAME_CONFIG_FILE_TEST} received !${NC}"
-# else
-#     echo -e "${RED}Unit test 7 failed: no file received !${NC}"
-#     exit 1
-# fi
+echo -e "wget on ${URL}${ENDPOINT_DEFAULT_CONFIG}..."
 
-# # ----------------------------------------
-# # Unit tests 8: test content of default config file
-# # ----------------------------------------
+wget -q -O - ${URL}${ENDPOINT_DEFAULT_CONFIG} > ${PATH_DEFAULT_CONFIG_FILE_TEST}${NAME_DEFAULT_CONFIG_FILE_TEST}
 
-# echo -e "${YELLOW}Running unit test 8: test content of ${NAME_CONFIG_FILE_TEST} ${NC}"
+if [ -f ${PATH_DEFAULT_CONFIG_FILE_TEST}${NAME_DEFAULT_CONFIG_FILE_TEST} ]; then
+    echo -e "${GREEN}Unit test 4 passed: ${NAME_DEFAULT_CONFIG_FILE_TEST} received !${NC}"
+else
+    echo -e "${RED}Unit test 4 failed: no file received !${NC}"
+    exit 1
+fi
 
-# echo -e "diff between ${NAME_CONFIG_FILE} and ${NAME_CONFIG_FILE_TEST}..."
+# ----------------------------------------
+# Unit tests 5: test content of default config file
+# ----------------------------------------
 
-# if diff ${PATH_CONFIG_FILE}${NAME_CONFIG_FILE} ${PATH_CONFIG_FILE_TEST}${NAME_CONFIG_FILE_TEST} > /result ; then
-#     echo -e "${GREEN}Unit test 8 passed: ${NAME_CONFIG_FILE_TEST} is the same as ${NAME_CONFIG_FILE} !${NC}"
-# else
-#     echo -e "${RED}Unit test 8 failed: ${NAME_CONFIG_FILE_TEST} is different from ${NAME_CONFIG_FILE} !${NC}"
-#     echo -e "$(cat /result)${NC}"
-#     exit 1
-# fi
+echo -e "${YELLOW}Running unit test 5: test content of ${NAME_DEFAULT_CONFIG_FILE_TEST} ${NC}"
+
+echo -e "diff between ${NAME_DEFAULT_CONFIG_FILE} and ${NAME_DEFAULT_CONFIG_FILE_TEST}..."
+
+if diff ${PATH_DEFAULT_CONFIG_FILE}${NAME_DEFAULT_CONFIG_FILE} ${PATH_DEFAULT_CONFIG_FILE_TEST}${NAME_DEFAULT_CONFIG_FILE_TEST} > /result ; then
+    echo -e "${GREEN}Unit test 5 passed: ${NAME_DEFAULT_CONFIG_FILE_TEST} is the same as ${NAME_DEFAULT_CONFIG_FILE} !${NC}"
+else
+    echo -e "${RED}Unit test 5 failed: ${NAME_DEFAULT_CONFIG_FILE_TEST} is different from ${NAME_DEFAULT_CONFIG_FILE} !${NC}"
+    echo -e "$(cat /result)${NC}"
+    exit 1
+fi
+
+
+# ----------------------------------------
+# Unit tests 6: test endpoint of config file
+# ----------------------------------------
+
+echo -e "${YELLOW}Running unit ${YELLOW}test 6${YELLOW}: test endpoint of config file${NC}"
+
+echo -e "curl on ${URL}${ENDPOINT_CONFIG}${MAC}..."
+
+http_code=$(curl -s -o /dev/null -w "%{http_code}" ${URL}${ENDPOINT_CONFIG}${MAC})
+if [ $http_code -eq 200 ]; then
+    echo -e "${GREEN}Unit test 6 passed with code ${http_code} !${NC}"
+else
+    echo -e "${RED}Unit test 6 failed with code ${http_code} !${NC}"
+    exit 1
+fi
+
+# ----------------------------------------
+# Unit tests 7: test receive default config file
+# ----------------------------------------
+
+echo -e "${YELLOW}Running unit test 7: test if ${NAME_CONFIG_FILE_TEST} is received${NC}"
+
+echo -e "wget on ${URL}${ENDPOINT_CONFIG}${MAC}..."
+
+wget -q -O - ${URL}${ENDPOINT_CONFIG}${MAC} > ${PATH_CONFIG_FILE_TEST}${NAME_CONFIG_FILE_TEST}
+
+if [ -f ${PATH_CONFIG_FILE_TEST}${NAME_CONFIG_FILE_TEST} ]; then
+    echo -e "${GREEN}Unit test 7 passed: ${NAME_CONFIG_FILE_TEST} received !${NC}"
+else
+    echo -e "${RED}Unit test 7 failed: no file received !${NC}"
+    exit 1
+fi
+
+# ----------------------------------------
+# Unit tests 8: test content of default config file
+# ----------------------------------------
+
+echo -e "${YELLOW}Running unit test 8: test content of ${NAME_CONFIG_FILE_TEST} ${NC}"
+
+echo -e "diff between ${NAME_CONFIG_FILE} and ${NAME_CONFIG_FILE_TEST}..."
+
+if diff ${PATH_CONFIG_FILE}${NAME_CONFIG_FILE} ${PATH_CONFIG_FILE_TEST}${NAME_CONFIG_FILE_TEST} > /result ; then
+    echo -e "${GREEN}Unit test 8 passed: ${NAME_CONFIG_FILE_TEST} is the same as ${NAME_CONFIG_FILE} !${NC}"
+else
+    echo -e "${RED}Unit test 8 failed: ${NAME_CONFIG_FILE_TEST} is different from ${NAME_CONFIG_FILE} !${NC}"
+    echo -e "$(cat /result)${NC}"
+    exit 1
+fi
 
 
 # ----------------------------------------
