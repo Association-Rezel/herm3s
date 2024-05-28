@@ -8,12 +8,13 @@ stages:
 #run unit-tests which launch command docker compose up --build with the docker compose in my project
 unit-tests:
   stage: unit-tests
-  image: docker:19.03.12
+  image: docker:latest
   services:
-    - docker:19.03.12-dind
+    - docker:lastest-dind
   script:
     - ls
     - docker --help
+    - docker --version
   
 
 
