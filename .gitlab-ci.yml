@@ -14,7 +14,7 @@ unit-tests:
   
   script:
     - ls
-    - docker compose -f docker-compose.unit_tests.yaml up --build || (docker compose -f docker-compose.unit_tests.yaml down && exit 1)  #if exit of one of the container is 1 stop all the container and fail the pipeline
+    - docker compose -f docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests  #if exit of one of the container is 1 stop all the container and fail the pipeline
 
 
   
