@@ -17,6 +17,8 @@ services:
       interval: 20s
       timeout: 10s
       retries: 5
+    #if exit code of unit_tests is 1 stop this container
+
     # networks:
     #     app_net:
     #         ipv6_address: fe80::5
@@ -48,6 +50,7 @@ services:
       - ENDPOINT_DEFAULT_CONFIG=/v1/config/ac2350/default/file
       - ENDPOINT_CONFIG=/v1/config/ac2350/
       - ENDPOINT_STATUS=/status
+    
     # networks:
     #     app_net:
     #         ipv6_address: fe80::4
