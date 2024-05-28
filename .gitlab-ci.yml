@@ -5,13 +5,14 @@ stages:
 
 #test
 
-#run unit-tests which launch command docker compose up --build
+#run unit-tests which launch command docker compose up --build with the docker compose in my project
 unit-tests:
   stage: unit-tests
   image: docker:19.03.12
   services:
     - docker:19.03.12-dind
   script:
+    - ls
     - docker-compose up --build -d
   
 
