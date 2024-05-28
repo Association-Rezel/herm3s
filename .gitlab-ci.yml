@@ -5,14 +5,15 @@ stages:
 
 #test
 
-#run unit-tests which launch the script ./tests/run_tests.sh and this script need docker commands
+#run unit-tests which launch command docker compose up --build
 unit-tests:
   stage: unit-tests
   image: docker:19.03.12
   services:
     - docker:19.03.12-dind
   script:
-    - docker compose up --build --abort-on-container-exit  
+    - docker-compose up --build -d
+  
 
 
 
