@@ -13,8 +13,7 @@ unit-tests:
     - docker:24.0.7-dind
   script:
     - ls
-    - docker --help
-    - docker --version
+    - docker compose -f docker-compose.unit_tests.yaml up --build
   
 
 
