@@ -8,9 +8,9 @@ stages:
 #run unit-tests which launch command docker compose up --build with the docker compose in my project
 unit-tests:
   stage: unit-tests
-  image: docker:latest
+  image: docker:24.0.7
   services:
-    - docker:lastest-dind
+    - docker:24.0.7-dind
   script:
     - ls
     - docker --help
