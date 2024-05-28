@@ -17,6 +17,7 @@ services:
       interval: 20s
       timeout: 10s
       retries: 5
+
     # networks:
     #     app_net:
     #         ipv6_address: fe80::5
@@ -47,6 +48,7 @@ services:
       - URL=http://api_hermes:8000
       - ENDPOINT_DEFAULT_CONFIG=/v1/config/ac2350/default/file
       - ENDPOINT_CONFIG=/v1/config/ac2350/
+
     # networks:
     #     app_net:
     #         ipv6_address: fe80::4

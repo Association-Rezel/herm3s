@@ -16,4 +16,6 @@ done
 #show logs of the container unit_tests
 docker logs unit_tests
 
+docker compose stop api_hermes
+
 # (docker network ls -q | xargs docker network rm) > /dev/null 2>&1
