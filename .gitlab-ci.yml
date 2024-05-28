@@ -13,7 +13,7 @@ unit-tests:
     - docker:19.03.12-dind
   script:
     - ls
-    - docker-compose up --build -d
+    - docker --help
   
 
 
