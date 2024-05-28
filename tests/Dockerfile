@@ -9,7 +9,7 @@ RUN apk update && apk add --no-cache bash && apk add --no-cache curl && apk add 
 COPY unit_tests.sh .
 
 COPY defaultConfigfile.txt .
-COPY configfile.txt .
+# COPY configfile.txt .
 
 # Make the script executable
 RUN chmod +x unit_tests.sh
