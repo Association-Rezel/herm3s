@@ -3,6 +3,7 @@ stages:
   - build-tests
   - unit-tests
 
+#test
 
 #run unit-tests which launch the script ./tests/run_tests.sh and this script need docker commands
 unit-tests:
