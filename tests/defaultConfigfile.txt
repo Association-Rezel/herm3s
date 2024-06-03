@@ -1,8 +1,8 @@
 /-- SEPARATOR network --/
 uci set network.loopback=interface
-uci set network.loopback.proto='static'
-uci set network.loopback.ipaddr='127.0.0.1'
-uci set network.loopback.netmask='255.0.0.0'
+uci set network.loopback.proto='127.0.0.1'
+uci set network.loopback.ipaddr='255.0.0.0'
+uci set network.loopback.netmask='static'
 uci set network.loopback.device='lo'
 uci set network.globals=globals
 uci set network.globals.ula_prefix='fdb2:b6c0:8430::/48'
@@ -15,7 +15,8 @@ uci set network.vlan_65.device='switch0'
 uci set network.vlan_65.vlan='65'
 uci set network.vlan_65.ports='1t 0t'
 uci set network.management=interface
-uci set network.management.device=eth0.65
+uci set network.management.device='eth0.65'
+uci set network.management.proto='dhcpv6'
 uci set network.vlan_101=switch_vlan
 uci set network.vlan_101.device='switch0'
 uci set network.vlan_101.vlan='101'
@@ -24,6 +25,10 @@ uci set network.vlan_102=switch_vlan
 uci set network.vlan_102.device='switch0'
 uci set network.vlan_102.vlan='102'
 uci set network.vlan_102.ports='1t 0t'
+uci set network.vlan_103=switch_vlan
+uci set network.vlan_103.device='switch0'
+uci set network.vlan_103.vlan='103'
+uci set network.vlan_103.ports='1t 0t'
 uci commit
 service network restart
 /-- SEPARATOR firewall --/
@@ -33,6 +38,32 @@ uci set firewall.defaults.flow_offloading_hw='1'
 uci set firewall.defaults.input='ACCEPT'
 uci set firewall.defaults.output='ACCEPT'
 uci set firewall.defaults.forward='REJECT'
+uci set firewall.zone_management=zone
+uci set firewall.zone_management.name='zone_management'
+uci set firewall.zone_management.network='management'
+uci set firewall.zone_management.input='REJECT'
+uci set firewall.zone_management.output='ACCEPT'
+uci set firewall.zone_management.forward='REJECT'
+uci set firewall.managemen_mgt_allow_ping=rule
+uci set firewall.managemen_mgt_allow_ping.name='Allow ICMPv6 to MGT'
+uci set firewall.managemen_mgt_allow_ping.proto='icmp'
+uci set firewall.managemen_mgt_allow_ping.target='ACCEPT'
+uci set firewall.managemen_mgt_allow_ping.family='ipv6'
+uci set firewall.managemen_mgt_allow_ping.src='zone_management'
+uci set firewall.managemen_mgt_allow_ssh=rule
+uci set firewall.managemen_mgt_allow_ssh.name='Allow ssh to MGT'
+uci set firewall.managemen_mgt_allow_ssh.proto='tcp'
+uci set firewall.managemen_mgt_allow_ssh.target='ACCEPT'
+uci set firewall.managemen_mgt_allow_ssh.family='ipv6'
+uci set firewall.managemen_mgt_allow_ssh.src='zone_management'
+uci set firewall.managemen_mgt_allow_ssh.dest_port='22'
+uci set firewall.managemen_mgt_allow_daemon=rule
+uci set firewall.managemen_mgt_allow_daemon.name='Allow deamon to MGT'
+uci set firewall.managemen_mgt_allow_daemon.proto='tcp'
+uci set firewall.managemen_mgt_allow_daemon.target='ACCEPT'
+uci set firewall.managemen_mgt_allow_daemon.family='ipv6'
+uci set firewall.managemen_mgt_allow_daemon.src='zone_management'
+uci set firewall.managemen_mgt_allow_daemon.dest_port='50051'
 uci commit
 service firewall restart
 /-- SEPARATOR dhcp --/
@@ -62,6 +93,7 @@ uci set dhcp.odhcpd.leasetrigger='/usr/sbin/odhcpd-update'
 uci set dhcp.odhcpd.loglevel='4'
 uci commit
 service dnsmasq restart
+service odhcpd restart
 /-- SEPARATOR wireless --/
 uci set wireless.radio0=wifi-device
 uci set wireless.radio0.type='mac80211'
