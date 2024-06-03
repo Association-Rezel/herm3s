@@ -16,7 +16,7 @@ if "DB_URI" in os.environ:
 elif CONFIG_FILE_EXISTS and "TOKEN_NETBOX" in config["communication_netbox"]:
     DB_URI = config["communication_netbox"]["TOKEN_NETBOX"]
 else:
-    DB_URI = "mongodb+srv://dbUser:dbUser@hermestest.oin9kts.mongodb.net/?retryWrites=true&w=majority"
+    DB_URI = "mongodb://admintest:Rwy4ygL5hqoNUr@137.194.13.162/?retryWrites=true&w=majority&authSource=test"
 
 if "DB_NAME" in os.environ:
     DB_NAME = os.environ["URL_NETBOX"]
