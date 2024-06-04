@@ -95,25 +95,15 @@ class UnetProfile(BaseModel):
     firewall: UnetFirewall
 
 
-class WanVlanIpv4(BaseModel):
-    """
-    WanVlanIpv4 Model
-    """
 
-    vlan_id: str = Field(alias="id")
-    ipv4_net: str = Field(pattern=REGEX_IPV4_MASK)
-    ipv4_gateway: str = Field(pattern=REGEX_IPV4_NO_MASK)
-
-
-class WanVlanIpv6(BaseModel):
+class WanVlan(BaseModel):
     """
-    WanVlanIpv6 Model
+    WanVlan Model
     """
 
     vlan_id: str = Field(alias="id")
-    ipv6_net: str
-    ipv6_gateway: str
-
+    ipv6_net: str = Field(alias="ipv4_net")
+    ipv6_gateway: str = Field(alias="ipv4_gateway")
 
 class ObjectId(BaseModel):
     """
@@ -131,4 +121,4 @@ class Box(BaseModel):
     type: str  # type de box (ex: ac2350)
     mac: str = Field(pattern=REGEX_MAC)
     unets: list[UnetProfile]
-    wan_vlan: list[WanIpv4 | WanIpv6] = Field(alias="wan-vlan")
+    wan_vlan: list[WanVlan] = Field(alias="wan-vlan")
