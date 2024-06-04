@@ -4,8 +4,8 @@ Defines Models for the database
 
 from pydantic import BaseModel, Field
 
-REGEX_IPV4_MASK = r"^(((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4})\/(3[0-2]|[1-2]\d|\d)$"
-REGEX_IPV4_NO_MASK = r"^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$"
+REGEX_IPV4_MASK = r"^(((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4})\/(3[0-2]|[1-2][0-9]|[0-9])$"
+REGEX_IPV4_NO_MASK = r"^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4}$"
 REGEX_MAC = r"([0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5})"
 
 class WanIpv4(BaseModel):
@@ -80,8 +80,8 @@ class UnetFirewall(BaseModel):
     UnetFirewall Model
     """
 
-    ipv4_portforwarding: list[Ipv4Portforwarding]
-    ipv6_portopening: list[Ipv6Portopening]
+    ipv4_port_forwarding: list[Ipv4Portforwarding]
+    ipv6_port_opening: list[Ipv6Portopening]
 
 
 class UnetProfile(BaseModel):
@@ -101,24 +101,18 @@ class WanVlan(BaseModel):
     WanVlan Model
     """
 
-    vlan_id: str = Field(alias="id")
-    ipv6_net: str = Field(alias="ipv4_net")
-    ipv6_gateway: str = Field(alias="ipv4_gateway")
-
-class ObjectId(BaseModel):
-    """
-    ObjectId Model
-    """
-
-    id:str
+    vlan_id: str
+    ip_version: str
+    net: str
+    gateway: str
 
 class Box(BaseModel):
     """
     Box Model
     """
 
-    id: ObjectId = Field(alias="_id")
+    id: str = Field(alias="_id")
     type: str  # type de box (ex: ac2350)
     mac: str = Field(pattern=REGEX_MAC)
     unets: list[UnetProfile]
-    wan_vlan: list[WanVlan] = Field(alias="wan-vlan")
+    wan_vlan: list[WanVlan]

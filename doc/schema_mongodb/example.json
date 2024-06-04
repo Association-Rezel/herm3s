@@ -6,7 +6,7 @@
     "type": "ac2350",
     "unets": [
       {
-        "unetid": "aaaaaaaa",
+        "unet_id": "aaaaaaaa",
         "network": {
           "wan_ipv4": {
             "vlan": "101",
@@ -48,11 +48,11 @@
         }
       },
       {
-        "unetid": "bbbbbbbb",
+        "unet_id": "bbbbbbbb",
         "network": {
           "wan_ipv4": {
             "vlan": "102",
-            "ip": "195.14.28.2"
+            "ip": "195.14.28.2/24"
           },
           "wan_ipv6": {
             "vlan": "103",
@@ -68,14 +68,14 @@
           "psk": "password"
         },
         "firewall": {
-          "ipv4_portforwarding": [],
-          "ipv6_portopening": []
+          "ipv4_port_forwarding": [],
+          "ipv6_port_opening": []
         }
       }
     ],
     "wan_vlan": [
       {
-        "id": "101",
+        "vlan_id": "101",
         "ip_version": "ipv4",
         "net": "137.194.8.0/24",
         "gateway": "137.194.8.1"
