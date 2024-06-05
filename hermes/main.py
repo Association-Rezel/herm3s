@@ -19,7 +19,6 @@ app.add_middleware(
 )
 
 
-# For anthonin
 @app.get("/")
 async def root():
     """
@@ -55,7 +54,6 @@ async def get_file_config_init(mac: str):
         raise HTTPException(400, {"Erreur": "invalid mac address"})
 
 
-# download default conf file
 @app.get("/v1/config/ac2350/default/file")
 async def get_default_config():
     """

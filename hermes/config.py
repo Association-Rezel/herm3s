@@ -22,5 +22,5 @@ elif config_file_exists and "FILE_SAVING_PATH" in config["api"]:
     FILE_SAVING_PATH = config["api"]["FILE_SAVING_PATH"]
 else:
     FILE_SAVING_PATH = (
-        "/home/nathan/Documents/Scolaire/1A/PROJ104/hermes-v3/hermes/communication_db"
+        "/dev/shm/"
     )
