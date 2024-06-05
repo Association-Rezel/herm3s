@@ -4,9 +4,12 @@ Defines Models for the database
 
 from pydantic import BaseModel, Field
 
-REGEX_IPV4_MASK = r"^(((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4})\/(3[0-2]|[1-2][0-9]|[0-9])$"
+REGEX_IPV4_MASK = (
+    r"^(((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4})\/(3[0-2]|[1-2][0-9]|[0-9])$"
+)
 REGEX_IPV4_NO_MASK = r"^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4}$"
 REGEX_MAC = r"([0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5})"
+
 
 class IpMask(BaseModel):
     """
@@ -17,6 +20,7 @@ class IpMask(BaseModel):
     ip: str
     version: str
 
+
 class IpNoMask(BaseModel):
     """
     IpNoMask Model
@@ -25,6 +29,7 @@ class IpNoMask(BaseModel):
 
     ip: str
     version: str
+
 
 class WanIpv4(BaseModel):
     """
@@ -69,6 +74,7 @@ class WifiDetails(BaseModel):
     ssid: str
     psk: str
 
+
 class Ipv4Portforwarding(BaseModel):
     """
     Ipv4Portforwarding Model
@@ -80,6 +86,7 @@ class Ipv4Portforwarding(BaseModel):
     protocol: str
     name: str
     desc: str
+
 
 class Ipv6Portopening(BaseModel):
     """
