@@ -1,7 +1,7 @@
 from netaddr import EUI
 
 
-# class to check if the mac address is valid and store it
+
 class MacAddress:
     """Class to check if the mac address is valid and store it"""
 
