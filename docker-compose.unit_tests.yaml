@@ -17,14 +17,7 @@ services:
       interval: 20s
       timeout: 10s
       retries: 5
-    #if exit code of unit_tests is 1 stop this container
 
-    # networks:
-    #     app_net:
-    #         ipv6_address: fe80::5
-
-
-# commande to ping : ping6 fe80::5%eth0
   unit_tests:
     container_name: unit_tests
     depends_on:
@@ -51,18 +44,6 @@ services:
       - ENDPOINT_CONFIG=/v1/config/ac2350/
       - ENDPOINT_STATUS=/status
     
-    # networks:
-    #     app_net:
-    #         ipv6_address: fe80::4
 
-
-# networks:
-#   app_net:
-#     driver: bridge
-#     enable_ipv6: true
-#     ipam:
-#       driver: default
-#       config:
-#         - subnet: "fe80::/64"
 
  
