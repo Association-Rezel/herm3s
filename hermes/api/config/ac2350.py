@@ -1,6 +1,4 @@
-import json
 from netaddr import IPNetwork
-import re
 
 from ...communication_db.db_api import DbApi
 from ..MacAddress import MacAddress
@@ -10,21 +8,24 @@ from ...hermes_command_building import uci_common as UCI
 from ... import config
 
 
-# function to create the configuration file of the main user
+
 def create_configfile(mac_address: str):
-    """create configuration file for all users
+    """
+    Function to create the configuration files for all users
+
     Args:
         mac_address (str): mac address of the box
     return:
         void
     """
+
     Netconf = ccb.UCINetworkConfig()
     Fireconf = ccb.UCIFirewallConfig()
     Dhcpconf = ccb.UCIDHCPConfig()
     Wirelessconf = ccb.UCIWirelessConfig()
     Dropbearconf = ccb.UCIDropbearConfig()
 
-    # create the default configuration
+    # Create the default configuration
     defconf = ac2350.HermesDefaultConfig(UCI.DnsServers([UCI.IPAddress("8.8.8.8")]))
 
     defconf.build_network(Netconf)
@@ -35,13 +36,13 @@ def create_configfile(mac_address: str):
 
     db_api = DbApi()
 
-    # get the infos by mac address
+    # Get the infos by mac address
     box = db_api.get_box_by_mac(mac_address)
 
-    # get the main unet id
+    # Get the main unet id
     unet_id_main_user = box.main_unet_id
 
-    # count lan_vlan
+    # Count lan_vlan
     indice_lan_vlan = 1
 
     for unet_profile in box.unets:
@@ -51,8 +52,6 @@ def create_configfile(mac_address: str):
         lan_ip_address = IPNetwork(unet_profile.network.lan_ipv4.net).ip
         lan_ip_network = str(IPNetwork(unet_profile.network.lan_ipv4.net).cidr)
         wan_vlan_number = int(unet_profile.network.wan_ipv4.vlan)
-
-        # cf si IP de dodo/ptero et si c le même selon si c un télécommien ou non (faire condition sur vlan sinon)
         default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
 
         default_router_v6 = (
@@ -78,7 +77,7 @@ def create_configfile(mac_address: str):
                 lan_vlan=indice_lan_vlan,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_ip_address),
-                wan6_address=UCI.IPAddress(
+                wan6_address=UCI.IPNetwork(
                     str(IPNetwork(unet_profile.network.wan_ipv6.ip).ip)
                 ),
                 unet6_prefix=IPNetwork(
@@ -100,7 +99,7 @@ def create_configfile(mac_address: str):
                 wan_vlan=wan_vlan_number,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_ip_address),
-                wan6_address=UCI.IPAddress(
+                wan6_address=UCI.IPNetwork(
                     str(IPNetwork(unet_profile.network.wan_ipv6.ip).ip)
                 ),
                 unet6_prefix=IPNetwork(
@@ -115,7 +114,7 @@ def create_configfile(mac_address: str):
         user.build_dhcp(Dhcpconf)
         user.build_wireless(Wirelessconf)
 
-        # create port forwarding
+        # Create port forwarding
         for port_forwarding in unet_profile.firewall.ipv4_port_forwarding:
             user_port_forwarding = ac2350.HermesPortForwarding(
                 unetid=UCI.UNetId(unet_profile.unet_id),
@@ -130,10 +129,10 @@ def create_configfile(mac_address: str):
             )
             user_port_forwarding.build_firewall(Fireconf)
 
-        # update lan_vlan
+        # Update lan_vlan
         indice_lan_vlan += 1
 
-    # add to the configfile
+    # Add to the config file
     with open(
         f"{config.FILE_SAVING_PATH}configfile_" + mac_address + ".txt", "w"
     ) as file:
@@ -152,7 +151,9 @@ def create_configfile(mac_address: str):
 
 
 def create_default_configfile():
-    """create configuration file for all users
+    """
+    Function to create the default configuration files for all users
+
      Args:
         void
     return:

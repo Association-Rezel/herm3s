@@ -2,7 +2,8 @@ from .uci_common import uci_common as UCI
 
 
 class UCITypeConfig:
-    """Mother class reprensenting a config block uci
+    """
+    Mother class reprensenting a config block UCI
     (e.g. network, firewall, dhcp, wireless, dropbear)
     """
 
@@ -12,7 +13,8 @@ class UCITypeConfig:
         pass
 
     def build(self) -> str:
-        """Add the reload commands to the config block
+        """
+        Add the reload commands to the config block
 
         Returns:
             str: Config block with reload command
@@ -73,7 +75,8 @@ class UCIDropbearConfig(UCITypeConfig):
 
 
 class HermesConfigBuilder:
-    """Mother class for the configuration builders
+    """
+    Mother class for the configuration builders
     The commands lists contain blocks of UCI commands
     That can be call with uci_build_string() to get the string
     """
@@ -118,7 +121,8 @@ class HermesConfigBuilder:
 
 
 class HermesDefaultConfig(HermesConfigBuilder):
-    """Mother class for the default configuration of the router
+    """
+    Mother class for the default configuration of the router
     Herits from HermesConfigBuilder
     """
 
