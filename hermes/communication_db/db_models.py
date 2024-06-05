@@ -60,7 +60,9 @@ class LanIpv4(BaseModel):
 
 
 class UnetNetwork(BaseModel):
-    """"""
+    """
+    UnetNetwork Model
+    """
 
     wan_ipv4: WanIpv4
     wan_ipv6: WanIpv6
@@ -146,7 +148,7 @@ class Box(BaseModel):
     """
 
     id: str = Field(alias="_id")
-    type: str  # type de box (ex: ac2350)
+    type: str  # Type de box (ex: ac2350)
     main_unet_id: str = Field(pattern=REGEX_UNET_ID)
     mac: str = Field(pattern=REGEX_MAC)
     unets: list[UnetProfile]
