@@ -27,17 +27,17 @@ services:
       context: ./tests
     environment:
       - PATH_DEFAULT_CONFIG_FILE=/
-      - NAME_DEFAULT_CONFIG_FILE=defaultConfigfile.txt
+      - NAME_DEFAULT_CONFIG_FILE=test_ac2350_defaultConfigfile.txt
 
       - PATH_DEFAULT_CONFIG_FILE_TEST=/
-      - NAME_DEFAULT_CONFIG_FILE_TEST=defaultConfigfileTest.txt
+      - NAME_DEFAULT_CONFIG_FILE_TEST=test_ac2350_defaultConfigfileTest_received.txt
 
       - MAC=00:00:00:00:00:00
       - PATH_CONFIG_FILE=/
-      - NAME_CONFIG_FILE=configfile.txt
+      - NAME_CONFIG_FILE=test_ac2350_configfile.txt
 
       - PATH_CONFIG_FILE_TEST=/
-      - NAME_CONFIG_FILE_TEST=configfileTest.txt
+      - NAME_CONFIG_FILE_TEST=test_ac2350_configfile_received.txt
 
       - URL=http://api_hermes:8000
       - ENDPOINT_DEFAULT_CONFIG=/v1/config/ac2350/default/file

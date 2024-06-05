@@ -1,9 +1,8 @@
 __pycache__
 .venv
 .env
-configfile.txt
 temp
-config_files/*
+
 
 # Config files
 config.yaml
