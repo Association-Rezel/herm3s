@@ -1,1 +1,0 @@
-from .netbox import NetboxInterface

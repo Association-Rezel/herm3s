@@ -2,7 +2,7 @@ import json
 from netaddr import IPNetwork
 import re
 
-from ...communication_netbox import NetboxInterface
+from ...communication_db.db_api import DbApi
 from ..MacAddress import MacAddress
 from ...hermes_command_building import common_command_builder as ccb
 from ...hermes_command_building import ac2350
@@ -33,197 +33,102 @@ def create_configfile(mac_address: str):
     defconf.build_wireless(Wirelessconf)
     defconf.build_dropbear(Dropbearconf)
 
-    netbox = NetboxInterface()
+    db_api = DbApi()
 
     # get the infos by mac address
-    json_infos_by_mac = netbox.get_infos_by_mac(mac_address)
+    box = db_api.get_box_by_mac(mac_address)
 
     # get the main unet id
-    unet_id_main_user = json_infos_by_mac["main_unet_id"]
+    unet_id_main_user = box.main_unet_id
 
     # count lan_vlan
     indice_lan_vlan = 1
 
-    for key in json_infos_by_mac["ip_addresses"].keys():
+    for unet_profile in box.unets:
 
-        # check if  the unet_id has the good form
-        if re.match(r"^[a-z0-9]{8}$", key) is None:
-            raise ValueError("Invalid UNetId")
+        wan_ip_address = IPNetwork(unet_profile.network.wan_ipv4.ip).ip
+        wan_ip_netmask = str(IPNetwork(unet_profile.network.wan_ipv4.ip).netmask)
+        lan_ip_address = IPNetwork(unet_profile.network.lan_ipv4.net).ip
+        lan_ip_network = str(IPNetwork(unet_profile.network.lan_ipv4.net).cidr)
+        wan_vlan_number = int(unet_profile.network.wan_ipv4.vlan)
 
-        indice = 0
-        # config file main user
-        if key == unet_id_main_user:
-            for i in range(len(json_infos_by_mac["ip_addresses"][key])):
-                if json_infos_by_mac["ip_addresses"][key][i]["name"] != "eth0.65":
-                    # indice of the good interface (not eth0.65)
-                    indice = i
+        # cf si IP de dodo/ptero et si c le même selon si c un télécommien ou non (faire condition sur vlan sinon)
+        default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
 
-            # get passord of the main user
-            password_main_user = json_infos_by_mac["passwords"][key]
-
-            # get SSID from the unet id
-            SSID = json_infos_by_mac["ssids"][key]
-
-            # get wan ip address of the main user
-            wan_ip_address = json_infos_by_mac["ip_addresses"][key][indice][
-                "ip_address"
-            ][:-3]
-
-            # calculate the netmask with netaddr
-            wan_ip_netmask = str(
-                IPNetwork(
-                    json_infos_by_mac["ip_addresses"][key][indice]["ip_address"]
-                ).netmask
+        default_router_v6 = (
+            next(
+                vlan
+                for vlan in box.wan_vlan
+                if vlan.vlan_id == unet_profile.network.wan_ipv6.vlan
             )
+            .net_gateway[0]
+            .gateway.ip
+        )
 
-            # get lan ip address of the main user
-            lan_ip_address = json_infos_by_mac["ip_addresses"][key][indice][
-                "nat_inside_ip"
-            ][:-3]
-
-            # calculate the network with netaddr
-            lan_ip_network = str(
-                IPNetwork(
-                    json_infos_by_mac["ip_addresses"][key][indice]["nat_inside_ip"]
-                ).cidr
-            )
-
-            # get wan_wlan number of the main user
-            wan_vlan_number = int(
-                json_infos_by_mac["ip_addresses"][key][indice]["name"].split("eth0.")[1]
-            )
-
-            # get the default router ip address
-            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
-
-            # create the main user configuration
-            main_user = ac2350.HermesMainUser(
-                unetid=UCI.UNetId(key),
-                ssid=UCI.SSID(SSID),
+        if unet_profile.unet_id == unet_id_main_user:
+            user = ac2350.HermesMainUser(
+                unetid=UCI.UNetId(unet_profile.unet_id),
+                ssid=UCI.SSID(unet_profile.wifi.ssid),
                 wan_address=UCI.IPAddress(wan_ip_address),
                 wan_netmask=UCI.IPAddress(wan_ip_netmask),
                 lan_address=UCI.IPAddress(lan_ip_address),
                 lan_network=UCI.IPNetwork(lan_ip_network),
-                wifi_passphrase=UCI.WifiPassphrase(password_main_user),
+                wifi_passphrase=UCI.WifiPassphrase(unet_profile.wifi.psk),
                 wan_vlan=wan_vlan_number,
                 lan_vlan=indice_lan_vlan,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_ip_address),
+                wan6_address=UCI.IPAddress(
+                    str(IPNetwork(unet_profile.network.wan_ipv6.ip).ip)
+                ),
+                unet6_prefix=IPNetwork(
+                    str(IPNetwork(unet_profile.network.ipv6_prefix).ip)
+                ),
+                wan6_vlan=int(unet_profile.network.wan_ipv6.vlan),
+                default_router6=UCI.IPAddress(default_router_v6),
             )
-            main_user.build_network(Netconf)
-            main_user.build_firewall(Fireconf)
-            main_user.build_dhcp(Dhcpconf)
-            main_user.build_wireless(Wirelessconf)
-
-            # create port forwarding for the main user
-            for dico in json_infos_by_mac["pf_rules"]:
-                if dico["unet_id"] == key:
-
-                    # get source port
-                    outside_port = dico["outside_port"]
-
-                    # get dest port and ip
-                    inside_port = dico["inside_port"]
-                    inside_ip = dico["inside_ip"][:-3]
-
-                    protocol = dico["protocol"]
-
-                    main_port_forwarding = ac2350.HermesPortForwarding(
-                        unetid=UCI.UNetId(key),
-                        name=UCI.UCISectionName("http_to_internal"),
-                        desc=UCI.Description("HTTP forwarding"),
-                        src=main_user.wan_zone,
-                        src_dport=UCI.TCPUDPPort(outside_port),
-                        dest=main_user.lan_zone,
-                        dest_ip=UCI.IPAddress(inside_ip),
-                        dest_port=UCI.TCPUDPPort(inside_port),
-                        proto=UCI.Protocol(protocol),
-                    )
-                    main_port_forwarding.build_firewall(Fireconf)
-
         else:
-            # get passord of the main user
-            password_other_user = json_infos_by_mac["passwords"][key]
-
-            # get SSID from the unet id
-            SSID = json_infos_by_mac["ssids"][key]
-
-            # get wan ip address of the main user
-            wan_ip_address = json_infos_by_mac["ip_addresses"][key][indice][
-                "ip_address"
-            ][:-3]
-
-            # calculate the netmask with netaddr
-            wan_ip_netmask = str(
-                IPNetwork(
-                    json_infos_by_mac["ip_addresses"][key][indice]["ip_address"]
-                ).netmask
-            )
-
-            # get lan ip address of the main user
-            lan_ip_address = json_infos_by_mac["ip_addresses"][key][indice][
-                "nat_inside_ip"
-            ][:-3]
-
-            # calculate the network with netaddr
-            lan_ip_network = str(
-                IPNetwork(
-                    json_infos_by_mac["ip_addresses"][key][indice]["nat_inside_ip"]
-                ).cidr
-            )
-
-            # get wan_wlan number of the main user
-            wan_vlan_number = int(
-                json_infos_by_mac["ip_addresses"][key][indice]["name"].split("eth0.")[1]
-            )
-
-            # cf si IP de dodo/ptero et si c le même selon si c un télécommien ou non (faire condition sur vlan sinon)
-            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
-
-            # create the other user configuration
-            other_user = ac2350.HermesSecondaryUser(
-                unetid=UCI.UNetId(key),
-                ssid=UCI.SSID(SSID),
+            user = ac2350.HermesSecondaryUser(
+                unetid=UCI.UNetId(unet_profile.unet_id),
+                ssid=UCI.SSID(unet_profile.wifi.ssid),
                 wan_address=UCI.IPAddress(wan_ip_address),
                 wan_netmask=UCI.IPAddress(wan_ip_netmask),
                 lan_address=UCI.IPAddress(lan_ip_address),
                 lan_network=UCI.IPNetwork(lan_ip_network),
                 lan_vlan=indice_lan_vlan,
-                wifi_passphrase=UCI.WifiPassphrase(password_other_user),
+                wifi_passphrase=UCI.WifiPassphrase(unet_profile.wifi.psk),
                 wan_vlan=wan_vlan_number,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_ip_address),
+                wan6_address=UCI.IPAddress(
+                    str(IPNetwork(unet_profile.network.wan_ipv6.ip).ip)
+                ),
+                unet6_prefix=IPNetwork(
+                    str(IPNetwork(unet_profile.network.ipv6_prefix).ip)
+                ),
+                wan6_vlan=int(unet_profile.network.wan_ipv6.vlan),
+                default_router6=UCI.IPAddress(default_router_v6),
             )
-            other_user.build_network(Netconf)
-            other_user.build_firewall(Fireconf)
-            other_user.build_dhcp(Dhcpconf)
-            other_user.build_wireless(Wirelessconf)
 
-            # create port forwarding for the other user
-            for dico in json_infos_by_mac["pf_rules"]:
-                if dico["unet_id"] == key:
+        user.build_network(Netconf)
+        user.build_firewall(Fireconf)
+        user.build_dhcp(Dhcpconf)
+        user.build_wireless(Wirelessconf)
 
-                    # get source port
-                    outside_port = dico["outside_port"]
-
-                    # get dest port and ip
-                    inside_port = dico["inside_port"]
-                    inside_ip = dico["inside_ip"][:-3]
-
-                    protocol = dico["protocol"]
-
-                    main_port_forwarding = ac2350.HermesPortForwarding(
-                        unetid=UCI.UNetId(key),
-                        name=UCI.UCISectionName("http_to_internal"),
-                        desc=UCI.Description("HTTP forwarding"),
-                        src=main_user.wan_zone,
-                        src_dport=UCI.TCPUDPPort(outside_port),
-                        dest=main_user.lan_zone,
-                        dest_ip=UCI.IPAddress(inside_ip),
-                        dest_port=UCI.TCPUDPPort(inside_port),
-                        proto=UCI.Protocol(protocol),
-                    )
-                    main_port_forwarding.build_firewall(Fireconf)
+        # create port forwarding
+        for port_forwarding in unet_profile.firewall.ipv4_port_forwarding:
+            user_port_forwarding = ac2350.HermesPortForwarding(
+                unetid=UCI.UNetId(unet_profile.unet_id),
+                name=UCI.UCISectionName("http_to_internal"),
+                desc=UCI.Description("HTTP forwarding"),
+                src=user.wan_zone,
+                src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
+                dest=user.lan_zone,
+                dest_ip=UCI.IPAddress(port_forwarding.lan_ip),
+                dest_port=UCI.TCPUDPPort(port_forwarding.lan_port),
+                proto=UCI.Protocol(port_forwarding.protocol),
+            )
+            user_port_forwarding.build_firewall(Fireconf)
 
         # update lan_vlan
         indice_lan_vlan += 1
@@ -284,23 +189,5 @@ def create_default_configfile():
 
 
 if __name__ == "__main__":
-    mac_address = MacAddress("88:C3:97:69:96:69").getMac()
-    netbox = NetboxInterface()
-
-    # # get the infos by mac address
-    json_infos_by_mac = netbox.get_infos_by_mac(mac_address)
+    mac_address = MacAddress("00:00:00:00:00:00").getMac()
     create_configfile(mac_address)
-    create_default_configfile()
-    print(json.dumps(json_infos_by_mac, indent=4))
-    print(
-        IPNetwork(
-            json_infos_by_mac["ip_addresses"]["unet_id_666_1"][0]["nat_inside_ip"]
-        ).cidr
-    )
-    print(
-        str(
-            IPNetwork(
-                json_infos_by_mac["ip_addresses"]["unet_id_666_0"][1]["ip_address"]
-            ).netmask
-        )
-    )
