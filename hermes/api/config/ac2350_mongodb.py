@@ -46,43 +46,29 @@ def create_configfile(mac_address: str):
 
     for unet_profile in box.unets:
 
-        # configure file main user
-        if unet_profile.unet_id == unet_id_main_user:
-            password_main_user = unet_profile.wifi.psk
-            SSID = unet_profile.wifi.ssid
+        wan_ip_address = IPNetwork(unet_profile.network.wan_ipv4.ip).ip
+        wan_ip_netmask = str(IPNetwork(unet_profile.network.wan_ipv4.ip).netmask)
+        lan_ip_address = IPNetwork(unet_profile.network.lan_ipv4.net).ip
+        lan_ip_network = str(IPNetwork(unet_profile.network.lan_ipv4.net).cidr)
+        wan_vlan_number = int(unet_profile.network.wan_ipv4.vlan)
 
-            # get wan ip address of the main user
-            wan_ip_address = IPNetwork(unet_profile.network.wan_ipv4.ip).ip
+        # cf si IP de dodo/ptero et si c le même selon si c un télécommien ou non (faire condition sur vlan sinon)
+        default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
 
-            # calculate the netmask with netaddr
-            wan_ip_netmask = str(IPNetwork(unet_profile.network.wan_ipv4.ip).netmask)
-
-            # get lan ip address of the main user
-            lan_ip_address = IPNetwork(unet_profile.network.lan_ipv4.net).ip
-
-            # calculate the network with netaddr
-            lan_ip_network = str(IPNetwork(unet_profile.network.lan_ipv4.net).cidr)
-
-            # get wan_vlan number of the main user
-            wan_vlan_number = int(unet_profile.network.wan_ipv4.vlan)
-
-            # get the default router ip address
-            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
-
-            default_router_v6 = \
+        default_router_v6 = \
                 next(vlan for vlan in box.wan_vlan
                     if vlan.vlan_id == unet_profile.network.wan_ipv6.vlan) \
             .net_gateway[0].gateway.ip
 
-            # create the main user configuration
-            main_user = ac2350.HermesMainUser(
+        if unet_profile.unet_id == unet_id_main_user:
+            user = ac2350.HermesMainUser(
                 unetid=UCI.UNetId(unet_profile.unet_id),
-                ssid=UCI.SSID(SSID),
+                ssid=UCI.SSID(unet_profile.wifi.ssid),
                 wan_address=UCI.IPAddress(wan_ip_address),
                 wan_netmask=UCI.IPAddress(wan_ip_netmask),
                 lan_address=UCI.IPAddress(lan_ip_address),
                 lan_network=UCI.IPNetwork(lan_ip_network),
-                wifi_passphrase=UCI.WifiPassphrase(password_main_user),
+                wifi_passphrase=UCI.WifiPassphrase(unet_profile.wifi.psk),
                 wan_vlan=wan_vlan_number,
                 lan_vlan=indice_lan_vlan,
                 default_config=defconf,
@@ -96,58 +82,16 @@ def create_configfile(mac_address: str):
                 wan6_vlan=int(unet_profile.network.wan_ipv6.vlan),
                 default_router6=UCI.IPAddress(default_router_v6),
             )
-            main_user.build_network(Netconf)
-            main_user.build_firewall(Fireconf)
-            main_user.build_dhcp(Dhcpconf)
-            main_user.build_wireless(Wirelessconf)
-
-            # create port forwarding for the main user
-            for port_forwarding in unet_profile.firewall.ipv4_port_forwarding:
-                main_port_forwarding = ac2350.HermesPortForwarding(
-                    unetid=UCI.UNetId(unet_profile.unet_id),
-                    name=UCI.UCISectionName("http_to_internal"),
-                    desc=UCI.Description("HTTP forwarding"),
-                    src=main_user.wan_zone,
-                    src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
-                    dest=main_user.lan_zone,
-                    dest_ip=UCI.IPAddress(port_forwarding.lan_ip),
-                    dest_port=UCI.TCPUDPPort(port_forwarding.lan_port),
-                    proto=UCI.Protocol(port_forwarding.protocol),
-                )
-                main_port_forwarding.build_firewall(Fireconf)
-
         else:
-            password_other_user = unet_profile.wifi.psk
-            SSID = unet_profile.wifi.ssid
-
-            # get wan ip address of the other user
-            wan_ip_address = IPNetwork(unet_profile.network.wan_ipv4.ip).ip
-
-            # calculate the netmask with netaddr
-            wan_ip_netmask = str(IPNetwork(unet_profile.network.wan_ipv4.ip).netmask)
-
-            # get lan ip address of the main user
-            lan_ip_address = IPNetwork(unet_profile.network.lan_ipv4.net).ip
-
-            # calculate the network with netaddr
-            lan_ip_network = str(IPNetwork(unet_profile.network.lan_ipv4.net).cidr)
-
-            # get wan_vlan number of the other user
-            wan_vlan_number = int(unet_profile.network.wan_ipv4.vlan)
-
-            # cf si IP de dodo/ptero et si c le même selon si c un télécommien ou non (faire condition sur vlan sinon)
-            default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
-
-            # create the other user configuration
-            other_user = ac2350.HermesSecondaryUser(
+            user = ac2350.HermesSecondaryUser(
                 unetid=UCI.UNetId(unet_profile.unet_id),
-                ssid=UCI.SSID(SSID),
+                ssid=UCI.SSID(unet_profile.wifi.ssid),
                 wan_address=UCI.IPAddress(wan_ip_address),
                 wan_netmask=UCI.IPAddress(wan_ip_netmask),
                 lan_address=UCI.IPAddress(lan_ip_address),
                 lan_network=UCI.IPNetwork(lan_ip_network),
                 lan_vlan=indice_lan_vlan,
-                wifi_passphrase=UCI.WifiPassphrase(password_other_user),
+                wifi_passphrase=UCI.WifiPassphrase(unet_profile.wifi.psk),
                 wan_vlan=wan_vlan_number,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_ip_address),
@@ -160,25 +104,26 @@ def create_configfile(mac_address: str):
                 wan6_vlan=int(unet_profile.network.wan_ipv6.vlan),
                 default_router6=UCI.IPAddress(default_router_v6),
             )
-            other_user.build_network(Netconf)
-            other_user.build_firewall(Fireconf)
-            other_user.build_dhcp(Dhcpconf)
-            other_user.build_wireless(Wirelessconf)
+        
+        user.build_network(Netconf)
+        user.build_firewall(Fireconf)
+        user.build_dhcp(Dhcpconf)
+        user.build_wireless(Wirelessconf)
 
-            # create port forwarding for the other user
-            for port_forwarding in unet_profile.firewall.ipv4_port_forwarding:
-                main_port_forwarding = ac2350.HermesPortForwarding(
-                    unetid=UCI.UNetId(unet_profile.unet_id),
-                    name=UCI.UCISectionName("http_to_internal"),
-                    desc=UCI.Description("HTTP forwarding"),
-                    src=main_user.wan_zone,
-                    src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
-                    dest=main_user.lan_zone,
-                    dest_ip=UCI.IPAddress(port_forwarding.lan_ip),
-                    dest_port=UCI.TCPUDPPort(port_forwarding.lan_port),
-                    proto=UCI.Protocol(port_forwarding.protocol),
-                )
-                main_port_forwarding.build_firewall(Fireconf)
+        # create port forwarding
+        for port_forwarding in unet_profile.firewall.ipv4_port_forwarding:
+            user_port_forwarding = ac2350.HermesPortForwarding(
+                unetid=UCI.UNetId(unet_profile.unet_id),
+                name=UCI.UCISectionName("http_to_internal"),
+                desc=UCI.Description("HTTP forwarding"),
+                src=user.wan_zone,
+                src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
+                dest=user.lan_zone,
+                dest_ip=UCI.IPAddress(port_forwarding.lan_ip),
+                dest_port=UCI.TCPUDPPort(port_forwarding.lan_port),
+                proto=UCI.Protocol(port_forwarding.protocol),
+            )
+            user_port_forwarding.build_firewall(Fireconf)
 
         # update lan_vlan
         indice_lan_vlan += 1
