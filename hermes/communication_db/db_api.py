@@ -21,7 +21,7 @@ class DbApi:
         """tests"""
         return self.db.boxes.find_one()
 
-    def get_box_by_mac(self, mac: str) -> dict:
+    def get_box_by_mac(self, mac: str) -> Box:
         """Get a box by its MAC address."""
         res = self.db.boxes.find_one({"mac": mac})
         res["_id"] = str(res["_id"])

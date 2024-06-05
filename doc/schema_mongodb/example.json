@@ -4,6 +4,7 @@
     },
     "mac": "00:00:00:00:00:00",
     "type": "ac2350",
+    "main_unet_id": "aaaaaaaa",
     "unets": [
       {
         "unet_id": "aaaaaaaa",

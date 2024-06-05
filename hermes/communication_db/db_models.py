@@ -9,7 +9,7 @@ REGEX_IPV4_MASK = (
 )
 REGEX_IPV4_NO_MASK = r"^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4}$"
 REGEX_MAC = r"([0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5})"
-
+REGEX_UNET_ID = r"^[a-z0-9]{8}$"
 
 class IpMask(BaseModel):
     """
@@ -114,7 +114,7 @@ class UnetProfile(BaseModel):
     UnetProfile Model
     """
 
-    unet_id: str = Field(pattern=r"^[a-z0-9]{8}$")
+    unet_id: str = Field(pattern=REGEX_UNET_ID)
     network: UnetNetwork
     wifi: WifiDetails
     firewall: UnetFirewall
@@ -145,6 +145,7 @@ class Box(BaseModel):
 
     id: str = Field(alias="_id")
     type: str  # type de box (ex: ac2350)
+    main_unet_id: str = Field(pattern=REGEX_UNET_ID)
     mac: str = Field(pattern=REGEX_MAC)
     unets: list[UnetProfile]
     wan_vlan: list[WanVlan]
