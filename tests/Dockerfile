@@ -8,12 +8,14 @@ RUN apk update && apk add --no-cache bash && apk add --no-cache curl && apk add 
 # Copy the script to the container
 COPY unit_tests.sh .
 
-COPY defaultConfigfile.txt .
-COPY configfile.txt .
+COPY test_ac2350_defaultConfigfile.txt .
+COPY test_ac2350_configfile.txt .
 
 # Make the script executable
 RUN chmod +x unit_tests.sh
 RUN dos2unix unit_tests.sh
+RUN dos2unix test_ac2350_defaultConfigfile.txt
+RUN dos2unix test_ac2350_configfile.txt
 
 
 # Run the script when the container starts
