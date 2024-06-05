@@ -8,3 +8,6 @@ config_files/*
 # Config files
 config.yaml
 hermes/communication_db/test.py
+
+# IntelliJ
+.idea/
