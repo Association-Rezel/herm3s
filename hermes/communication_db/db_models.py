@@ -8,6 +8,24 @@ REGEX_IPV4_MASK = r"^(((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4})\/(3[0-2]|
 REGEX_IPV4_NO_MASK = r"^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4}$"
 REGEX_MAC = r"([0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5})"
 
+class IpMask(BaseModel):
+    """
+    IpMask Model
+    ex : {"ip": "0.0.0.0/8", "version": "ipv4"}
+    """
+
+    ip: str
+    version: str
+
+class IpNoMask(BaseModel):
+    """
+    IpNoMask Model
+    ex: {"ip": "0.0.0.0", "version": "ipv4"}
+    """
+
+    ip: str
+    version: str
+
 class WanIpv4(BaseModel):
     """
     WanIpv4 Model
@@ -95,6 +113,14 @@ class UnetProfile(BaseModel):
     firewall: UnetFirewall
 
 
+class NetGateway(BaseModel):
+    """
+    NetGateway Model : contains a network and the default gateway in it
+    """
+
+    net: IpMask
+    gateway: IpNoMask
+
 
 class WanVlan(BaseModel):
     """
@@ -102,9 +128,8 @@ class WanVlan(BaseModel):
     """
 
     vlan_id: str
-    ip_version: str
-    net: str
-    gateway: str
+    net_gateway: list[NetGateway]
+
 
 class Box(BaseModel):
     """

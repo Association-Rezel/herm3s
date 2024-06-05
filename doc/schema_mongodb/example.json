@@ -76,21 +76,48 @@
     "wan_vlan": [
       {
         "vlan_id": "101",
-        "ip_version": "ipv4",
-        "net": "137.194.8.0/24",
-        "gateway": "137.194.8.1"
+        "net_gateway": [
+          {
+            "net": {
+              "ip": "137.194.8.0/24",
+              "version": "ipv4"
+            },
+            "gateway": {
+              "ip":"137.194.8.1",
+              "version": "ipv4"
+            }
+          }
+        ]
       },
       {
         "vlan_id": "102",
-        "ip_version": "ipv4",
-        "net": "195.14.28.0/24",
-        "gateway": "195.14.28.1"
+        "net_gateway": [
+          {
+            "net": {
+              "ip": "195.14.28.0/24",
+              "version": "ipv4"
+            },
+            "gateway": {
+              "ip":"195.14.28.1",
+              "version": "ipv4"
+            }
+          }
+        ]
       },
       {
         "vlan_id": "103",
-        "ip_version": "ipv6",
-        "net": "2a09:6847:ffff::/64",
-        "gateway": "2a09:6847:ffff::1"
+        "net_gateway": [
+          {
+            "net": {
+              "ip": "2a09:6847:ffff::/64",
+              "version": "ipv6"
+            },
+            "gateway": {
+              "ip":"2a09:6847:ffff::1",
+              "version": "ipv6"
+            }
+          }
+        ]
       }
     ]
 }
