@@ -3,7 +3,7 @@ from netaddr import IPAddress, IPNetwork, EUI, mac_unix_expanded
 
 
 class Attribute:
-    """Intrerface for attribute of UCIConfig objects"""
+    """Interface for attribute of UCIConfig objects"""
 
     value: str
 
@@ -21,7 +21,8 @@ class UNetId(Attribute):
     value: str
 
     def __init__(self, unetid: str):
-        """Initialize the UNetId object
+        """
+        Initialize the UNetId object
 
         Args:
             unetid (str): The name of the user network id
@@ -52,7 +53,7 @@ class UCISectionName:
 
 
 class UCISectionNamePrefix:
-    """Object used to store the prefi of a UCIConfig section
+    """Object used to store the prefix of a UCIConfig section
     e.g. Rezel_ or wifi_"""
 
     value: str
@@ -102,7 +103,8 @@ class UCIConfig:
     builded_string: str
 
     def __init__(self, name: UCISectionName, optional_uci_commands: str = ""):
-        """Initialize the UCIConfig object
+        """
+        Initialize the UCIConfig object
 
         Args:
             name (UCISectionName): The name of the network object
@@ -123,7 +125,7 @@ class UCIConfig:
         self.builded_string += "\n".join(args) + "\n"
 
     def uci_build_string(self) -> str:
-        """Used to create the set of uci command to use in the system
+        """Used to create the set of UCI commands to use in the system
 
         Returns:
             str: Uci commands to execute
@@ -142,7 +144,8 @@ class InterfaceProto(Attribute):
     """Object used to store the protocol of a network interface"""
 
     def __init__(self, value: str = "static"):
-        """Initialize the InterfaceProto object
+        """
+        Initialize the InterfaceProto object
 
         Args:
             value (str, optional): The protocol value. Defaults to "static".
@@ -164,7 +167,8 @@ class Device:
         """Initialize the Device object"""
 
     def __str__(self) -> str:
-        """Return the string representation of the Device object
+        """
+        Return the string representation of the Device object
 
         Returns:
             str: The string representation of the Device object.
@@ -176,7 +180,8 @@ class UCISimpleDevice(Device):
     """Object used to store the name of a device"""
 
     def __init__(self, name: str):
-        """Initialize the UCISimpleDevice object
+        """
+        Initialize the UCISimpleDevice object
 
         Args:
             name (str): The name of the device.
@@ -190,7 +195,8 @@ class UCISimpleDevice(Device):
 
 
 class UCIBridge(UCIConfig, Device):
-    """Represents a network bridge in uci
+    """
+    Represents a network bridge in UCI
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_device
     """
 
@@ -202,7 +208,8 @@ class UCIBridge(UCIConfig, Device):
         name_prefix: UCISectionNamePrefix,
         ports: UCINetworkPorts = None,
     ):
-        """Initialize the UCIBridge object
+        """
+        Initialize the UCIBridge object
 
         Args:
             unetid (UNetId): The UNetId object.
@@ -213,7 +220,8 @@ class UCIBridge(UCIConfig, Device):
         self.ports = ports
 
     def uci_build_string(self):
-        """Build the UCI configuration string for UCIBridge
+        """
+        Build the UCI configuration string for UCIBridge
 
         Returns:
             str: The UCI configuration string.
@@ -232,14 +240,16 @@ class UCIBridge(UCIConfig, Device):
 
 
 class UCINetGlobals(UCIConfig):
-    """Used to create a global network configuration
+    """
+    Used to create a global network configuration
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_globals
     """
 
     ula_prefix: IPNetwork
 
     def __init__(self, ula_prefix: IPNetwork):
-        """Initialize the UCINetGlobals object
+        """
+        Initialize the UCINetGlobals object
 
         Args:
             ula_prefix (IPNetwork): The ULA prefix.
@@ -248,7 +258,8 @@ class UCINetGlobals(UCIConfig):
         self.ula_prefix = ula_prefix
 
     def uci_build_string(self):
-        """Build the UCI configuration string for UCINetGlobals
+        """
+        Build the UCI configuration string for UCINetGlobals
 
         Returns:
             str: The UCI configuration string.
@@ -261,7 +272,8 @@ class UCINetGlobals(UCIConfig):
 
 
 class UCISwitch(UCIConfig):
-    """Used to create a network switch
+    """
+    Used to create a network switch
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_switch
     """
 
@@ -279,7 +291,8 @@ class UCISwitch(UCIConfig):
         self.ports = ports
 
     def uci_build_string(self):
-        """Build the UCI configuration string for UCISwitch
+        """
+        Build the UCI configuration string for UCISwitch
 
         Returns:
             str: The UCI configuration string.
@@ -298,7 +311,8 @@ class UCISwitch(UCIConfig):
 
 
 class UCIInterface(UCIConfig):
-    """Represents a network interface in uci
+    """
+    Represents a network interface in uci
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_interface
     And for IPv6 https://openwrt.org/docs/guide-user/network/ipv6/configuration
     """
@@ -327,7 +341,8 @@ class UCIInterface(UCIConfig):
         ip6class: UCISectionName = None,
         ip6assign: int = None,
     ):
-        """Initialize the UCIInterface object
+        """
+        Initialize the UCIInterface object
 
         Args:
             unetid (UNetId): The UNetId object.
@@ -357,7 +372,8 @@ class UCIInterface(UCIConfig):
         self.ip6assign = ip6assign
 
     def uci_build_string(self):
-        """Build the UCI configuration string for UCIInterface
+        """
+        Build the UCI configuration string for UCIInterface
 
         Returns:
             str: The UCI configuration string.
@@ -403,7 +419,8 @@ class UCIInterface(UCIConfig):
 
 
 class UCIRouteRule(UCIConfig):
-    """Used to create a network route rule
+    """
+    Used to create a network route rule
     See https://openwrt.org/docs/guide-user/network/routing/ip_rules
     """
 
@@ -418,7 +435,8 @@ class UCIRouteRule(UCIConfig):
         src: IPNetwork = None,
         dest: IPNetwork = None,
     ):
-        """Initialize the UCIRouteRule object
+        """
+        Initialize the UCIRouteRule object
 
         Args:
             unetid (UNetId): The UNetId object.
@@ -431,7 +449,8 @@ class UCIRouteRule(UCIConfig):
         self.dest = dest
 
     def uci_build_string(self):
-        """Build the UCI configuration string for UCIRouteRule
+        """
+        Build the UCI configuration string for UCIRouteRule
 
         Returns:
             str: The UCI configuration string.
@@ -452,7 +471,8 @@ class UCIRouteRule(UCIConfig):
 
 
 class UCIRoute(UCIConfig):
-    """Used to create a network route
+    """
+    Used to create a network route
     See https://openwrt.org/docs/guide-user/network/routing/routes_configuration#static_routes
     """
 
@@ -465,7 +485,8 @@ class UCIRoute(UCIConfig):
         interface: UCIInterface,
         table: int = None,
     ):
-        """Initialize the UCIRoute object
+        """
+        Initialize the UCIRoute object
 
         Args:
             unetid (UNetId): The UNetId object.
@@ -482,7 +503,8 @@ class UCIRoute(UCIConfig):
         self.table = table
 
     def uci_build_string(self):
-        """Build the UCI configuration string for UCIRoute
+        """
+        Build the UCI configuration string for UCIRoute
 
         Returns:
             str: The UCI configuration string.
@@ -501,7 +523,8 @@ class UCIRoute(UCIConfig):
 
 
 class UCIRoute6(UCIConfig):
-    """Used to create a network route
+    """
+    Used to create a network route
     See https://openwrt.org/docs/guide-user/network/routing/routes_configuration#static_routes
     """
 
@@ -514,7 +537,8 @@ class UCIRoute6(UCIConfig):
         interface: UCIInterface,
         table: int = None,
     ):
-        """Initialize the UCIRoute6 object
+        """
+        Initialize the UCIRoute6 object
 
         Args:
             unetid (UNetId): The UNetId object.
@@ -531,7 +555,8 @@ class UCIRoute6(UCIConfig):
         self.table = table
 
     def uci_build_string(self):
-        """Build the UCI configuration string for UCIRoute
+        """
+        Build the UCI configuration string for UCIRoute
 
         Returns:
             str: The UCI configuration string.
@@ -550,14 +575,16 @@ class UCIRoute6(UCIConfig):
 
 
 class UCINoIPInterface(UCIConfig):
-    """Used to create a network interface without an IP
+    """
+    Used to create a network interface without an IP
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_interface
     """
 
     def __init__(
         self, name: UCISectionName, device: Device, proto: InterfaceProto = None
     ):
-        """Initialize the UCINoIPInterface object
+        """
+        Initialize the UCINoIPInterface object
 
         Args:
             name (UCISectionName): The name of the interface.
@@ -569,7 +596,8 @@ class UCINoIPInterface(UCIConfig):
         self.proto = proto
 
     def uci_build_string(self):
-        """Build the UCI configuration string for UCINoIPInterface
+        """
+        Build the UCI configuration string for UCINoIPInterface
 
         Returns:
             str: The UCI configuration string.
@@ -586,7 +614,8 @@ class UCINoIPInterface(UCIConfig):
 
 
 class UCISwitchVlan(UCIConfig):
-    """Used to create a VLAN on a switch
+    """
+    Used to create a VLAN on a switch
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_switch_vlan
     """
 
@@ -599,7 +628,8 @@ class UCISwitchVlan(UCIConfig):
     def __init__(
         self, name: UCISectionName, device: UCISwitch, vid: int, ports: UCINetworkPorts
     ):
-        """Initialize the UCISwitchVlan object
+        """
+        Initialize the UCISwitchVlan object
 
         Args:
             name (UCISectionName): The name of the VLAN.
@@ -614,7 +644,8 @@ class UCISwitchVlan(UCIConfig):
         self.ports = ports
 
     def uci_build_string(self):
-        """Build the UCI configuration string for UCISwitchVlan
+        """
+        Build the UCI configuration string for UCISwitchVlan
 
         Returns:
             str: The UCI configuration string.
@@ -833,7 +864,8 @@ class WifiPassphrase(Attribute):
 
 
 class UCIWifiDevice(UCIConfig):
-    """Used to create a wireless interface
+    """
+    Used to create a wireless interface
     See https://openwrt.org/docs/guide-user/network/wifi/basic#wi-fi_devices
     """
 
@@ -858,7 +890,8 @@ class UCIWifiDevice(UCIConfig):
         disabled: int = 0,
         channels: Channels = None,
     ):
-        """Create a wifi device
+        """
+        Create a wifi device
 
         Args:
             name (str): radio0 or radio1 (for 2.4 and 5GHz)
@@ -903,7 +936,8 @@ class UCIWifiDevice(UCIConfig):
 
 
 class UCIWifiIface(UCIConfig):
-    """Used to create a wireless interface
+    """
+    Used to create a wireless interface
     See https://openwrt.org/docs/guide-user/network/wifi/basic#wi-fi_interfaces
     """
 
@@ -918,11 +952,12 @@ class UCIWifiIface(UCIConfig):
         passphrase: WifiPassphrase,
         disabled: int = 0,
     ):
-        """Create a wifi interface with password and SSID
+        """
+        Create a wifi interface with password and SSID
 
         Args:
             unetid (UNetId): UNetId of the attached user
-            device (UCIWifiDevice): WIfi device to attach to
+            device (UCIWifiDevice): Wifi device to attach to
             network (UCIInterface): Network to attach to (lan, wan, ...)
             mode (Mode): mostly ap
             ssid (SSID): SSID of the wifi
@@ -1089,7 +1124,8 @@ class MatchIPSet(Attribute):
 
 
 class UCIFirewallDefaults(UCIConfig):
-    """Used to create a default firewall configuration
+    """
+    Used to create a default firewall configuration
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#defaults
     """
 
@@ -1118,7 +1154,8 @@ class UCIFirewallDefaults(UCIConfig):
 
 
 class UCIIpset(UCIConfig):
-    """Used to create a fw4 ipset
+    """
+    Used to create a fw4 ipset
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#options_fw4
     """
 
@@ -1164,7 +1201,8 @@ class UCIIpset(UCIConfig):
 
 
 class UCIZone(UCIConfig):
-    """Used to create a firewall zone
+    """
+    Used to create a firewall zone
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#zones
     """
 
@@ -1227,7 +1265,8 @@ class UCIZone(UCIConfig):
 
 
 class UCIRedirect4(UCIConfig):
-    """Used to create a port redirection
+    """
+    Used to create a port redirection
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#redirects
     """
 
@@ -1312,7 +1351,8 @@ class UCIRedirect4(UCIConfig):
 
 
 class UCIForwarding(UCIConfig):
-    """Used to create a port forwarding
+    """
+    Used to create a port forwarding
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#forwardings
     """
 
@@ -1355,7 +1395,8 @@ class UCIForwarding(UCIConfig):
 
 
 class UCIRule(UCIConfig):
-    """Used to create a firewall rule
+    """
+    Used to create a firewall rule
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#rules
     """
 
@@ -1463,7 +1504,8 @@ class UCIRule(UCIConfig):
 
 
 class UCISnat(UCIConfig):
-    """Used to create a NAT rule
+    """
+    Used to create a NAT rule
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#source_nat
     """
 
@@ -1513,7 +1555,8 @@ class UCISnat(UCIConfig):
 #                                     DHCP                                     #
 # ---------------------------------------------------------------------------- #
 class DnsServers(Attribute):
-    """Object used to store the DNS servers served by a DHCP server
+    """
+    Object used to store the DNS servers served by a DHCP server
     Its value is a list of IP addresses
     """
 
@@ -1552,7 +1595,8 @@ class DUid(Attribute):
 
 
 class UCIdnsmasq(UCIConfig):
-    """Used to create a DNS server
+    """
+    Used to create a DNS server
     See https://openwrt.org/docs/guide-user/base-system/dhcp#common_options
     """
 
@@ -1646,7 +1690,8 @@ class UCIodchp(UCIConfig):
 
 
 class UCIDHCP(UCIConfig):
-    """Used to create a DHCP server
+    """
+    Used to create a DHCP server
     See https://openwrt.org/docs/guide-user/base-system/dhcp#dhcp_pools
     """
 
@@ -1692,7 +1737,8 @@ class UCIDHCP(UCIConfig):
 
 
 class UCIHost(UCIConfig):
-    """Used to create a DHCP static lease
+    """
+    Used to create a DHCP static lease
     See https://openwrt.org/docs/guide-user/base-system/dhcp#static_leases
     And https://openwrt.org/docs/guide-user/base-system/dhcp_configuration#static_leases
     """
