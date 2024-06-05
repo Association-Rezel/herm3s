@@ -18,10 +18,6 @@ class DbApi:
         self.db = self.mongodb_client[DB_NAME]
         self.db.boxes = self.db.hermestest1
 
-    def test(self):
-        """tests"""
-        return self.db.boxes.find_one()
-
     def get_box_by_mac(self, mac: str) -> Box:
         """Get a box by its MAC address."""
         res = self.db.boxes.find_one({"mac": mac})

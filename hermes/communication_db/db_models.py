@@ -12,6 +12,7 @@ REGEX_IPV4_NO_MASK = r"^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4}$"
 REGEX_MAC = r"([0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5})"
 REGEX_UNET_ID = r"^[a-z0-9]{8}$"
 
+
 class IpMask(BaseModel):
     """
     IpMask Model

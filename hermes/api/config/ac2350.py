@@ -55,10 +55,15 @@ def create_configfile(mac_address: str):
         # cf si IP de dodo/ptero et si c le même selon si c un télécommien ou non (faire condition sur vlan sinon)
         default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
 
-        default_router_v6 = \
-                next(vlan for vlan in box.wan_vlan
-                    if vlan.vlan_id == unet_profile.network.wan_ipv6.vlan) \
-            .net_gateway[0].gateway.ip
+        default_router_v6 = (
+            next(
+                vlan
+                for vlan in box.wan_vlan
+                if vlan.vlan_id == unet_profile.network.wan_ipv6.vlan
+            )
+            .net_gateway[0]
+            .gateway.ip
+        )
 
         if unet_profile.unet_id == unet_id_main_user:
             user = ac2350.HermesMainUser(
@@ -104,7 +109,7 @@ def create_configfile(mac_address: str):
                 wan6_vlan=int(unet_profile.network.wan_ipv6.vlan),
                 default_router6=UCI.IPAddress(default_router_v6),
             )
-        
+
         user.build_network(Netconf)
         user.build_firewall(Fireconf)
         user.build_dhcp(Dhcpconf)
