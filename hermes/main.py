@@ -18,7 +18,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#For anthonin
+
+# For anthonin
 @app.get("/")
 async def root():
     """
