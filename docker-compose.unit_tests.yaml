@@ -39,7 +39,7 @@ services:
       - PATH_DEFAULT_CONFIG_FILE_TEST=/
       - NAME_DEFAULT_CONFIG_FILE_TEST=defaultConfigfileTest.txt
 
-      - MAC=88:C3:97:69:96:69
+      - MAC=00:00:00:00:00:00
       - PATH_CONFIG_FILE=/
       - NAME_CONFIG_FILE=configfile.txt
 
