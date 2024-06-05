@@ -1,6 +1,6 @@
-communication_netbox:
-  TOKEN_NETBOX: your_token
-  URL_NETBOX: http://netbox:8000
+communication_db:
+  DB_URI: "mongodb://admintest:Rwy4ygL5hqoNUr@137.194.13.162/?retryWrites=true&w=majority&authSource=test"
+  DB_NAME: "test"
 api:
   FILE_SAVING_PATH: /dev/shm
   DEF_ROUTER_IP_VLAN:
