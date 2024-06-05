@@ -1,8 +1,7 @@
 """
-Provides an API to interact with the MongoDb database.
+Provides an API to interact with the MongoDB database.
 """
 
-# import requests
 from pymongo import MongoClient
 
 from .env import DB_URI, DB_NAME
@@ -10,7 +9,7 @@ from .db_models import Box, UnetProfile, WanVlan
 
 
 class DbApi:
-    """Provides an API to interact with the MongoDb database."""
+    """Provides an API to interact with the MongoDB database."""
 
     def __init__(self) -> None:
         print(f"{DB_URI=} ; {DB_NAME=}")
