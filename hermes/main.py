@@ -4,7 +4,7 @@ from fastapi.responses import FileResponse
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .api.MacAddress import MacAddress
-from .api.config import ac2350
+from .api.config import ac2350_mongodb as ac2350
 from . import config
 
 

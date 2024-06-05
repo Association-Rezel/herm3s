@@ -69,6 +69,11 @@ def create_configfile(mac_address: str):
             # get the default router ip address
             default_router_ip_address = config.DEF_ROUTER_IP_VLAN[str(wan_vlan_number)]
 
+            default_router_v6 = \
+                next(vlan for vlan in box.wan_vlan
+                    if vlan.vlan_id == unet_profile.network.wan_ipv6.vlan) \
+            .net_gateway[0].gateway.ip
+
             # create the main user configuration
             main_user = ac2350.HermesMainUser(
                 unetid=UCI.UNetId(unet_profile.unet_id),
@@ -82,6 +87,14 @@ def create_configfile(mac_address: str):
                 lan_vlan=indice_lan_vlan,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_ip_address),
+                wan6_address=UCI.IPAddress(
+                    str(IPNetwork(unet_profile.network.wan_ipv6.ip).ip)
+                ),
+                unet6_prefix=IPNetwork(
+                    str(IPNetwork(unet_profile.network.ipv6_prefix).ip)
+                ),
+                wan6_vlan=int(unet_profile.network.wan_ipv6.vlan),
+                default_router6=UCI.IPAddress(default_router_v6),
             )
             main_user.build_network(Netconf)
             main_user.build_firewall(Fireconf)
@@ -138,6 +151,14 @@ def create_configfile(mac_address: str):
                 wan_vlan=wan_vlan_number,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_ip_address),
+                wan6_address=UCI.IPAddress(
+                    str(IPNetwork(unet_profile.network.wan_ipv6.ip).ip)
+                ),
+                unet6_prefix=IPNetwork(
+                    str(IPNetwork(unet_profile.network.ipv6_prefix).ip)
+                ),
+                wan6_vlan=int(unet_profile.network.wan_ipv6.vlan),
+                default_router6=UCI.IPAddress(default_router_v6),
             )
             other_user.build_network(Netconf)
             other_user.build_firewall(Fireconf)

@@ -4,6 +4,7 @@ Defines Models for the database
 
 from pydantic import BaseModel, Field
 
+
 REGEX_IPV4_MASK = (
     r"^(((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4})\/(3[0-2]|[1-2][0-9]|[0-9])$"
 )
