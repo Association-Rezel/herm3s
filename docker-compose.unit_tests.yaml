@@ -1,7 +1,7 @@
 services:
   api_hermes:
     volumes:
-      - ./config.yaml.example:/config.yaml
+      - ./tests/unit_tests_config.yaml.example:/config.yaml
     container_name: api_hermes
     build: .
     environment:
@@ -18,13 +18,31 @@ services:
       timeout: 10s
       retries: 5
 
+  mongodb:
+    container_name: mongodb
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - "27017:27017"
+
+  mongodb-import:
+    container_name: mongodb-import
+    image: mongodb/mongodb-community-server:latest
+    links:
+      - mongodb
+    volumes:
+      - ./tests/mongodb-import:/mongodb-import
+    command:
+      /mongodb-import/import.sh
+    
+
   unit_tests:
     container_name: unit_tests
     depends_on:
        api_hermes:
           condition: service_healthy
-    build:
-      context: ./tests
+    build: 
+      context: ./tests/
+      dockerfile: Dockerfile.unit_tests
     environment:
       - PATH_DEFAULT_CONFIG_FILE=/
       - NAME_DEFAULT_CONFIG_FILE=test_ac2350_defaultConfigfile.txt

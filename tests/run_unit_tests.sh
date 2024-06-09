@@ -16,5 +16,8 @@ done
 #show logs of the container unit_tests
 docker logs unit_tests
 
+
 docker compose stop api_hermes
+docker stop mongodb
+docker rm mongodb
 
