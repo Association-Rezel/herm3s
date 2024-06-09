@@ -1,0 +1,4 @@
+FROM mongodb/mongodb-community-server:latest
+
+RUN  chmod +x /mongodb-import/import.sh 
+
