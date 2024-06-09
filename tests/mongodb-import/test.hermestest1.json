@@ -1,0 +1,124 @@
+[{
+  "_id": {
+    "$oid": "6655d652f85afd2f11a26a13"
+  },
+  "mac": "00:00:00:00:00:00",
+  "type": "ac2350",
+  "main_unet_id": "antosalo",
+  "unets": [
+    {
+      "unet_id": "antosalo",
+      "network": {
+        "wan_ipv4": {
+          "vlan": "101",
+          "ip": "137.194.8.2/24"
+        },
+        "wan_ipv6": {
+          "vlan": "103",
+          "ip": "2a09:6847:ffff::0802/64"
+        },
+        "ipv6_prefix": "2a09:6847:0802::/48",
+        "lan_ipv4": {
+          "net": "192.168.0.0/24"
+        }
+      },
+      "wifi": {
+        "ssid": "Rezel-main",
+        "psk": "password"
+      },
+      "firewall": {
+        "ipv4_port_forwarding": [
+          {
+            "wan_port": "80",
+            "lan_ip": "192.168.0.3",
+            "lan_port": "80",
+            "protocol": "tcp",
+            "name": "http_to_internal",
+            "desc": "Forward http to internal server"
+          }
+        ],
+        "ipv6_port_opening": [
+          {
+            "ip": "2a09:6847:402:0:ee2:7ff:fe59:0",
+            "port": "80",
+            "protocol": "tcp",
+            "name": "http_to_internal_ipv6",
+            "desc": "Forward http to internal server"
+          }
+        ]
+      }
+    },
+    {
+      "unet_id": "nathanbo",
+      "network": {
+        "wan_ipv4": {
+          "vlan": "102",
+          "ip": "195.14.28.2/24"
+        },
+        "wan_ipv6": {
+          "vlan": "103",
+          "ip": "2a09:6847:ffff::0402/64"
+        },
+        "ipv6_prefix": "2a09:6847:0402::/48",
+        "lan_ipv4": {
+          "net": "192.168.1.0/24"
+        }
+      },
+      "wifi": {
+        "ssid": "Rezel-secondary",
+        "psk": "password"
+      },
+      "firewall": {
+        "ipv4_port_forwarding": [],
+        "ipv6_port_opening": []
+      }
+    }
+  ],
+  "wan_vlan": [
+    {
+      "vlan_id": "101",
+      "net_gateway": [
+        {
+          "net": {
+            "ip": "137.194.8.0/24",
+            "version": "ipv4"
+          },
+          "gateway": {
+            "ip": "137.194.8.1",
+            "version": "ipv4"
+          }
+        }
+      ]
+    },
+    {
+      "vlan_id": "102",
+      "net_gateway": [
+        {
+          "net": {
+            "ip": "195.14.28.0/24",
+            "version": "ipv4"
+          },
+          "gateway": {
+            "ip": "195.14.28.1",
+            "version": "ipv4"
+          }
+        }
+      ]
+    },
+    {
+      "vlan_id": "103",
+      "net_gateway": [
+        {
+          "net": {
+            "ip": "2a09:6847:ffff::/64",
+            "version": "ipv6"
+          },
+          "gateway": {
+            "ip": "2a09:6847:ffff::1",
+            "version": "ipv6"
+          }
+        }
+      ]
+    }
+  ]
+}]
