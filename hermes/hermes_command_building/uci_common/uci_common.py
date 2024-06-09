@@ -100,7 +100,7 @@ class UCIConfig:
 
     name: UCISectionName
     optional_uci_commands: str
-    builded_string: str
+    built_string: str
 
     def __init__(self, name: UCISectionName, optional_uci_commands: str = ""):
         """
@@ -114,7 +114,7 @@ class UCIConfig:
             name = UCISectionName(name)
         self.name = name
         self.optional_uci_commands = optional_uci_commands
-        self.builded_string = ""
+        self.built_string = ""
 
     def contatenate_uci_commands(self, *args: str):
         """Concatenate the UCI commands
@@ -122,7 +122,7 @@ class UCIConfig:
         Args:
             *args (str): The UCI commands to concatenate
         """
-        self.builded_string += "\n".join(args) + "\n"
+        self.built_string += "\n".join(args) + "\n"
 
     def uci_build_string(self) -> str:
         """Used to create the set of UCI commands to use in the system
@@ -236,7 +236,7 @@ class UCIBridge(UCIConfig, Device):
             self.contatenate_uci_commands(
                 f"uci set network.{self.name}.ports='{self.ports}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCINetGlobals(UCIConfig):
@@ -268,7 +268,7 @@ class UCINetGlobals(UCIConfig):
             f"uci set network.{self.name}=globals",
             f"uci set network.{self.name}.ula_prefix='{self.ula_prefix}'",
         )
-        return self.builded_string
+        return self.built_string
 
 
 class UCISwitch(UCIConfig):
@@ -307,7 +307,7 @@ class UCISwitch(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set network.{self.name}.ports='{self.ports}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIInterface(UCIConfig):
@@ -415,7 +415,7 @@ class UCIInterface(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set network.{self.name}.ip6assign='{self.ip6assign}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIRouteRule(UCIConfig):
@@ -467,7 +467,7 @@ class UCIRouteRule(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set network.{self.name}.dest='{self.dest}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIRoute(UCIConfig):
@@ -519,7 +519,7 @@ class UCIRoute(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set network.{self.name}.table='{self.table}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIRoute6(UCIConfig):
@@ -571,7 +571,7 @@ class UCIRoute6(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set network.{self.name}.table='{self.table}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCINoIPInterface(UCIConfig):
@@ -610,7 +610,7 @@ class UCINoIPInterface(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set network.{self.name}.proto='{self.proto}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCISwitchVlan(UCIConfig):
@@ -656,7 +656,7 @@ class UCISwitchVlan(UCIConfig):
             f"uci set network.{self.name}.vlan='{self.vid}'",
             f"uci set network.{self.name}.ports='{self.ports}'",
         )
-        return self.builded_string
+        return self.built_string
 
 
 # ---------------------------------------------------------------------------- #
@@ -932,7 +932,7 @@ class UCIWifiDevice(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set wireless.{self.name}.channels='{self.channels}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIWifiIface(UCIConfig):
@@ -985,7 +985,7 @@ class UCIWifiIface(UCIConfig):
             f"uci set wireless.{self.name}.key='{self.key}'",
             f"uci set wireless.{self.name}.disabled='{self.disabled}'",
         )
-        return self.builded_string
+        return self.built_string
 
 
 # ---------------------------------------------------------------------------- #
@@ -1150,7 +1150,7 @@ class UCIFirewallDefaults(UCIConfig):
             f"uci set firewall.{self.name}.output='ACCEPT'",
             f"uci set firewall.{self.name}.forward='REJECT'",
         )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIIpset(UCIConfig):
@@ -1197,7 +1197,7 @@ class UCIIpset(UCIConfig):
                 f"uci add_list firewall.{self.name}.entry='{entry}'"
             )
 
-        return self.builded_string
+        return self.built_string
 
 
 class UCIZone(UCIConfig):
@@ -1261,7 +1261,7 @@ class UCIZone(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set firewall.{self.name}.family='{self.family}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIRedirect4(UCIConfig):
@@ -1347,7 +1347,7 @@ class UCIRedirect4(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set firewall.{self.name}.src_ip='{self.src_ip}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIForwarding(UCIConfig):
@@ -1391,7 +1391,7 @@ class UCIForwarding(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set firewall.{self.name}.ipset='{self.ipset.name}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIRule(UCIConfig):
@@ -1500,7 +1500,7 @@ class UCIRule(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set firewall.{self.name}.icmp_type='{self.icmp_type}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCISnat(UCIConfig):
@@ -1548,7 +1548,7 @@ class UCISnat(UCIConfig):
             f"uci set firewall.{self.name}.src_ip='{self.lan_network}'",
             f"uci set firewall.{self.name}.proto='all'",
         )
-        return self.builded_string
+        return self.built_string
 
 
 # ---------------------------------------------------------------------------- #
@@ -1650,7 +1650,7 @@ class UCIdnsmasq(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci add_list dhcp.{self.name}.server='{dns}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIodchp(UCIConfig):
@@ -1686,7 +1686,7 @@ class UCIodchp(UCIConfig):
             f"uci set dhcp.{self.name}.leasetrigger='/usr/sbin/odhcpd-update'",
             f"uci set dhcp.{self.name}.loglevel='{self.loglevel}'",
         )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIDHCP(UCIConfig):
@@ -1733,7 +1733,7 @@ class UCIDHCP(UCIConfig):
             f"uci set dhcp.{self.name}.leasetime='{self.leasetime}'",
             f"uci set dhcp.{self.name}.ra='server'",
         )
-        return self.builded_string
+        return self.built_string
 
 
 class UCIHost(UCIConfig):
@@ -1800,7 +1800,7 @@ class UCIHost(UCIConfig):
             self.contatenate_uci_commands(
                 f"uci set dhcp.{self.name}.duid='{self.duid}'"
             )
-        return self.builded_string
+        return self.built_string
 
 
 # ---------------------------------------------------------------------------- #
@@ -1839,4 +1839,4 @@ class UCIDropbear(UCIConfig):
             f"uci set dropbear.{self.name}.RootPasswordAuth='off'",
             f"uci set dropbear.{self.name}.Port='22'",
         )
-        return self.builded_string
+        return self.built_string
