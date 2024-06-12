@@ -15,13 +15,16 @@ unit-tests:
   image: docker:24.0.7
   services:
     - docker:24.0.7-dind
-  
   script:
-    - docker compose -f docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests  
+    - docker compose -f docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests
+  rules:
+    - when: always  
 
 deploy:
   image: docker:latest
   stage: deploy
+  tags:
+    - deploy
   script:
     - echo "$SSH_PRIVATE_KEY" > ssh_private_key
     - chmod 400 ssh_private_key
@@ -30,5 +33,3 @@ deploy:
       docker compose stop &&
       docker compose rm -f &&
       docker compose up -d --build"
-  rules:
-    - when: always
