@@ -45,7 +45,10 @@ async def get_file_config_init(mac: str):
     """
     mac_box = MacAddress(mac).getMac()
     if mac_box is not None:
-        ac2350.create_configfile(mac_box)
+        try:
+            ac2350.create_configfile(mac_box)
+        except ValueError as e:
+            raise HTTPException(404, {"Erreur": str(e)})
         return FileResponse(
             f"{config.FILE_SAVING_PATH}configfile_" + mac_box + ".txt",
             filename="configfile.txt",

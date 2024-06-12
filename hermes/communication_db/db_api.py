@@ -20,6 +20,8 @@ class DbApi:
     def get_box_by_mac(self, mac: str) -> Box:
         """Get a box by its MAC address."""
         res = self.db.boxes.find_one({"mac": mac})
+        if res is None:
+            raise ValueError(f"Box with MAC address {mac} not found")
         res["_id"] = str(res["_id"])
         box = Box.model_validate(res)
         return box
