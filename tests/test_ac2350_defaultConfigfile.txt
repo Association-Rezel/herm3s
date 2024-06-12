@@ -73,7 +73,7 @@ uci set firewall.manageme_mgt_allow_daemon.proto='tcp'
 uci set firewall.manageme_mgt_allow_daemon.target='ACCEPT'
 uci set firewall.manageme_mgt_allow_daemon.family='ipv6'
 uci set firewall.manageme_mgt_allow_daemon.src='zone_management'
-uci set firewall.manageme_mgt_allow_daemon.dest_port='50051'   
+uci set firewall.manageme_mgt_allow_daemon.dest_port='50051'
 uci commit
 service firewall restart
 /-- SEPARATOR dhcp --/
