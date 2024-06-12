@@ -94,7 +94,7 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         )
         self.firewall_commands.append(self.static_mgt_zone)
 
-        self.rule_icmpv6_mgt =  UCI.UCIRule(
+        self.rule_icmpv6_mgt = UCI.UCIRule(
             unetid="manageme",
             name=UCI.UCISectionName("mgt_allow_ping"),
             desc=UCI.Description("Allow ICMPv6 to MGT"),
