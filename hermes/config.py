@@ -21,6 +21,4 @@ if "FILE_SAVING_PATH" in os.environ:
 elif config_file_exists and "FILE_SAVING_PATH" in config["api"]:
     FILE_SAVING_PATH = config["api"]["FILE_SAVING_PATH"]
 else:
-    FILE_SAVING_PATH = (
-        "/dev/shm/"
-    )
+    FILE_SAVING_PATH = "/dev/shm/"

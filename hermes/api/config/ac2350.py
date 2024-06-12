@@ -8,7 +8,6 @@ from ...hermes_command_building import uci_common as UCI
 from ... import config
 
 
-
 def create_configfile(mac_address: str):
     """
     Function to create the configuration files for all users
