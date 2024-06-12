@@ -6,6 +6,9 @@
 #run commande to up docker compose
 docker compose -f docker-compose.unit_tests.yaml up -d --build
 
+docker stop mongodb-import
+docker rm mongodb-import
+
 #wait the end of the container unit_tests
 test=$(docker ps | grep unit_tests)
 while [ -n "$test" ]; do
@@ -20,7 +23,6 @@ docker logs unit_tests
 docker compose stop api_hermes
 docker stop mongodb
 docker rm mongodb
-docker stop mongodb-import
-docker rm mongodb-import
+
 
 
