@@ -9,7 +9,7 @@ RUN  pip install --upgrade pip
 RUN  pip install -r /hermes/requirements.txt
 
 #for health check
-RUN apt update && apt install -y curl 
+RUN apt-get update && apt-get install -y curl 
 
 COPY ./hermes /hermes
 

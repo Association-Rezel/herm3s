@@ -1,20 +1,7 @@
 stages:
   - linting
-  - build-tests
   - unit-tests
-
-
-unit-tests:
-  stage: unit-tests
-  image: docker:24.0.7
-  services:
-    - docker:24.0.7-dind
-  
-  script:
-    - docker compose -f docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests  
-
-
-  
+  - deploy
 
 # linting:
 #   stage: linting
@@ -22,3 +9,26 @@ unit-tests:
 #   script:
 #     - pip install black
 #     - black --check .
+
+# unit-tests:
+#   stage: unit-tests
+#   image: docker:24.0.7
+#   services:
+#     - docker:24.0.7-dind
+  
+#   script:
+#     - docker compose -f docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests  
+
+deploy:
+  image: docker:latest
+  stage: deploy
+  script:
+    - echo "$SSH_PRIVATE_KEY" > ssh_private_key
+    - chmod 400 ssh_private_key
+    - scp -i ssh_private_key -o StrictHostKeyChecking=no -r ./* ${VM_USER}@${VM_IP}:/opt/hermes/
+    - ssh -i ssh_private_key -o StrictHostKeyChecking=no $VM_USER@$VM_IP "cd /opt/hermes &&
+      docker compose stop &&
+      docker compose rm -f &&
+      docker compose up -d --build"
+  rules:
+    - when: always
