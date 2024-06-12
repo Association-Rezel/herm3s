@@ -3,21 +3,21 @@ stages:
   - unit-tests
   - deploy
 
-# linting:
-#   stage: linting
-#   image: python
-#   script:
-#     - pip install black
-#     - black --check .
+linting:
+  stage: linting
+  image: python
+  script:
+    - pip install black
+    - black --check .
 
-# unit-tests:
-#   stage: unit-tests
-#   image: docker:24.0.7
-#   services:
-#     - docker:24.0.7-dind
+unit-tests:
+  stage: unit-tests
+  image: docker:24.0.7
+  services:
+    - docker:24.0.7-dind
   
-#   script:
-#     - docker compose -f docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests  
+  script:
+    - docker compose -f docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests  
 
 deploy:
   image: docker:latest

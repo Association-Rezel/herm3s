@@ -1,5 +1,6 @@
 from netaddr import EUI
 
+
 class MacAddress:
     """
     Class to check if the mac address is valid and store it
@@ -9,7 +10,9 @@ class MacAddress:
 
     def __init__(self, mac: str):
         try:
-            self.___mac = str(EUI(mac)).replace("-", ":") # Convert the mac address to the correct format
+            self.___mac = str(EUI(mac)).replace(
+                "-", ":"
+            )  # Convert the mac address to the correct format
         except Exception as e:
             print(e)
             self.___mac = None
