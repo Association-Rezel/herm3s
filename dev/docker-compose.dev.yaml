@@ -1,0 +1,27 @@
+services:
+  api_hermes:
+    volumes:
+      - ./dev_config.yaml:/config.yaml
+    container_name: api_hermes
+    build: ..
+    environment:
+      - CONFIG_PATH=/config.yaml
+    ports:
+      - "8000:8000"
+
+  mongodb:
+    container_name: mongodb
+    image: mongodb/mongodb-community-server:latest
+    ports:
+      - "27017:27017"
+
+  mongodb-import:
+    container_name: mongodb-import
+    image: mongodb/mongodb-community-server:latest
+    links:
+      - mongodb
+    volumes:
+      - ./mongodb-import:/mongodb-import
+    command: >
+      bash -c '
+      mongoimport --host mongodb --db test --collection hermestest1 --type json --file /mongodb-import/test.hermestest1.json --jsonArray'
