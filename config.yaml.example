@@ -1,8 +1,5 @@
 communication_db:
-  DB_URI: "mongodb://admintest:Rwy4ygL5hqoNUr@137.194.13.162/?retryWrites=true&w=majority&authSource=test"
-  DB_NAME: "test"
+  DB_URI: "mongodb://<username>:<password>@<db_address>/"
+  DB_NAME: "exampleName"
 api:
   FILE_SAVING_PATH: /dev/shm
-  DEF_ROUTER_IP_VLAN:
-    - 101: "10.101.0.1"
-    - 102: "10.102.0.1"

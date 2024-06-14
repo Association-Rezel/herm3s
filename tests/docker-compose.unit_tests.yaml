@@ -1,40 +1,36 @@
 services:
   api_hermes:
     volumes:
-      - ./tests/unit_tests_config.yaml.example:/config.yaml
-    container_name: api_hermes
-    build: .
+      - ./unit_tests_config.yaml:/config.yaml
+    container_name: test_api_hermes
+    build: ..
     environment:
       - CONFIG_PATH=/config.yaml
-      - TOKEN_NETBOX=91a0e80dd5c290ba0d7f7d070a9f3fd80a61e6ea
-      - URL_NETBOX=http://netbox.dev.fai.rezel.net/graphql/
-      - DEF_ROUTER_IP_VLAN={"101":"137.194.8.1","102":"195.14.28.1"}
       - FILE_SAVING_PATH=/dev/shm
     ports:
-      - "80:8000"
+      - "8000:8000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://api_hermes:8000/status"]
-      interval: 20s
-      timeout: 15s
+      test: ["CMD", "curl", "-f", "http://test_api_hermes:8000/status"]
+      interval: 2s
+      timeout: 5s
       retries: 10
 
   mongodb:
-    container_name: mongodb
+    container_name: test_mongodb
     image: mongodb/mongodb-community-server:latest
     ports:
       - "27017:27017"
 
   mongodb-import:
-    container_name: mongodb-import
+    container_name: test_mongodb-import
     image: mongodb/mongodb-community-server:latest
     links:
       - mongodb
     volumes:
-      - ./tests/mongodb-import:/mongodb-import
+      - ./mongodb-import:/mongodb-import
     command: >
       bash -c '
-      mongoimport --host mongodb --db test --collection hermestest1 --type json --file /mongodb-import/test.hermestest1.json --jsonArray &&
-      sleep infinity'
+      mongoimport --host test_mongodb --db test --collection hermestest1 --type json --file /mongodb-import/test.hermestest1.json --jsonArray && sleep infinity'
     
 
   unit_tests:
@@ -43,7 +39,7 @@ services:
        api_hermes:
           condition: service_healthy
     build: 
-      context: ./tests/
+      context: .
       dockerfile: Dockerfile.unit_tests
     environment:
       - PATH_DEFAULT_CONFIG_FILE=/
@@ -59,7 +55,7 @@ services:
       - PATH_CONFIG_FILE_TEST=/
       - NAME_CONFIG_FILE_TEST=test_ac2350_configfile_received.txt
 
-      - URL=http://api_hermes:8000
+      - URL=http://test_api_hermes:8000
       - ENDPOINT_DEFAULT_CONFIG=/v1/config/ac2350/default/file
       - ENDPOINT_CONFIG=/v1/config/ac2350/
       - ENDPOINT_STATUS=/status

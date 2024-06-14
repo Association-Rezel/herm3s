@@ -10,7 +10,7 @@ class MacAddress:
 
     def __init__(self, mac: str):
         try:
-            self.___mac = str(EUI(mac)).replace(
+            self.___mac = str(EUI(mac).format()).replace(
                 "-", ":"
             )  # Convert the mac address to the correct format
         except Exception as e:

@@ -5,32 +5,10 @@ Defines Models for the database
 from pydantic import BaseModel, Field
 
 
-REGEX_IPV4_MASK = (
-    r"^(((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4})\/(3[0-2]|[1-2][0-9]|[0-9])$"
-)
-REGEX_IPV4_NO_MASK = r"^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])\.?\b){4}$"
+REGEX_IPV4_CIDR = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\/(?:[0-9]|[1-2][0-9]|3[0-2])$"
+REGEX_IPV4 = r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
 REGEX_MAC = r"([0-9a-fA-F]{2}(:[0-9a-fA-F]{2}){5})"
 REGEX_UNET_ID = r"^[a-z0-9]{8}$"
-
-
-class IpMask(BaseModel):
-    """
-    IpMask Model
-    ex : {"ip": "0.0.0.0/8", "version": "ipv4"}
-    """
-
-    ip: str
-    version: str
-
-
-class IpNoMask(BaseModel):
-    """
-    IpNoMask Model
-    ex: {"ip": "0.0.0.0", "version": "ipv4"}
-    """
-
-    ip: str
-    version: str
 
 
 class WanIpv4(BaseModel):
@@ -39,7 +17,7 @@ class WanIpv4(BaseModel):
     """
 
     vlan: str
-    ip: str = Field(pattern=REGEX_IPV4_MASK)
+    ip: str = Field(pattern=REGEX_IPV4_CIDR)
 
 
 class WanIpv6(BaseModel):
@@ -56,7 +34,7 @@ class LanIpv4(BaseModel):
     LanIpv4 Model
     """
 
-    net: str
+    address: str
 
 
 class UnetNetwork(BaseModel):
@@ -85,7 +63,7 @@ class Ipv4Portforwarding(BaseModel):
     """
 
     wan_port: int
-    lan_ip: str = Field(pattern=REGEX_IPV4_NO_MASK)
+    lan_ip: str = Field(pattern=REGEX_IPV4)
     lan_port: int
     protocol: str
     name: str
@@ -124,22 +102,14 @@ class UnetProfile(BaseModel):
     firewall: UnetFirewall
 
 
-class NetGateway(BaseModel):
-    """
-    NetGateway Model : contains a network and the default gateway in it
-    """
-
-    net: IpMask
-    gateway: IpNoMask
-
-
 class WanVlan(BaseModel):
     """
     WanVlan Model
     """
 
     vlan_id: str
-    net_gateway: list[NetGateway]
+    ipv4_gateway: str = Field(pattern=REGEX_IPV4_CIDR + r"|^$")
+    ipv6_gateway: str
 
 
 class Box(BaseModel):
