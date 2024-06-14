@@ -16,7 +16,7 @@ unit-tests:
   services:
     - docker:24.0.7-dind
   script:
-    - docker compose -f docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests
+    - docker compose -f tests/docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests
   rules:
     - when: always  
 
@@ -28,8 +28,11 @@ deploy:
   script:
     - echo "$SSH_PRIVATE_KEY" > ssh_private_key
     - chmod 400 ssh_private_key
+    - cp $CONFIG_FILE config.yaml
     - scp -i ssh_private_key -o StrictHostKeyChecking=no -r ./* ${VM_USER}@${VM_IP}:/opt/hermes/
     - ssh -i ssh_private_key -o StrictHostKeyChecking=no $VM_USER@$VM_IP "cd /opt/hermes &&
       docker compose stop &&
       docker compose rm -f &&
       docker compose up -d --build"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"

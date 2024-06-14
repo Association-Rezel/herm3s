@@ -9,12 +9,12 @@ if "CONFIG_PATH" in os.environ and os.path.exists(os.environ["CONFIG_PATH"]):
     with open(os.environ["CONFIG_PATH"], "r", encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-if "DEF_ROUTER_IP_VLAN" in os.environ:
-    DEF_ROUTER_IP_VLAN = json.loads(os.environ["DEF_ROUTER_IP_VLAN"])
-elif config_file_exists and "DEF_ROUTER_IP_VLAN" in config["api"]:
-    DEF_ROUTER_IP_VLAN = config["api"]["DEF_ROUTER_IP_VLAN"]
+if "DNS_SERVERS" in os.environ:
+    DNS_SERVERS = json.loads(os.environ["DNS_SERVERS"])
+elif config_file_exists and "DNS_SERVERS" in config["api"]:
+    DNS_SERVERS = config["api"]["DNS_SERVERS"]
 else:
-    DEF_ROUTER_IP_VLAN = {101: "10.121.0.1", 102: "10.122.0.1"}
+    DNS_SERVERS = ["8.8.8.8", "8.8.4.4"]
 
 if "FILE_SAVING_PATH" in os.environ:
     FILE_SAVING_PATH = os.environ["FILE_SAVING_PATH"]

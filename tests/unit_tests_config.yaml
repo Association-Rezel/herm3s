@@ -1,0 +1,5 @@
+communication_db:
+  DB_URI: "mongodb://mongodb:27017/"
+  DB_NAME: "test"
+api:
+  FILE_SAVING_PATH: /dev/shm
