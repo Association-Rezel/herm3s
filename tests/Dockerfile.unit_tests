@@ -3,7 +3,7 @@ FROM alpine:latest
 
 
 # Install necessary dependencies
-RUN apk update && apk add --no-cache bash && apk add --no-cache curl && apk add --no-cache jq && apk add dos2unix
+RUN apk update && apk add --no-cache bash curl jq dos2unix
 
 # Copy the script to the container
 COPY unit_tests.sh .
@@ -13,6 +13,7 @@ COPY test_ac2350_configfile.txt .
 
 # Make the script executable
 RUN chmod +x unit_tests.sh
+# Because some bad guys code on Windows with CRLF
 RUN dos2unix unit_tests.sh
 RUN dos2unix test_ac2350_defaultConfigfile.txt
 RUN dos2unix test_ac2350_configfile.txt
