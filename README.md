@@ -1,9 +1,21 @@
 # Hermès v3
 
-## Quick start
-1) Créer un fichier de config:
-    - 
+## MAKEFILE information
 
-## Procédure pour lancer les tests unitaires
+To host the project locally, you can use the following command (it will host the service in a docker and launch a docker mongodb) :
 
-/!\ Léo
+```bash
+make dev
+```
+
+To launch the unit tests :
+
+```bash
+make test
+```
+
+For more information :
+
+```bash
+make help
+```
