@@ -29,6 +29,7 @@ deploy:
     - echo "$SSH_PRIVATE_KEY" > ssh_private_key
     - chmod 400 ssh_private_key
     - cp $CONFIG_FILE config.yaml
+    - 'echo "PTAH_ACCESS_TOKEN="$PTAH_ACCESS_TOKEN >> .env'
     - scp -i ssh_private_key -o StrictHostKeyChecking=no -r ./* ${VM_USER}@${VM_IP}:/opt/hermes/
     - ssh -i ssh_private_key -o StrictHostKeyChecking=no $VM_USER@$VM_IP "cd /opt/hermes &&
       docker compose stop &&

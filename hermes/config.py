@@ -22,3 +22,17 @@ elif config_file_exists and "FILE_SAVING_PATH" in config["api"]:
     FILE_SAVING_PATH = config["api"]["FILE_SAVING_PATH"]
 else:
     FILE_SAVING_PATH = "/dev/shm/"
+
+if "PTAH_ACCESS_TOKEN" in os.environ:
+    PTAH_ACCESS_TOKEN = os.environ["PTAH_ACCESS_TOKEN"]
+elif config_file_exists and "PTAH_ACCESS_TOKEN" in config["api"]:
+    PTAH_ACCESS_TOKEN = config["api"]["PTAH_ACCESS_TOKEN"]
+else:
+    PTAH_ACCESS_TOKEN = "notset"
+
+if "GITLAB_BASE_URL" in os.environ:
+    GITLAB_BASE_URL = os.environ["GITLAB_BASE_URL"]
+elif config_file_exists and "GITLAB_BASE_URL" in config["api"]:
+    GITLAB_BASE_URL = config["api"]["GITLAB_BASE_URL"]
+else:
+    GITLAB_BASE_URL = "https://gitlab.fai.rezel.net/api/v4/projects/15/releases/"
