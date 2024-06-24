@@ -43,9 +43,6 @@ def create_configfile(mac_address: str):
     # Get the main unet id
     main_user_unetid = box.main_unet_id
 
-    # Count lan_vlan
-    indice_lan_vlan = 1
-
     for unet in box.unets:
 
         wan_ip_address = IPNetwork(unet.network.wan_ipv4.ip).ip
@@ -91,7 +88,7 @@ def create_configfile(mac_address: str):
                 lan_network=UCI.IPNetwork(lan_ip_network),
                 wifi_passphrase=UCI.WifiPassphrase(unet.wifi.psk),
                 wan_vlan=int(unet.network.wan_ipv4.vlan),
-                lan_vlan=indice_lan_vlan,
+                lan_vlan=unet.network.lan_ipv4.vlan,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_v4),
                 wan6_address=UCI.IPNetwork(unet.network.wan_ipv6.ip),
@@ -107,7 +104,7 @@ def create_configfile(mac_address: str):
                 wan_netmask=UCI.IPAddress(wan_ip_netmask),
                 lan_address=UCI.IPAddress(lan_ip_address),
                 lan_network=UCI.IPNetwork(lan_ip_network),
-                lan_vlan=indice_lan_vlan,
+                lan_vlan=unet.network.lan_ipv4.vlan,
                 wifi_passphrase=UCI.WifiPassphrase(unet.wifi.psk),
                 wan_vlan=int(unet.network.wan_ipv4.vlan),
                 default_config=defconf,
@@ -137,9 +134,6 @@ def create_configfile(mac_address: str):
                 proto=UCI.Protocol(port_forwarding.protocol),
             )
             user_port_forwarding.build_firewall(Fireconf)
-
-        # Update lan_vlan
-        indice_lan_vlan += 1
 
     # Add to the config file
     with open(
