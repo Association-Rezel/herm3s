@@ -24,7 +24,7 @@ all: dev tests
 .PHONY: dev
 dev:
 	@echo "Starting the dev compose"
-	docker compose -f dev/docker-compose.dev.yml up --build
+	docker compose -f dev/docker-compose.dev.yaml up --build
 
 ###################
 # TESTS

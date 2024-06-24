@@ -1,12 +1,13 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
+from fastapi.responses import StreamingResponse
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from .api.MacAddress import MacAddress
-from .api.config import ac2350
+from .api.config import ac2350 as config_ac2350
+import requests
 from . import config
-
 
 app = FastAPI()
 
@@ -37,7 +38,7 @@ async def status():
 
 # download file from hermes to box
 @app.get("/v1/config/ac2350/{mac}")
-async def get_file_config_init(mac: str):
+async def ac2350_get_file_config_init(mac: str):
     """
     Download the configuration file for the box with the mac address mac
     args:
@@ -46,7 +47,7 @@ async def get_file_config_init(mac: str):
     mac_box = MacAddress(mac).getMac()
     if mac_box is not None:
         try:
-            ac2350.create_configfile(mac_box)
+            config_ac2350.create_configfile(mac_box)
         except ValueError as e:
             raise HTTPException(404, {"Erreur": str(e)})
         return FileResponse(
@@ -58,14 +59,47 @@ async def get_file_config_init(mac: str):
 
 
 @app.get("/v1/config/ac2350/default/file")
-async def get_default_config():
+async def ac2350_get_default_config():
     """
     Download the default configuration file
     """
-    ac2350.create_default_configfile()
+    config_ac2350.create_default_configfile()
     return FileResponse(
         f"{config.FILE_SAVING_PATH}defaultConfigfile.txt",
         filename="defaultConfigfile.txt",
+    )
+
+
+@app.get("/v1/sysupgrade/{box}/{version}")
+async def sysupgrade(box: str, version: str):
+    """
+    Download the default configuration file
+    """
+    if version == "latest":
+        url = f"{config.GITLAB_BASE_URL}/permalink/latest/downloads/bin/openwrt-ptah-{box}.bin"
+    else:
+        url = f"{config.GITLAB_BASE_URL}{version}/downloads/bin/openwrt-ptah-{box}.bin"
+    headers = {"PRIVATE-TOKEN": config.PTAH_ACCESS_TOKEN}
+    try:
+        response = requests.get(url, stream=True, headers=headers, timeout=10)
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(500, {"Erreur": str(e)})
+    if response.status_code == 404:
+        raise HTTPException(
+            response.status_code, {"Erreur": "version not found on gitlab"}
+        )
+    elif response.status_code != 200:
+        raise HTTPException(
+            response.status_code, {"Erreur": "unable to retrieve file from gitlab"}
+        )
+
+    def iter_content(response: requests.Response):
+        for chunk in response.iter_content(chunk_size=8192):
+            yield chunk
+
+    return StreamingResponse(
+        iter_content(response),
+        headers={"Content-Disposition": "attachment; filename=sysupgrade.bin"},
     )
 
 
