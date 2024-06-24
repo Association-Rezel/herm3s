@@ -35,6 +35,7 @@ class LanIpv4(BaseModel):
     """
 
     address: str
+    vlan: int
 
 
 class UnetNetwork(BaseModel):

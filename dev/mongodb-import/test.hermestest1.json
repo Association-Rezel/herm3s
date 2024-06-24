@@ -1,184 +1,192 @@
-[
-  {
-    "mac": "0C:C4:45:91:00:00",
-    "type": "ac2350",
-    "main_unet_id": "antroboo",
-    "unets": [
-      {
-        "unet_id": "antroboo",
-        "network": {
-          "wan_ipv4": {
-            "vlan": "101",
-            "ip": "137.194.8.2/24"
-          },
-          "wan_ipv6": {
-            "vlan": "103",
-            "ip": "2a09:6847:ffff::0802/64"
-          },
-          "ipv6_prefix": "2a09:6847:0802::/48",
-          "lan_ipv4": {
-            "address": "192.168.0.1/24"
-          }
-        },
-        "wifi": {
-          "ssid": "Rezel-main",
-          "psk": "password"
-        },
-        "firewall": {
-          "ipv4_port_forwarding": [
-            {
-              "wan_port": "80",
-              "lan_ip": "192.168.0.3",
-              "lan_port": "80",
-              "protocol": "tcp",
-              "name": "http_to_internal",
-              "desc": "Forward http to internal server"
-            }
-          ],
-          "ipv6_port_opening": [
-            {
-              "ip": "2a09:6847:402:0:ee2:7ff:fe59:0",
-              "port": "80",
-              "protocol": "tcp",
-              "name": "http_to_internal_ipv6",
-              "desc": "Forward http to internal server"
-            }
-          ]
-        }
-      },
-      {
-        "unet_id": "nathanbo",
-        "network": {
-          "wan_ipv4": {
-            "vlan": "102",
-            "ip": "195.14.28.2/24"
-          },
-          "wan_ipv6": {
-            "vlan": "103",
-            "ip": "2a09:6847:ffff::0402/64"
-          },
-          "ipv6_prefix": "2a09:6847:0402::/48",
-          "lan_ipv4": {
-            "address": "192.168.1.1/24"
-          }
-        },
-        "wifi": {
-          "ssid": "Rezel-secondary",
-          "psk": "password"
-        },
-        "firewall": {
-          "ipv4_port_forwarding": [],
-          "ipv6_port_opening": []
-        }
-      }
-    ],
-    "wan_vlan": [
-      {
-        "vlan_id": "101",
-        "ipv4_gateway": "137.194.8.1/24",
-        "ipv6_gateway": ""
-      },
-      {
-        "vlan_id": "102",
-        "ipv4_gateway": "195.14.28.1/24",
-        "ipv6_gateway": ""
-      },
-      {
-        "vlan_id": "103",
-        "ipv4_gateway": "",
-        "ipv6_gateway": "2a09:6847:ffff::1/64"
-      }
-    ]
+[{
+  "_id": {
+    "$oid": "66792cd41772e774b6c90c24"
   },
-  {
-    "mac": "00:00:00:00:00:00",
-    "type": "ac2350",
-    "main_unet_id": "ac2350a1",
-    "unets": [
-      {
-        "unet_id": "ac2350a1",
-        "network": {
-          "wan_ipv4": {
-            "vlan": "101",
-            "ip": "137.194.8.3/24"
-          },
-          "wan_ipv6": {
-            "vlan": "103",
-            "ip": "2a09:6847:ffff::0803/64"
-          },
-          "ipv6_prefix": "2a09:6847:0803::/48",
-          "lan_ipv4": {
-            "address": "192.168.0.1/24"
-          }
+  "mac": "0C:C4:45:91:00:00",
+  "type": "ac2350",
+  "main_unet_id": "antroboo",
+  "unets": [
+    {
+      "unet_id": "antroboo",
+      "network": {
+        "wan_ipv4": {
+          "vlan": "101",
+          "ip": "137.194.8.2/24"
         },
-        "wifi": {
-          "ssid": "Rezel-main",
-          "psk": "password"
+        "wan_ipv6": {
+          "vlan": "103",
+          "ip": "2a09:6847:ffff::0802/64"
         },
-        "firewall": {
-          "ipv4_port_forwarding": [
-            {
-              "wan_port": "80",
-              "lan_ip": "192.168.0.3",
-              "lan_port": "80",
-              "protocol": "tcp",
-              "name": "http_to_internal",
-              "desc": "Forward http to internal server"
-            }
-          ],
-          "ipv6_port_opening": [
-            {
-              "ip": "2a09:6847:402:0:ee2:7ff:fe59:0",
-              "port": "80",
-              "protocol": "tcp",
-              "name": "http_to_internal_ipv6",
-              "desc": "Forward http to internal server"
-            }
-          ]
+        "ipv6_prefix": "2a09:6847:0802::/48",
+        "lan_ipv4": {
+          "address": "192.168.0.1/24",
+          "vlan": 0
         }
       },
-      {
-        "unet_id": "ac2350a2",
-        "network": {
-          "wan_ipv4": {
-            "vlan": "102",
-            "ip": "195.14.28.3/24"
-          },
-          "wan_ipv6": {
-            "vlan": "103",
-            "ip": "2a09:6847:ffff::0403/64"
-          },
-          "ipv6_prefix": "2a09:6847:0403::/48",
-          "lan_ipv4": {
-            "address": "192.168.1.1/24"
+      "wifi": {
+        "ssid": "Rezel-main",
+        "psk": "password"
+      },
+      "firewall": {
+        "ipv4_port_forwarding": [
+          {
+            "wan_port": "80",
+            "lan_ip": "192.168.0.3",
+            "lan_port": "80",
+            "protocol": "tcp",
+            "name": "http_to_internal",
+            "desc": "Forward http to internal server"
           }
+        ],
+        "ipv6_port_opening": [
+          {
+            "ip": "2a09:6847:402:0:ee2:7ff:fe59:0",
+            "port": "80",
+            "protocol": "tcp",
+            "name": "http_to_internal_ipv6",
+            "desc": "Forward http to internal server"
+          }
+        ]
+      }
+    },
+    {
+      "unet_id": "nathanbo",
+      "network": {
+        "wan_ipv4": {
+          "vlan": "102",
+          "ip": "195.14.28.2/24"
         },
-        "wifi": {
-          "ssid": "Rezel-secondary",
-          "psk": "password"
+        "wan_ipv6": {
+          "vlan": "103",
+          "ip": "2a09:6847:ffff::0402/64"
         },
-        "firewall": {
-          "ipv4_port_forwarding": [],
-          "ipv6_port_opening": []
+        "ipv6_prefix": "2a09:6847:0402::/48",
+        "lan_ipv4": {
+          "address": "192.168.1.1/24",
+          "vlan": 1
         }
-      }
-    ],
-    "wan_vlan": [
-      {
-        "vlan_id": "101",
-        "ipv4_gateway": "137.194.8.1/24",
-        "ipv6_gateway": ""
       },
-      {
-        "vlan_id": "102",
-        "ipv4_gateway": "195.14.28.1/24",
-        "ipv6_gateway": ""
+      "wifi": {
+        "ssid": "Rezel-secondary",
+        "psk": "password"
       },
-      {
-        "vlan_id": "103",
-        "ipv4_gateway": "",
-        "ipv6_gateway": "2a09:6847:ffff::1/64"
+      "firewall": {
+        "ipv4_port_forwarding": [],
+        "ipv6_port_opening": []
       }
-    ]
-  }
-]
+    }
+  ],
+  "wan_vlan": [
+    {
+      "vlan_id": "101",
+      "ipv4_gateway": "137.194.8.1/24",
+      "ipv6_gateway": ""
+    },
+    {
+      "vlan_id": "102",
+      "ipv4_gateway": "195.14.28.1/24",
+      "ipv6_gateway": ""
+    },
+    {
+      "vlan_id": "103",
+      "ipv4_gateway": "",
+      "ipv6_gateway": "2a09:6847:ffff::1/64"
+    }
+  ]
+},
+{
+  "_id": {
+    "$oid": "66792cd41772e774b6c90c25"
+  },
+  "mac": "00:00:00:00:00:00",
+  "type": "ac2350",
+  "main_unet_id": "ac2350a1",
+  "unets": [
+    {
+      "unet_id": "ac2350a1",
+      "network": {
+        "wan_ipv4": {
+          "vlan": "101",
+          "ip": "137.194.8.3/24"
+        },
+        "wan_ipv6": {
+          "vlan": "103",
+          "ip": "2a09:6847:ffff::0803/64"
+        },
+        "ipv6_prefix": "2a09:6847:0803::/48",
+        "lan_ipv4": {
+          "address": "192.168.0.1/24",
+          "vlan": 0
+        }
+      },
+      "wifi": {
+        "ssid": "Rezel-main",
+        "psk": "password"
+      },
+      "firewall": {
+        "ipv4_port_forwarding": [
+          {
+            "wan_port": "80",
+            "lan_ip": "192.168.0.3",
+            "lan_port": "80",
+            "protocol": "tcp",
+            "name": "http_to_internal",
+            "desc": "Forward http to internal server"
+          }
+        ],
+        "ipv6_port_opening": [
+          {
+            "ip": "2a09:6847:402:0:ee2:7ff:fe59:0",
+            "port": "80",
+            "protocol": "tcp",
+            "name": "http_to_internal_ipv6",
+            "desc": "Forward http to internal server"
+          }
+        ]
+      }
+    },
+    {
+      "unet_id": "ac2350a2",
+      "network": {
+        "wan_ipv4": {
+          "vlan": "102",
+          "ip": "195.14.28.3/24"
+        },
+        "wan_ipv6": {
+          "vlan": "103",
+          "ip": "2a09:6847:ffff::0403/64"
+        },
+        "ipv6_prefix": "2a09:6847:0403::/48",
+        "lan_ipv4": {
+          "address": "192.168.1.1/24",
+          "vlan": 0
+        }
+      },
+      "wifi": {
+        "ssid": "Rezel-secondary",
+        "psk": "password"
+      },
+      "firewall": {
+        "ipv4_port_forwarding": [],
+        "ipv6_port_opening": []
+      }
+    }
+  ],
+  "wan_vlan": [
+    {
+      "vlan_id": "101",
+      "ipv4_gateway": "137.194.8.1/24",
+      "ipv6_gateway": ""
+    },
+    {
+      "vlan_id": "102",
+      "ipv4_gateway": "195.14.28.1/24",
+      "ipv6_gateway": ""
+    },
+    {
+      "vlan_id": "103",
+      "ipv4_gateway": "",
+      "ipv6_gateway": "2a09:6847:ffff::1/64"
+    }
+  ]
+}]
