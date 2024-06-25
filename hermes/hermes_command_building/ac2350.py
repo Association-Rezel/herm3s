@@ -242,7 +242,7 @@ class HermesUser(ccb.HermesConfigBuilder):
             target=UCI.IPNetwork("0.0.0.0/0"),
             gateway=default_router,
             interface=self.wan_int,
-            table=int(f"1{str(lan_vlan).zfill(2)}"),
+            table=int(f"4{str(lan_vlan).zfill(2)}"),
         )
         self.network_commands.append(self.route)
 
@@ -264,17 +264,17 @@ class HermesUser(ccb.HermesConfigBuilder):
         )
         self.network_commands.append(self.wan6_int)
 
-        self.route6 = UCI.UCIRoute(
+        self.route6 = UCI.UCIRoute6(
             unetid=unetid,
             name_prefix="route6_default_wan_",
             target=UCI.IPNetwork("::/0"),
             gateway=default_router6,
             interface=self.wan6_int,
-            table=int(f"1{str(lan_vlan).zfill(2)}"),
+            table=int(f"6{str(lan_vlan).zfill(2)}"),
         )
         self.network_commands.append(self.route6)
 
-        self.route6_rule = UCI.UCIRouteRule(
+        self.route6_rule = UCI.UCIRoute6Rule(
             name=UCI.UCISectionName(f"route6_rule_{unetid}"),
             src=unet6_prefix,
             lookup=self.route6.table,
@@ -738,7 +738,7 @@ if __name__ == "__main__":
     defconf.build_dropbear(Dropbearconf)
     # def router 2a09:6847:ffff::1/64
     # Print the default configuration
-    PRINTDEF = True
+    PRINTDEF = False
     if PRINTDEF is True:
         print("------ DEFAULT CONFIGURATION ------")
         print(Netconf.build())
