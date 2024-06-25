@@ -30,7 +30,7 @@ services:
       - ./mongodb-import:/mongodb-import
     command: >
       bash -c '
-      mongoimport --host test_mongodb --db test --collection hermestest1 --type json --file /mongodb-import/test.hermestest1.json --jsonArray && sleep infinity'
+      mongoimport --host test_mongodb --db test --collection boxes --type json --file /mongodb-import/test.boxes.json --jsonArray && sleep infinity'
     
 
   unit_tests:
