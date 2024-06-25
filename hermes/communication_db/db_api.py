@@ -15,7 +15,7 @@ class DbApi:
         print(f"{DB_URI=} ; {DB_NAME=}")
         self.mongodb_client = MongoClient(DB_URI)
         self.db = self.mongodb_client[DB_NAME]
-        self.db.boxes = self.db.hermestest1
+        self.db.boxes = self.db.boxes  # Collection name: boxes
 
     def get_box_by_mac(self, mac: str) -> Box:
         """Get a box by its MAC address."""
