@@ -521,6 +521,7 @@ class UCIRoute(UCIConfig):
             )
         return self.built_string
 
+
 class UCIRoute6Rule(UCIConfig):
     """
     Used to create a network route rule
