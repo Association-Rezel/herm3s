@@ -113,12 +113,20 @@ class WanVlan(BaseModel):
     ipv6_gateway: str
 
 
+class IdModel(BaseModel):
+    """
+    IdModel Model
+    """
+
+    oid: str = Field(alias="$oid")
+
+
 class Box(BaseModel):
     """
     Box Model
     """
 
-    id: str = Field(alias="_id")
+    id: str | IdModel | None = Field(alias="_id", default=None)
     type: str  # Type de box (ex: ac2350)
     main_unet_id: str = Field(pattern=REGEX_UNET_ID)
     mac: str = Field(pattern=REGEX_MAC)

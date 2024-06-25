@@ -10,3 +10,6 @@ hermes/communication_db/test.py
 
 # IntelliJ
 .idea/
+
+# Tests
+communication_db/scripts_model_validation/instance.txt
