@@ -521,6 +521,57 @@ class UCIRoute(UCIConfig):
             )
         return self.built_string
 
+class UCIRoute6Rule(UCIConfig):
+    """
+    Used to create a network route rule
+    See https://openwrt.org/docs/guide-user/network/routing/ip_rules
+    """
+
+    src: IPNetwork
+    lookup: int
+    dest: IPNetwork
+
+    def __init__(
+        self,
+        name: UCISectionName,
+        lookup: int,
+        src: IPNetwork = None,
+        dest: IPNetwork = None,
+    ):
+        """
+        Initialize the UCIRouteRule object
+
+        Args:
+            unetid (UNetId): The UNetId object.
+            src (IPNetwork): The source IP network.
+            lookup (int): The routing table to use.
+        """
+        super().__init__(name)
+        self.src = src
+        self.lookup = lookup
+        self.dest = dest
+
+    def uci_build_string(self):
+        """
+        Build the UCI configuration string for UCIRouteRule
+
+        Returns:
+            str: The UCI configuration string.
+        """
+        self.contatenate_uci_commands(
+            f"uci set network.{self.name}=rule6",
+            f"uci set network.{self.name}.lookup='{self.lookup}'",
+        )
+        if self.src is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.src='{self.src}'"
+            )
+        if self.dest is not None:
+            self.contatenate_uci_commands(
+                f"uci set network.{self.name}.dest='{self.dest}'"
+            )
+        return self.built_string
+
 
 class UCIRoute6(UCIConfig):
     """
