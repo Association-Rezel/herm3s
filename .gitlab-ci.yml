@@ -30,6 +30,7 @@ deploy:
     - chmod 400 ssh_private_key
     - cp $CONFIG_FILE config.yaml
     - 'echo "PTAH_ACCESS_TOKEN="$PTAH_ACCESS_TOKEN >> .env'
+    - ssh -i ssh_private_key -o StrictHostKeyChecking=no $VM_USER@$VM_IP "rm -rf /opt/hermes/*"
     - scp -i ssh_private_key -o StrictHostKeyChecking=no -r ./* ${VM_USER}@${VM_IP}:/opt/hermes/
     - scp -i ssh_private_key -o StrictHostKeyChecking=no -r ./.env ${VM_USER}@${VM_IP}:/opt/hermes/
     - ssh -i ssh_private_key -o StrictHostKeyChecking=no $VM_USER@$VM_IP "cd /opt/hermes &&
