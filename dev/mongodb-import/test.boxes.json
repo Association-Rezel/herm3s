@@ -147,7 +147,7 @@
           "ipv6_port_opening": []
         },
         "dhcp": {
-          "dns_ip_server": {
+          "dns_servers": {
             "ipv4": [
               "8.8.8.8",
               "137.194.15.132"
