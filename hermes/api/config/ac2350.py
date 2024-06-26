@@ -25,9 +25,7 @@ def create_configfile(mac_address: str):
     Dropbearconf = ccb.UCIDropbearConfig()
 
     # Create the default configuration
-    defconf = ac2350.HermesDefaultConfig(
-        UCI.DnsServers([UCI.IPAddress(dns) for dns in config.DNS_SERVERS])
-    )
+    defconf = ac2350.HermesDefaultConfig()
 
     defconf.build_network(Netconf)
     defconf.build_firewall(Fireconf)
@@ -87,6 +85,12 @@ def create_configfile(mac_address: str):
                 lan_address=UCI.IPAddress(lan_ip_address),
                 lan_network=UCI.IPNetwork(lan_ip_network),
                 wifi_passphrase=UCI.WifiPassphrase(unet.wifi.psk),
+                dns_servers_v4=UCI.DnsServers(
+                    [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv4]
+                ),
+                dns_servers_v6=UCI.DnsServers(
+                    [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv6]
+                ),
                 wan_vlan=int(unet.network.wan_ipv4.vlan),
                 lan_vlan=unet.network.lan_ipv4.vlan,
                 default_config=defconf,
@@ -106,6 +110,12 @@ def create_configfile(mac_address: str):
                 lan_network=UCI.IPNetwork(lan_ip_network),
                 lan_vlan=unet.network.lan_ipv4.vlan,
                 wifi_passphrase=UCI.WifiPassphrase(unet.wifi.psk),
+                dns_servers_v4=UCI.DnsServers(
+                    [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv4]
+                ),
+                dns_servers_v6=UCI.DnsServers(
+                    [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv6]
+                ),
                 wan_vlan=int(unet.network.wan_ipv4.vlan),
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_v4),
@@ -171,9 +181,7 @@ def create_default_configfile():
     Dropbearconf = ccb.UCIDropbearConfig()
 
     # create the default configuration
-    defconf = ac2350.HermesDefaultConfig(
-        UCI.DnsServers([UCI.IPAddress(dns) for dns in config.DNS_SERVERS])
-    )
+    defconf = ac2350.HermesDefaultConfig()
 
     defconf.build_network(Netconf)
     defconf.build_firewall(Fireconf)
