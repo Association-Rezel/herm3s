@@ -19,7 +19,7 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
     radio0: UCI.UCIWifiDevice
     radio1: UCI.UCIWifiDevice
 
-    def __init__(self, dns_servers: UCI.DnsServers):
+    def __init__(self):
         super().__init__()
         # Network Configuration
         self.loopback = UCI.UCIInterface(
@@ -130,7 +130,7 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         self.firewall_commands.append(self.rule_daemon_mgt)
 
         # DHCP Configuration
-        self.dhcp_commands.append(UCI.UCIdnsmasq(dns_servers))
+        self.dhcp_commands.append(UCI.UCIdnsmasq())
         self.dhcp_commands.append(UCI.UCIodchp())
 
         # Wireless Configuration
@@ -193,6 +193,8 @@ class HermesUser(ccb.HermesConfigBuilder):
         lan_address: UCI.IPAddress,
         lan_network: UCI.IPNetwork,
         wifi_passphrase: UCI.WifiPassphrase,
+        dns_servers_v4: UCI.DnsServers,
+        dns_servers_v6: UCI.DnsServers,
         wan_vlan: int,
         lan_vlan: int,
         default_config: HermesDefaultConfig,
@@ -214,6 +216,8 @@ class HermesUser(ccb.HermesConfigBuilder):
             lan_network (UCI.IPNetwork): The LAN network
             lan6_prefix (UCI.IPNetwork): The LAN IPv6 prefix
             wifi_passphrase (UCI.WifiPassphrase): The wifi passphrase
+            dns_servers_v4 (UCI.DnsServers): A list of ipv4 DNS servers
+            dns_servers_v6 (UCI.DnsServers): A list of ipv6 DNS servers
             wan_vlan (int): The WAN VLAN
             wan6_vlan (int): The WAN IPv6 VLAN
             default_config (HermesDefaultConfig): The default configuration
@@ -318,7 +322,12 @@ class HermesUser(ccb.HermesConfigBuilder):
 
         # DHCP Configuration
         self.dhcp = UCI.UCIDHCP(
-            interface=self.lan_int, start=100, limit=150, leasetime=12
+            interface=self.lan_int,
+            start=100,
+            limit=150,
+            leasetime=12,
+            dns_v4=dns_servers_v4,
+            dns_v6=dns_servers_v6,
         )
         self.dhcp_commands.append(self.dhcp)
 
@@ -401,6 +410,8 @@ class HermesMainUser(HermesUser):
         lan_address: UCI.IPAddress,
         lan_network: UCI.IPNetwork,
         wifi_passphrase: UCI.WifiPassphrase,
+        dns_servers_v4: UCI.DnsServers,
+        dns_servers_v6: UCI.DnsServers,
         wan_vlan: int,
         lan_vlan: int,
         default_config: HermesDefaultConfig,
@@ -420,6 +431,8 @@ class HermesMainUser(HermesUser):
             lan_address (UCI.IPAddress): The LAN address
             lan_network (UCI.IPNetwork): The LAN network
             wifi_passphrase (UCI.WifiPassphrase): The wifi passphrase
+            dns_servers_v4 (UCI.DnsServers): A list of ipv4 DNS servers
+            dns_servers_v6 (UCI.DnsServers): A list of ipv6 DNS servers
             wan_vlan (int): The WAN VLAN
             lan_vlan (int): The LAN VLAN
             default_config (HermesDefaultConfig): The default configuration
@@ -446,6 +459,8 @@ class HermesMainUser(HermesUser):
             lan_address=lan_address,
             lan_network=lan_network,
             wifi_passphrase=wifi_passphrase,
+            dns_servers_v4=dns_servers_v4,
+            dns_servers_v6=dns_servers_v6,
             wan_vlan=wan_vlan,
             lan_vlan=lan_vlan,
             default_config=default_config,
@@ -473,6 +488,8 @@ class HermesSecondaryUser(HermesUser):
         lan_address: UCI.IPAddress,
         lan_network: UCI.IPNetwork,
         wifi_passphrase: UCI.WifiPassphrase,
+        dns_servers_v4: UCI.DnsServers,
+        dns_servers_v6: UCI.DnsServers,
         wan_vlan: int,
         lan_vlan: int,
         default_config: HermesDefaultConfig,
@@ -492,6 +509,8 @@ class HermesSecondaryUser(HermesUser):
             lan_address (UCI.IPAddress): The LAN address
             lan_network (UCI.IPNetwork): The LAN network
             wifi_passphrase (UCI.WifiPassphrase): The wifi passphrase
+            dns_servers_v4 (UCI.DnsServers): A list of ipv4 DNS servers
+            dns_servers_v6 (UCI.DnsServers): A list of ipv6 DNS servers
             wan_vlan (int): The WAN VLAN
             lan_vlan (int): The LAN VLAN
             default_config (HermesDefaultConfig): The default configuration
@@ -516,6 +535,8 @@ class HermesSecondaryUser(HermesUser):
             lan_address=lan_address,
             lan_network=lan_network,
             wifi_passphrase=wifi_passphrase,
+            dns_servers_v4=dns_servers_v4,
+            dns_servers_v6=dns_servers_v6,
             wan_vlan=wan_vlan,
             lan_vlan=lan_vlan,
             default_config=default_config,
@@ -729,7 +750,7 @@ if __name__ == "__main__":
     Wirelessconf = ccb.UCIWirelessConfig()
     Dropbearconf = ccb.UCIDropbearConfig()
 
-    defconf = HermesDefaultConfig(UCI.DnsServers([UCI.IPAddress("8.8.8.8")]))
+    defconf = HermesDefaultConfig()
 
     defconf.build_network(Netconf)
     defconf.build_firewall(Fireconf)
@@ -756,6 +777,12 @@ if __name__ == "__main__":
             lan_address=UCI.IPAddress("192.168.0.1"),
             lan_network=UCI.IPNetwork("192.168.0.0/24"),
             wifi_passphrase=UCI.WifiPassphrase("password"),
+            dns_servers_v4=UCI.DnsServers(
+                [UCI.IPAddress("137.194.15.132"), UCI.IPAddress("137.194.15.222")]
+            ),
+            dns_servers_v6=UCI.DnsServers(
+                [UCI.IPAddress("2001:4860:4860::8844", "2001:4860:4860::8888")]
+            ),
             wan_vlan=101,
             lan_vlan=1,
             default_config=defconf,
@@ -779,6 +806,12 @@ if __name__ == "__main__":
             lan_address=UCI.IPAddress("192.168.1.1"),
             lan_network=UCI.IPNetwork("192.168.1.0/24"),
             wifi_passphrase=UCI.WifiPassphrase("password"),
+            dns_servers_v4=UCI.DnsServers(
+                [UCI.IPAddress("137.194.15.132"), UCI.IPAddress("137.194.15.222")]
+            ),
+            dns_servers_v6=UCI.DnsServers(
+                [UCI.IPAddress("2001:4860:4860::8844", "2001:4860:4860::8888")]
+            ),
             wan_vlan=102,
             lan_vlan=2,
             default_config=defconf,
@@ -802,6 +835,12 @@ if __name__ == "__main__":
             lan_address=UCI.IPAddress("192.168.2.1"),
             lan_network=UCI.IPNetwork("192.168.2.0/24"),
             wifi_passphrase=UCI.WifiPassphrase("password"),
+            dns_servers_v4=UCI.DnsServers(
+                [UCI.IPAddress("137.194.15.132"), UCI.IPAddress("137.194.15.222")]
+            ),
+            dns_servers_v6=UCI.DnsServers(
+                [UCI.IPAddress("2001:4860:4860::8844", "2001:4860:4860::8888")]
+            ),
             wan_vlan=101,
             lan_vlan=3,
             default_config=defconf,
