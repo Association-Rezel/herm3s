@@ -7,5 +7,6 @@ services:
     environment:
       - CONFIG_PATH=/config.yaml
       - FILE_SAVING_PATH=/dev/shm
+      - PTAH_ACCESS_TOKEN=$PTAH_ACCESS_TOKEN
     ports:
       - "80:8000"
