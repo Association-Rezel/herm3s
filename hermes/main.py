@@ -88,6 +88,13 @@ async def sysupgrade(box: str, version: str):
         raise HTTPException(
             response.status_code, {"Erreur": "version not found on gitlab"}
         )
+    elif response.status_code == 401:
+        raise HTTPException(
+            response.status_code,
+            {
+                "Erreur": "unauthorized access to gitlab (maybe PTAH_ACCESS_TOKEN is missing or expired)"
+            },
+        )
     elif response.status_code != 200:
         raise HTTPException(
             response.status_code, {"Erreur": "unable to retrieve file from gitlab"}
