@@ -92,6 +92,23 @@ class UnetFirewall(BaseModel):
     ipv6_port_opening: list[Ipv6Portopening]
 
 
+class DnsServers(BaseModel):
+    """
+    DnsServers Model
+    """
+
+    ipv4: list[str]
+    ipv6: list[str]
+
+
+class Dhcp(BaseModel):
+    """
+    DnsV4 Model
+    """
+
+    dns_servers: DnsServers
+
+
 class UnetProfile(BaseModel):
     """
     UnetProfile Model
@@ -101,6 +118,7 @@ class UnetProfile(BaseModel):
     network: UnetNetwork
     wifi: WifiDetails
     firewall: UnetFirewall
+    dhcp: Dhcp
 
 
 class WanVlan(BaseModel):

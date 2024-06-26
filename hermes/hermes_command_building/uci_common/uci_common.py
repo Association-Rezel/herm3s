@@ -1652,21 +1652,14 @@ class UCIdnsmasq(UCIConfig):
     See https://openwrt.org/docs/guide-user/base-system/dhcp#common_options
     """
 
-    dns_servers: DnsServers
-
-    def __init__(self, dns_servers: DnsServers):
+    def __init__(self):
         """
         Initialize the UCIdnsmasq object.
-
-        Parameters:
-        - dns_servers (DnsServers): An instance of the DnsServers
-        class representing the DNS servers.
 
         Raises:
         - None
         """
         super().__init__("dnsmasq")
-        self.dns_servers = dns_servers
 
     def uci_build_string(self):
         """
@@ -1698,10 +1691,6 @@ class UCIdnsmasq(UCIConfig):
             f"uci set dhcp.{self.name}.localservice='1'",
             f"uci set dhcp.{self.name}.ednspacket_max='1232'",
         )
-        for dns in self.dns_servers.value:
-            self.contatenate_uci_commands(
-                f"uci add_list dhcp.{self.name}.server='{dns}'"
-            )
         return self.built_string
 
 
@@ -1747,7 +1736,15 @@ class UCIDHCP(UCIConfig):
     See https://openwrt.org/docs/guide-user/base-system/dhcp#dhcp_pools
     """
 
-    def __init__(self, interface: UCIInterface, start: int, limit: int, leasetime: int):
+    def __init__(
+        self,
+        interface: UCIInterface,
+        start: int,
+        limit: int,
+        leasetime: int,
+        dns_v4: DnsServers,
+        dns_v6: DnsServers,
+    ):
         """
         Initialize the UCIDHCP object.
 
@@ -1757,6 +1754,8 @@ class UCIDHCP(UCIConfig):
         - start (int): The starting IP address for the DHCP range.
         - limit (int): The maximum number of IP addresses in the DHCP range.
         - leasetime (int): The lease time for the DHCP addresses.
+        - dns_v4 (DnsServers): IP of the DNS4 servers to use
+        - dns_v6 (DnsServers): IP of the DNS6 servers to use
 
         Raises:
         - None
@@ -1766,6 +1765,8 @@ class UCIDHCP(UCIConfig):
         self.start = start
         self.limit = limit
         self.leasetime = leasetime
+        self.dns_v4 = dns_v4
+        self.dns_v6 = dns_v6
 
     def uci_build_string(self):
         """
@@ -1785,6 +1786,12 @@ class UCIDHCP(UCIConfig):
             f"uci set dhcp.{self.name}.leasetime='{self.leasetime}'",
             f"uci set dhcp.{self.name}.ra='server'",
         )
+        # see https://openwrt.org/docs/guide-user/base-system/dhcp#dhcp_pools
+        self.contatenate_uci_commands(
+            f"uci add_list dhcp.{self.name}.dhcp_option='6,{','.join([str(dns) for dns in self.dns_v4.value])}'"
+        )
+        for dns in self.dns_v6.value:
+            self.contatenate_uci_commands(f"uci add_list dhcp.{self.name}.dns='{dns}'")
         return self.built_string
 
 
