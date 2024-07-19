@@ -8,11 +8,11 @@
         "unet_id": "antroboo",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.2/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0802/64"
           },
           "ipv6_prefix": "2a09:6847:0802::/48",
@@ -63,11 +63,11 @@
         "unet_id": "nathanbo",
         "network": {
           "wan_ipv4": {
-            "vlan": "102",
+            "vlan": 102,
             "ip": "195.14.28.2/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0402/64"
           },
           "ipv6_prefix": "2a09:6847:0402::/48",
@@ -100,17 +100,17 @@
     ],
     "wan_vlan": [
       {
-        "vlan_id": "101",
+        "vlan_id": 101,
         "ipv4_gateway": "137.194.8.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "102",
+        "vlan_id": 102,
         "ipv4_gateway": "195.14.28.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "103",
+        "vlan_id": 103,
         "ipv4_gateway": "",
         "ipv6_gateway": "2a09:6847:ffff::1/64"
       }
@@ -125,11 +125,11 @@
         "unet_id": "antopabo",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.3/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0803/64"
           },
           "ipv6_prefix": "2a09:6847:0803::/48",
@@ -163,11 +163,11 @@
         "unet_id": "nathsalo",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.4/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0804/64"
           },
           "ipv6_prefix": "2a09:6847:0804::/48",
@@ -209,17 +209,17 @@
     ],
     "wan_vlan": [
       {
-        "vlan_id": "101",
+        "vlan_id": 101,
         "ipv4_gateway": "137.194.8.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "102",
+        "vlan_id": 102,
         "ipv4_gateway": "195.14.28.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "103",
+        "vlan_id": 103,
         "ipv4_gateway": "",
         "ipv6_gateway": "2a09:6847:ffff::1/64"
       }
@@ -234,11 +234,11 @@
         "unet_id": "leooxide",
         "network": {
           "wan_ipv4": {
-            "vlan": "102",
+            "vlan": 102,
             "ip": "195.14.28.3/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0403/64"
           },
           "ipv6_prefix": "2a09:6847:0403::/48",
@@ -272,11 +272,11 @@
         "unet_id": "remyoxide",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.5/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0805/64"
           },
           "ipv6_prefix": "2a09:6847:0805::/48",
@@ -310,11 +310,11 @@
         "unet_id": "antoinee",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.6/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0806/64"
           },
           "ipv6_prefix": "2a09:6847:0806::/48",
@@ -347,17 +347,17 @@
     ],
     "wan_vlan": [
       {
-        "vlan_id": "101",
+        "vlan_id": 101,
         "ipv4_gateway": "137.194.8.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "102",
+        "vlan_id": 102,
         "ipv4_gateway": "195.14.28.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "103",
+        "vlan_id": 103,
         "ipv4_gateway": "",
         "ipv6_gateway": "2a09:6847:ffff::1/64"
       }
@@ -372,11 +372,11 @@
         "unet_id": "e1e1e1e1",
         "network": {
           "wan_ipv4": {
-            "vlan": "102",
+            "vlan": 102,
             "ip": "195.14.28.4/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0404/64"
           },
           "ipv6_prefix": "2a09:6847:0404::/48",
@@ -427,11 +427,11 @@
         "unet_id": "b1b1b1b1",
         "network": {
           "wan_ipv4": {
-            "vlan": "102",
+            "vlan": 102,
             "ip": "195.14.28.5/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0405/64"
           },
           "ipv6_prefix": "2a09:6847:0405::/48",
@@ -464,17 +464,17 @@
     ],
     "wan_vlan": [
       {
-        "vlan_id": "101",
+        "vlan_id": 101,
         "ipv4_gateway": "137.194.8.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "102",
+        "vlan_id": 102,
         "ipv4_gateway": "195.14.28.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "103",
+        "vlan_id": 103,
         "ipv4_gateway": "",
         "ipv6_gateway": "2a09:6847:ffff::1/64"
       }
@@ -489,11 +489,11 @@
         "unet_id": "a1a1a1a1",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.7/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0807/64"
           },
           "ipv6_prefix": "2a09:6847:0807::/48",
@@ -527,11 +527,11 @@
         "unet_id": "k1k1k1k1",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.8/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0808/64"
           },
           "ipv6_prefix": "2a09:6847:0808::/48",
@@ -565,11 +565,11 @@
         "unet_id": "l1l1l1l1",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.9/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0809/64"
           },
           "ipv6_prefix": "2a09:6847:0809::/48",
@@ -602,17 +602,17 @@
     ],
     "wan_vlan": [
       {
-        "vlan_id": "101",
+        "vlan_id": 101,
         "ipv4_gateway": "137.194.8.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "102",
+        "vlan_id": 102,
         "ipv4_gateway": "195.14.28.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "103",
+        "vlan_id": 103,
         "ipv4_gateway": "",
         "ipv6_gateway": "2a09:6847:ffff::1/64"
       }
@@ -627,17 +627,17 @@
         "unet_id": "ac2350a1",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.3/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0803/64"
           },
           "ipv6_prefix": "2a09:6847:0803::/48",
           "lan_ipv4": {
-            "address": "192.168.0.1/24",
-            "vlan": 0
+            "address": "192.168.1.1/24",
+            "vlan": 1
           }
         },
         "wifi": {
@@ -648,7 +648,7 @@
           "ipv4_port_forwarding": [
             {
               "wan_port": "80",
-              "lan_ip": "192.168.0.3",
+              "lan_ip": "192.168.1.3",
               "lan_port": "80",
               "protocol": "tcp",
               "name": "http_to_internal",
@@ -682,17 +682,17 @@
         "unet_id": "ac2350a2",
         "network": {
           "wan_ipv4": {
-            "vlan": "102",
+            "vlan": 102,
             "ip": "195.14.28.3/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0403/64"
           },
           "ipv6_prefix": "2a09:6847:0403::/48",
           "lan_ipv4": {
-            "address": "192.168.1.1/24",
-            "vlan": 0
+            "address": "192.168.2.1/24",
+            "vlan": 2
           }
         },
         "wifi": {
@@ -719,17 +719,17 @@
     ],
     "wan_vlan": [
       {
-        "vlan_id": "101",
+        "vlan_id": 101,
         "ipv4_gateway": "137.194.8.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "102",
+        "vlan_id": 102,
         "ipv4_gateway": "195.14.28.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "103",
+        "vlan_id": 103,
         "ipv4_gateway": "",
         "ipv6_gateway": "2a09:6847:ffff::1/64"
       }

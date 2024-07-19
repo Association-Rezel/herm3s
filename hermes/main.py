@@ -1,10 +1,10 @@
+from netaddr import EUI, mac_unix_expanded, AddrFormatError
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.responses import StreamingResponse
 from fastapi import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .api.MacAddress import MacAddress
 from .api.config import ac2350 as config_ac2350
 import requests
 from . import config
@@ -44,18 +44,19 @@ async def ac2350_get_file_config_init(mac: str):
     args:
         mac: str: mac address of the box
     """
-    mac_box = MacAddress(mac).getMac()
-    if mac_box is not None:
-        try:
-            config_ac2350.create_configfile(mac_box)
-        except ValueError as e:
-            raise HTTPException(404, {"Erreur": str(e)})
-        return FileResponse(
-            f"{config.FILE_SAVING_PATH}configfile_" + mac_box + ".txt",
-            filename="configfile.txt",
-        )
-    else:
+    try:
+        mac_box = EUI(mac)
+        mac_box.dialect = mac_unix_expanded
+    except AddrFormatError:
         raise HTTPException(400, {"Erreur": "invalid mac address"})
+    try:
+        config_ac2350.create_configfile(mac_box)
+    except ValueError as e:
+        raise HTTPException(404, {"Erreur": str(e)})
+    return FileResponse(
+        f"{config.FILE_SAVING_PATH}configfile_" + str(mac_box) + ".txt",
+        filename="configfile.txt",
+    )
 
 
 @app.get("/v1/config/ac2350/default/file")
