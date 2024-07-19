@@ -16,7 +16,7 @@ class WanIpv4(BaseModel):
     WanIpv4 Model
     """
 
-    vlan: str
+    vlan: int
     ip: str = Field(pattern=REGEX_IPV4_CIDR)
 
 
@@ -25,7 +25,7 @@ class WanIpv6(BaseModel):
     WanIpv6 Model
     """
 
-    vlan: str
+    vlan: int
     ip: str
 
 
@@ -126,17 +126,9 @@ class WanVlan(BaseModel):
     WanVlan Model
     """
 
-    vlan_id: str
+    vlan_id: int
     ipv4_gateway: str = Field(pattern=REGEX_IPV4_CIDR + r"|^$")
     ipv6_gateway: str
-
-
-class IdModel(BaseModel):
-    """
-    IdModel Model
-    """
-
-    oid: str = Field(alias="$oid")
 
 
 class Box(BaseModel):
@@ -144,7 +136,6 @@ class Box(BaseModel):
     Box Model
     """
 
-    id: str | IdModel | None = Field(alias="_id", default=None)
     type: str  # Type de box (ex: ac2350)
     main_unet_id: str = Field(pattern=REGEX_UNET_ID)
     mac: str = Field(pattern=REGEX_MAC)
