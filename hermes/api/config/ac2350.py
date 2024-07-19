@@ -1,14 +1,13 @@
-from netaddr import IPNetwork
+from netaddr import EUI, IPNetwork, mac_unix_expanded
 
 from ...communication_db.db_api import DbApi
-from ..MacAddress import MacAddress
 from ...hermes_command_building import common_command_builder as ccb
 from ...hermes_command_building import ac2350
 from ...hermes_command_building import uci_common as UCI
 from ... import config
 
 
-def create_configfile(mac_address: str):
+def create_configfile(mac_address: EUI):
     """
     Function to create the configuration files for all users
 
@@ -91,13 +90,13 @@ def create_configfile(mac_address: str):
                 dns_servers_v6=UCI.DnsServers(
                     [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv6]
                 ),
-                wan_vlan=int(unet.network.wan_ipv4.vlan),
+                wan_vlan=unet.network.wan_ipv4.vlan,
                 lan_vlan=unet.network.lan_ipv4.vlan,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_v4),
                 wan6_address=UCI.IPNetwork(unet.network.wan_ipv6.ip),
                 unet6_prefix=UCI.IPNetwork(unet.network.ipv6_prefix),
-                wan6_vlan=int(unet.network.wan_ipv6.vlan),
+                wan6_vlan=unet.network.wan_ipv6.vlan,
                 default_router6=UCI.IPAddress(default_router_v6),
             )
         else:
@@ -116,12 +115,12 @@ def create_configfile(mac_address: str):
                 dns_servers_v6=UCI.DnsServers(
                     [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv6]
                 ),
-                wan_vlan=int(unet.network.wan_ipv4.vlan),
+                wan_vlan=unet.network.wan_ipv4.vlan,
                 default_config=defconf,
                 default_router=UCI.IPAddress(default_router_v4),
                 wan6_address=UCI.IPNetwork(unet.network.wan_ipv6.ip),
                 unet6_prefix=UCI.IPNetwork(unet.network.ipv6_prefix),
-                wan6_vlan=int(unet.network.wan_ipv6.vlan),
+                wan6_vlan=unet.network.wan_ipv6.vlan,
                 default_router6=UCI.IPAddress(default_router_v6),
             )
 
@@ -147,7 +146,7 @@ def create_configfile(mac_address: str):
 
     # Add to the config file
     with open(
-        f"{config.FILE_SAVING_PATH}configfile_" + mac_address + ".txt",
+        f"{config.FILE_SAVING_PATH}configfile_" + str(mac_address) + ".txt",
         "w",
         encoding="utf-8",
     ) as file:
@@ -207,5 +206,6 @@ def create_default_configfile():
 
 
 if __name__ == "__main__":
-    mac_address = MacAddress("00:00:00:00:00:00").getMac()
-    create_configfile(mac_address)
+    mac = EUI("00:00:00:00:00:00")
+    mac.dialect = mac_unix_expanded
+    create_configfile(mac)
