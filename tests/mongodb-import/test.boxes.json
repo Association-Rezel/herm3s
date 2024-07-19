@@ -11,17 +11,17 @@
         "unet_id": "ac2350a1",
         "network": {
           "wan_ipv4": {
-            "vlan": "101",
+            "vlan": 101,
             "ip": "137.194.8.3/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0803/64"
           },
           "ipv6_prefix": "2a09:6847:0803::/48",
           "lan_ipv4": {
-            "address": "192.168.0.1/24",
-            "vlan": 0
+            "address": "192.168.1.1/24",
+            "vlan": 1
           }
         },
         "wifi": {
@@ -66,17 +66,17 @@
         "unet_id": "ac2350a2",
         "network": {
           "wan_ipv4": {
-            "vlan": "102",
+            "vlan": 102,
             "ip": "195.14.28.3/24"
           },
           "wan_ipv6": {
-            "vlan": "103",
+            "vlan": 103,
             "ip": "2a09:6847:ffff::0403/64"
           },
           "ipv6_prefix": "2a09:6847:0403::/48",
           "lan_ipv4": {
-            "address": "192.168.1.1/24",
-            "vlan": 0
+            "address": "192.168.2.1/24",
+            "vlan": 2
           }
         },
         "wifi": {
@@ -103,17 +103,17 @@
     ],
     "wan_vlan": [
       {
-        "vlan_id": "101",
+        "vlan_id": 101,
         "ipv4_gateway": "137.194.8.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "102",
+        "vlan_id": 102,
         "ipv4_gateway": "195.14.28.1/24",
         "ipv6_gateway": ""
       },
       {
-        "vlan_id": "103",
+        "vlan_id": 103,
         "ipv4_gateway": "",
         "ipv6_gateway": "2a09:6847:ffff::1/64"
       }
