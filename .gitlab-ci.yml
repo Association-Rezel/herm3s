@@ -13,6 +13,8 @@ linting:
 unit-tests:
   stage: unit-tests
   image: docker:24.0.7
+  tags:
+    - runner-dind
   services:
     - docker:24.0.7-dind
   script:
