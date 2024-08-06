@@ -12,7 +12,7 @@ RUN  pip install -r /hermes/requirements.txt
 RUN apt-get update && apt-get install -y curl 
 
 COPY ./hermes /hermes
-COPY .env* /hermes/
+COPY .env* /
 
 EXPOSE 8000
 
