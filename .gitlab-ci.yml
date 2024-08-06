@@ -20,6 +20,8 @@ unit-tests:
   script:
     - docker compose -f tests/docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests
   rules:
+    - if: $SKIP_UNIT_TESTS == "true"
+      when: never
     - when: always
   tags:
     - dind
