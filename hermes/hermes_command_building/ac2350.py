@@ -1,5 +1,5 @@
-from .uci_common import uci_common as UCI
-from . import common_command_builder as ccb
+from hermes.hermes_command_building import uci_common as UCI
+from hermes.hermes_command_building import common_command_builder as ccb
 
 
 class HermesDefaultConfig(ccb.HermesDefaultConfig):

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: charon-deployment
+  labels:
+    app: hermes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hermes
+  template:
+    metadata:
+      labels:
+        app: hermes
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/role: "hermes"
+        vault.hashicorp.com/agent-inject-template-env: | # Writes at /vault/secrets/env
+          {{ with secret "kv/data/hermes" -}}
+            MONGODB_PASSWORD="{{ .Data.data.mongodb_password }}"
+            PTAH_ACCESS_TOKEN="{{ .Data.data.ptah_access_token }}"
+          {{- end }}
+    spec:
+      serviceAccountName: hermes-ksa
+      containers:
+      - name: hermes-container
+        image: $IMAGE_TAG
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            cpu: "1"
+            memory: "512Mi"
+        env:
+        - name: DEPLOY_ENV
+          value: "${DEPLOY_ENV}"

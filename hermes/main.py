@@ -1,13 +1,13 @@
-from netaddr import EUI, mac_unix_expanded, AddrFormatError
-import uvicorn
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
-from fastapi.responses import StreamingResponse
-from fastapi import HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from .api.config import ac2350 as config_ac2350
 import requests
-from . import config
+import uvicorn
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, StreamingResponse
+from netaddr import EUI, AddrFormatError, mac_unix_expanded
+
+from hermes.api.config import ac2350 as config_ac2350
+from hermes.env import ENV
+from hermes.mongodb.db import close_db, get_box_by_mac, get_db, init_db
 
 app = FastAPI()
 
@@ -18,6 +18,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_event_handler("startup", init_db)
+app.add_event_handler("shutdown", close_db)
 
 
 @app.get("/")
@@ -38,7 +41,7 @@ async def status():
 
 # download file from hermes to box
 @app.get("/v1/config/ac2350/{mac}")
-async def ac2350_get_file_config_init(mac: str):
+async def ac2350_get_file_config_init(mac: str, db=get_db):
     """
     Download the configuration file for the box with the mac address mac
     args:
@@ -47,14 +50,16 @@ async def ac2350_get_file_config_init(mac: str):
     try:
         mac_box = EUI(mac)
         mac_box.dialect = mac_unix_expanded
-    except AddrFormatError:
-        raise HTTPException(400, {"Erreur": "invalid mac address"})
+    except AddrFormatError as e:
+        raise HTTPException(
+            400, {"Erreur": "invalid mac address", "details": str(e)}
+        ) from e
     try:
-        config_ac2350.create_configfile(mac_box)
+        config_ac2350.create_configfile(await get_box_by_mac(db, mac_box))
     except ValueError as e:
-        raise HTTPException(404, {"Erreur": str(e)})
+        raise HTTPException(404, {"Erreur": str(e)}) from e
     return FileResponse(
-        f"{config.FILE_SAVING_PATH}configfile_" + str(mac_box) + ".txt",
+        f"{ENV.temp_generated_box_configs_dir}configfile_" + str(mac_box) + ".txt",
         filename="configfile.txt",
     )
 
@@ -66,7 +71,7 @@ async def ac2350_get_default_config():
     """
     config_ac2350.create_default_configfile()
     return FileResponse(
-        f"{config.FILE_SAVING_PATH}defaultConfigfile.txt",
+        f"{ENV.temp_generated_box_configs_dir}defaultConfigfile.txt",
         filename="defaultConfigfile.txt",
     )
 
@@ -77,14 +82,14 @@ async def sysupgrade(box: str, version: str):
     Download the default configuration file
     """
     if version == "latest":
-        url = f"{config.GITLAB_BASE_URL}/permalink/latest/downloads/bin/openwrt-ptah-{box}.bin"
+        url = f"{ENV.ptah_releases_base_url}/permalink/latest/downloads/bin/openwrt-ptah-{box}.bin"
     else:
-        url = f"{config.GITLAB_BASE_URL}{version}/downloads/bin/openwrt-ptah-{box}.bin"
-    headers = {"PRIVATE-TOKEN": config.PTAH_ACCESS_TOKEN}
+        url = f"{ENV.ptah_releases_base_url}{version}/downloads/bin/openwrt-ptah-{box}.bin"
+    headers = {"PRIVATE-TOKEN": ENV.gitlab_ptah_access_token}
     try:
         response = requests.get(url, stream=True, headers=headers, timeout=10)
     except requests.exceptions.RequestException as e:
-        raise HTTPException(500, {"Erreur": str(e)})
+        raise HTTPException(500, {"Erreur": str(e)}) from e
     if response.status_code == 404:
         raise HTTPException(
             response.status_code, {"Erreur": "version not found on gitlab"}

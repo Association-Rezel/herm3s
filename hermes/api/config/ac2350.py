@@ -1,13 +1,13 @@
 from netaddr import EUI, IPNetwork, mac_unix_expanded
 
-from ...communication_db.db_api import DbApi
-from ...hermes_command_building import common_command_builder as ccb
-from ...hermes_command_building import ac2350
-from ...hermes_command_building import uci_common as UCI
-from ... import config
+from hermes.env import ENV
+from hermes.hermes_command_building import ac2350
+from hermes.hermes_command_building import common_command_builder as ccb
+from hermes.hermes_command_building import uci_common as UCI
+from hermes.mongodb.models import Box
 
 
-def create_configfile(mac_address: EUI):
+def create_configfile(box: Box):
     """
     Function to create the configuration files for all users
 
@@ -31,11 +31,6 @@ def create_configfile(mac_address: EUI):
     defconf.build_dhcp(Dhcpconf)
     defconf.build_wireless(Wirelessconf)
     defconf.build_dropbear(Dropbearconf)
-
-    db_api = DbApi()
-
-    # Get the infos by mac address
-    box = db_api.get_box_by_mac(mac_address)
 
     # Get the main unet id
     main_user_unetid = box.main_unet_id
@@ -146,7 +141,7 @@ def create_configfile(mac_address: EUI):
 
     # Add to the config file
     with open(
-        f"{config.FILE_SAVING_PATH}configfile_" + str(mac_address) + ".txt",
+        f"{ENV.temp_generated_box_configs_dir}configfile_" + str(box.mac) + ".txt",
         "w",
         encoding="utf-8",
     ) as file:
@@ -189,7 +184,9 @@ def create_default_configfile():
     defconf.build_dropbear(Dropbearconf)
 
     with open(
-        f"{config.FILE_SAVING_PATH}defaultConfigfile.txt", "w", encoding="utf_8"
+        f"{ENV.temp_generated_box_configs_dir}defaultConfigfile.txt",
+        "w",
+        encoding="utf_8",
     ) as file:
         file.write(
             "/-- SEPARATOR network --/\n"

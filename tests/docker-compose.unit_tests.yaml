@@ -1,12 +1,9 @@
 services:
   api_hermes:
-    volumes:
-      - ./unit_tests_config.yaml:/config.yaml
     container_name: test_api_hermes
     build: ..
-    environment:
-      - CONFIG_PATH=/config.yaml
-      - FILE_SAVING_PATH=/dev/shm
+    env_file:
+      - .env.tests
     ports:
       - "8000:8000"
     healthcheck:

@@ -1,44 +1,54 @@
 stages:
-  - linting
-  - unit-tests
+  - pre_checks
+  - build
   - deploy
 
 linting:
-  stage: linting
+  stage: pre_checks
   image: python
   script:
     - pip install black
     - black --check .
+  rules:
+    - when: always
 
 unit-tests:
-  stage: unit-tests
+  stage: pre_checks
   image: docker:24.0.7
-  tags:
-    - last
   services:
     - docker:24.0.7-dind
   script:
     - docker compose -f tests/docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests
   rules:
-    - when: always  
+    - when: always
+  tags:
+    - dind
+
+variables:
+  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+  DEPLOY_ENV: "prod"
+
+build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.14.0-debug
+    entrypoint: [""]
+  script:
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"},\"$(echo -n $CI_DEPENDENCY_PROXY_SERVER | awk -F[:] '{print $1}')\":{\"auth\":\"$(printf "%s:%s" ${CI_DEPENDENCY_PROXY_USER} "${CI_DEPENDENCY_PROXY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${IMAGE_TAG}"
+  rules: 
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 deploy:
-  image: docker:latest
   stage: deploy
-  tags:
-    - deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: ['']
   script:
-    - echo "$SSH_PRIVATE_KEY" > ssh_private_key
-    - chmod 400 ssh_private_key
-    - cp $CONFIG_FILE config.yaml
-    - 'echo "PTAH_ACCESS_TOKEN="$PTAH_ACCESS_TOKEN >> .env'
-    - ssh -i ssh_private_key -o StrictHostKeyChecking=no $VM_USER@$VM_IP "rm -rf /opt/hermes/*"
-    - scp -i ssh_private_key -o StrictHostKeyChecking=no -r ./* ${VM_USER}@${VM_IP}:/opt/hermes/
-    - scp -i ssh_private_key -o StrictHostKeyChecking=no -r ./.env ${VM_USER}@${VM_IP}:/opt/hermes/
-    - ssh -i ssh_private_key -o StrictHostKeyChecking=no $VM_USER@$VM_IP "cd /opt/hermes &&
-      docker compose stop &&
-      docker compose rm -f &&
-      docker compose up -d --build"
-    - rm .env
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
+    - kubectl config use-context fai/k8s-cluster:main-k8s-agent
+    - kubectl apply -f k8s/
+  rules: 
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

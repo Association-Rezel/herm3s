@@ -1,4 +1,4 @@
-from .uci_common import uci_common as UCI
+from hermes.hermes_command_building import uci_common as UCI
 
 
 class UCITypeConfig:
