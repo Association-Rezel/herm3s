@@ -27,7 +27,7 @@ unit-tests:
     - dind
 
 variables:
-  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME"
+  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   DEPLOY_ENV: "prod"
 
 build:
