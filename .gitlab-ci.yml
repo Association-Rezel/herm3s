@@ -51,6 +51,11 @@ deploy:
     entrypoint: ['']
   script:
     - kubectl config use-context fai/k8s-cluster:main-k8s-agent
-    - kubectl apply -f k8s/
+    - mkdir k8s-envsubst
+    - |
+      for file in k8s/*.yaml; do
+        envsubst < $file | tee k8s-envsubst/$(basename $file)
+      done
+    - kubectl apply -f k8s-envsubst/
   rules: 
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
