@@ -18,6 +18,8 @@ while [ -n "$test" ]; do
     sleep 1
 done
 
+#show logs of the container test_api_hermes
+docker logs test_api_hermes
 #show logs of the container unit_tests
 docker logs unit_tests
 

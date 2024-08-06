@@ -6,7 +6,7 @@ Usage: python3 validation_unit_test.py <filename>
 
 import sys
 
-from db_models import Box
+from hermes.mongodb.models import Box
 
 if len(sys.argv) != 2:
     print("Veuillez fournir un nom de fichier en argument.")
@@ -15,7 +15,7 @@ if len(sys.argv) != 2:
 
 filename = sys.argv[1]
 try:
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         data = f.read()
         Box.model_validate_json(data)
     print(f"Le fichier {filename} contient une instance valide de box.")

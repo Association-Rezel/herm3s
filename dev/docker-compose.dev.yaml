@@ -1,12 +1,9 @@
 services:
   api_hermes:
-    volumes:
-      - ./dev_config.yaml:/config.yaml
     container_name: api_hermes
     build: ..
-    environment:
-      - CONFIG_PATH=/config.yaml
-      - PTAH_ACCESS_TOKEN=$PTAH_ACCESS_TOKEN
+    env_file:
+      - .env.local
     ports:
       - "8000:8000"
 
