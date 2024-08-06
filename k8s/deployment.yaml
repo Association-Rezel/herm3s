@@ -35,3 +35,5 @@ spec:
         env:
         - name: DEPLOY_ENV
           value: "${DEPLOY_ENV}"
+      imagePullSecrets:
+       - name: gitlab-registery-credentials

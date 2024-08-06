@@ -50,12 +50,14 @@ deploy:
     name: bitnami/kubectl:latest
     entrypoint: ['']
   script:
-    - kubectl config use-context fai/k8s-cluster:main-k8s-agent
+    # Substitute environment variables in Kubernetes manifests
     - mkdir k8s-envsubst
     - |
       for file in k8s/*.yaml; do
         envsubst < $file | tee k8s-envsubst/$(basename $file)
       done
+    # Apply Kubernetes manifests
+    - kubectl config use-context fai/k8s-cluster:main-k8s-agent
     - kubectl apply -f k8s-envsubst/
   rules: 
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
