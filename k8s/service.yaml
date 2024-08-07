@@ -3,13 +3,13 @@ kind: Service
 metadata:
   name: hermes
   namespace: default
+  annotations:
+    kube-vip.io/loadbalancerIPs: 137.194.15.36,2a09:6847:fa10:2270::1538
 spec:
   type: LoadBalancer
   selector:
     app: hermes
   loadBalancerClass: kube-vip.io/kube-vip-class
-  externalIPs:
-    - 137.194.15.36
   ports:
     - protocol: TCP
       port: 8000
