@@ -18,4 +18,4 @@ EXPOSE 8000
 
 #entry point for "uvicorn main:app --reload"
 # CMD ["ls /"]
-ENTRYPOINT [ "uvicorn", "hermes.main:app","--host", "0.0.0.0", "--reload"]
+ENTRYPOINT [ "uvicorn", "hermes.main:app","--host", "::", "--reload"]
