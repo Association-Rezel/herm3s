@@ -32,6 +32,9 @@ spec:
           limits:
             cpu: "1"
             memory: "512Mi"
+          requests:
+            cpu: "0.2"
+            memory: "256Mi"
         env:
         - name: DEPLOY_ENV
           value: "${DEPLOY_ENV}"
