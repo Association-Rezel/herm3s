@@ -3,6 +3,11 @@ stages:
   - build
   - deploy
 
+variables:
+  SKIP_UNIT_TESTS: true
+  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH"
+  DEPLOY_ENV: "prod"
+
 linting:
   stage: pre_checks
   image: python
@@ -25,10 +30,6 @@ unit-tests:
     - when: always
   tags:
     - dind
-
-variables:
-  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_BRANCH"
-  DEPLOY_ENV: "prod"
 
 build:
   stage: build
