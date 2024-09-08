@@ -116,5 +116,31 @@ async def sysupgrade(box: str, version: str):
     )
 
 
+@app.get("/v1/ptah/latest-version")
+async def sysupgrade():
+    """
+    Tell what is the latest version of the ptah firmware for the box
+    """
+    url = f"{ENV.ptah_releases_base_url}/permalink/latest"
+    headers = {"PRIVATE-TOKEN": ENV.gitlab_ptah_access_token}
+    try:
+        response = requests.get(url, headers=headers)
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(500, {"Erreur": str(e)}) from e
+    if response.status_code == 401:
+        raise HTTPException(
+            500,
+            {
+                "Erreur": "unauthorized access to gitlab (maybe PTAH_ACCESS_TOKEN is missing or expired)"
+            },
+        )
+    elif response.status_code != 200:
+        raise HTTPException(500, {"Erreur": "unable to get latest version from gitlab"})
+
+    version = response.json()["tag_name"]
+
+    return {"version": version}
+
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="::", reload=True)
