@@ -1307,8 +1307,6 @@ class UCIZone(UCIConfig):
             f"uci set firewall.{self.name}.output='{self.output}'",
             f"uci set firewall.{self.name}.forward='{self.forward}'",
         )
-        if self.is_wan_zone:
-            self.contatenate_uci_commands(f"uci set firewall.{self.name}.masq='1'")
         if self.family is not None:
             self.contatenate_uci_commands(
                 f"uci set firewall.{self.name}.family='{self.family}'"
@@ -1582,7 +1580,7 @@ class UCISnat(UCIConfig):
         self.lan_zone = lan_zone
         self.wan_interface = wan_interface
         self.lan_interface = lan_interface
-        self.lan_network = IPNetwork(f"{lan_interface.ip}/{lan_interface.mask}").network
+        self.lan_network = IPNetwork(f"{lan_interface.ip}/{lan_interface.mask}").cidr
 
     def uci_build_string(self):
         """
@@ -1596,7 +1594,7 @@ class UCISnat(UCIConfig):
             f"uci set firewall.{self.name}.name='{self.name}'",
             f"uci set firewall.{self.name}.target='SNAT'",
             f"uci set firewall.{self.name}.snat_ip='{self.wan_interface.ip}'",
-            f"uci set firewall.{self.name}.src='{self.lan_zone.name}'",
+            f"uci set firewall.{self.name}.src='{self.wan_zone.name}'",
             f"uci set firewall.{self.name}.src_ip='{self.lan_network}'",
             f"uci set firewall.{self.name}.proto='all'",
         )
