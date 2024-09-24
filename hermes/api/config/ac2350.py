@@ -5,6 +5,7 @@ from hermes.hermes_command_building import ac2350
 from hermes.hermes_command_building import common_command_builder as ccb
 from hermes.hermes_command_building import uci_common as UCI
 from hermes.mongodb.models import Box
+from hermes.mongodb.models import UnetProfile
 
 
 def create_configfile(box: Box):
@@ -35,27 +36,21 @@ def create_configfile(box: Box):
     # Get the main unet id
     main_user_unetid = box.main_unet_id
 
+    unets: list[UnetProfile] = []
+
     for unet in box.unets:
+        if unet.unet_id == main_user_unetid:
+            unets.insert(0, unet)
+        else:
+            unets.append(unet)
+
+    for unet in unets:
 
         wan_ip_address = IPNetwork(unet.network.wan_ipv4.ip).ip
         wan_ip_netmask = str(IPNetwork(unet.network.wan_ipv4.ip).netmask)
         lan_ip_address = IPNetwork(unet.network.lan_ipv4.address).ip
         lan_ip_network = str(IPNetwork(unet.network.lan_ipv4.address).cidr)
 
-        try:
-            default_router_v4 = IPNetwork(
-                next(
-                    # The weird lambda is to avoid a closure issue
-                    filter(
-                        lambda vlan, unet_vlan=unet.network.wan_ipv4.vlan: vlan.vlan_id
-                        == unet_vlan,
-                        box.wan_vlan,
-                    ),
-                    None,
-                ).ipv4_gateway
-            ).ip
-        except StopIteration:
-            print(f"Error: No matching VLAN found for {unet.network.wan_ipv4.vlan}")
         try:
             default_router_v6 = IPNetwork(
                 next(
@@ -71,6 +66,21 @@ def create_configfile(box: Box):
             print(f"Error: No matching VLAN found for {unet.network.wan_ipv6.vlan}")
 
         if unet.unet_id == main_user_unetid:
+            # Get the default router for the main user (not needed for secondary users bc it's shared)
+            try:
+                default_router_v4 = IPNetwork(
+                    next(
+                        # The weird lambda is to avoid a closure issue
+                        filter(
+                            lambda vlan, unet_vlan=unet.network.wan_ipv4.vlan: vlan.vlan_id
+                            == unet_vlan,
+                            box.wan_vlan,
+                        ),
+                        None,
+                    ).ipv4_gateway
+                ).ip
+            except StopIteration:
+                print(f"Error: No matching VLAN found for {unet.network.wan_ipv4.vlan}")
             user = ac2350.HermesMainUser(
                 unetid=UCI.UNetId(unet.unet_id),
                 ssid=UCI.SSID(unet.wifi.ssid),
@@ -94,6 +104,7 @@ def create_configfile(box: Box):
                 wan6_vlan=unet.network.wan_ipv6.vlan,
                 default_router6=UCI.IPAddress(default_router_v6),
             )
+            main_user = user
         else:
             user = ac2350.HermesSecondaryUser(
                 unetid=UCI.UNetId(unet.unet_id),
@@ -112,11 +123,11 @@ def create_configfile(box: Box):
                 ),
                 wan_vlan=unet.network.wan_ipv4.vlan,
                 default_config=defconf,
-                default_router=UCI.IPAddress(default_router_v4),
                 wan6_address=UCI.IPNetwork(unet.network.wan_ipv6.ip),
                 unet6_prefix=UCI.IPNetwork(unet.network.ipv6_prefix),
                 wan6_vlan=unet.network.wan_ipv6.vlan,
                 default_router6=UCI.IPAddress(default_router_v6),
+                hermes_primary_user=main_user,
             )
 
         user.build_network(Netconf)

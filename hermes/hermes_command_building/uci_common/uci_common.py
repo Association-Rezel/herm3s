@@ -1195,12 +1195,9 @@ class UCIFirewallDefaults(UCIConfig):
             str: The UCI string representation of the defaults configuration.
         """
         self.contatenate_uci_commands(
+            f"uci set firewall.{self.name}=defaults",
             f"uci set firewall.{self.name}.synflood_protect='1'",
             f"uci set firewall.{self.name}.flow_offloading='1'",
-            f"uci set firewall.{self.name}.flow_offloading_hw='1'",
-            f"uci set firewall.{self.name}.input='ACCEPT'",
-            f"uci set firewall.{self.name}.output='ACCEPT'",
-            f"uci set firewall.{self.name}.forward='REJECT'",
         )
         return self.built_string
 
@@ -1594,7 +1591,6 @@ class UCISnat(UCIConfig):
             f"uci set firewall.{self.name}.name='{self.name}'",
             f"uci set firewall.{self.name}.target='SNAT'",
             f"uci set firewall.{self.name}.snat_ip='{self.wan_interface.ip}'",
-            f"uci set firewall.{self.name}.src='{self.wan_zone.name}'",
             f"uci set firewall.{self.name}.src_ip='{self.lan_network}'",
             f"uci set firewall.{self.name}.proto='all'",
         )
