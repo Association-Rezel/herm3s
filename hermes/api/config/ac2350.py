@@ -1,11 +1,11 @@
-from netaddr import EUI, IPNetwork, mac_unix_expanded
+from ipaddress import IPv4Address, IPv6Address
+from typing import Optional
 
 from hermes.env import ENV
 from hermes.hermes_command_building import ac2350
 from hermes.hermes_command_building import common_command_builder as ccb
 from hermes.hermes_command_building import uci_common as UCI
-from hermes.mongodb.models import Box
-from hermes.mongodb.models import UnetProfile
+from hermes.mongodb.models import Box, UnetProfile
 
 
 def create_configfile(box: Box):
@@ -46,87 +46,67 @@ def create_configfile(box: Box):
 
     for unet in unets:
 
-        wan_ip_address = IPNetwork(unet.network.wan_ipv4.ip).ip
-        wan_ip_netmask = str(IPNetwork(unet.network.wan_ipv4.ip).netmask)
-        lan_ip_address = IPNetwork(unet.network.lan_ipv4.address).ip
-        lan_ip_network = str(IPNetwork(unet.network.lan_ipv4.address).cidr)
+        wan_ip_address = unet.network.wan_ipv4.ip
+        lan_ip_address = unet.network.lan_ipv4.address
 
-        try:
-            default_router_v6 = IPNetwork(
-                next(
-                    filter(
-                        lambda vlan, unet_vlan=unet.network.wan_ipv6.vlan: vlan.vlan_id
-                        == unet_vlan,
-                        box.wan_vlan,
-                    ),
-                    None,
-                ).ipv6_gateway
-            ).ip
-        except StopIteration:
-            print(f"Error: No matching VLAN found for {unet.network.wan_ipv6.vlan}")
+        default_router_v6: Optional[IPv6Address]
+        for wan_vlan in box.wan_vlan:
+            if wan_vlan.vlan_id == unet.network.wan_ipv6.vlan:
+                default_router_v6 = wan_vlan.ipv6_gateway
+                break
+        if default_router_v6 is None:
+            raise ValueError(
+                f"Error: No matching VLAN found for {unet.network.wan_ipv6.vlan}"
+            )
 
+        user: ac2350.HermesUser
+        main_user: ac2350.HermesMainUser
         if unet.unet_id == main_user_unetid:
             # Get the default router for the main user (not needed for secondary users bc it's shared)
-            try:
-                default_router_v4 = IPNetwork(
-                    next(
-                        # The weird lambda is to avoid a closure issue
-                        filter(
-                            lambda vlan, unet_vlan=unet.network.wan_ipv4.vlan: vlan.vlan_id
-                            == unet_vlan,
-                            box.wan_vlan,
-                        ),
-                        None,
-                    ).ipv4_gateway
-                ).ip
-            except StopIteration:
-                print(f"Error: No matching VLAN found for {unet.network.wan_ipv4.vlan}")
+            default_router_v4: Optional[IPv4Address]
+            for wan_vlan in box.wan_vlan:
+                if wan_vlan.vlan_id == unet.network.wan_ipv4.vlan:
+                    default_router_v4 = wan_vlan.ipv4_gateway
+                    break
+            if default_router_v4 is None:
+                raise ValueError(
+                    f"Error: No matching VLAN found for {unet.network.wan_ipv4.vlan}"
+                )
+
             user = ac2350.HermesMainUser(
                 unetid=UCI.UNetId(unet.unet_id),
                 ssid=UCI.SSID(unet.wifi.ssid),
-                wan_address=UCI.IPAddress(wan_ip_address),
-                wan_netmask=UCI.IPAddress(wan_ip_netmask),
-                lan_address=UCI.IPAddress(lan_ip_address),
-                lan_network=UCI.IPNetwork(lan_ip_network),
+                wan_address=wan_ip_address,
+                lan_address=lan_ip_address,
                 wifi_passphrase=UCI.WifiPassphrase(unet.wifi.psk),
-                dns_servers_v4=UCI.DnsServers(
-                    [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv4]
-                ),
-                dns_servers_v6=UCI.DnsServers(
-                    [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv6]
-                ),
+                dns_servers_v4=UCI.DnsServers(unet.dhcp.dns_servers.ipv4),
+                dns_servers_v6=UCI.DnsServers(unet.dhcp.dns_servers.ipv6),
                 wan_vlan=unet.network.wan_ipv4.vlan,
                 lan_vlan=unet.network.lan_ipv4.vlan,
                 default_config=defconf,
-                default_router=UCI.IPAddress(default_router_v4),
-                wan6_address=UCI.IPNetwork(unet.network.wan_ipv6.ip),
-                unet6_prefix=UCI.IPNetwork(unet.network.ipv6_prefix),
+                default_router=default_router_v4,
+                wan6_address=unet.network.wan_ipv6.ip,
+                unet6_prefix=unet.network.ipv6_prefix,
                 wan6_vlan=unet.network.wan_ipv6.vlan,
-                default_router6=UCI.IPAddress(default_router_v6),
+                default_router6=default_router_v6,
             )
             main_user = user
         else:
             user = ac2350.HermesSecondaryUser(
                 unetid=UCI.UNetId(unet.unet_id),
                 ssid=UCI.SSID(unet.wifi.ssid),
-                wan_address=UCI.IPAddress(wan_ip_address),
-                wan_netmask=UCI.IPAddress(wan_ip_netmask),
-                lan_address=UCI.IPAddress(lan_ip_address),
-                lan_network=UCI.IPNetwork(lan_ip_network),
+                wan_address=wan_ip_address,
+                lan_address=lan_ip_address,
                 lan_vlan=unet.network.lan_ipv4.vlan,
                 wifi_passphrase=UCI.WifiPassphrase(unet.wifi.psk),
-                dns_servers_v4=UCI.DnsServers(
-                    [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv4]
-                ),
-                dns_servers_v6=UCI.DnsServers(
-                    [UCI.IPAddress(dns) for dns in unet.dhcp.dns_servers.ipv6]
-                ),
+                dns_servers_v4=UCI.DnsServers(unet.dhcp.dns_servers.ipv4),
+                dns_servers_v6=UCI.DnsServers(unet.dhcp.dns_servers.ipv6),
                 wan_vlan=unet.network.wan_ipv4.vlan,
                 default_config=defconf,
-                wan6_address=UCI.IPNetwork(unet.network.wan_ipv6.ip),
-                unet6_prefix=UCI.IPNetwork(unet.network.ipv6_prefix),
+                wan6_address=unet.network.wan_ipv6.ip,
+                unet6_prefix=unet.network.ipv6_prefix,
                 wan6_vlan=unet.network.wan_ipv6.vlan,
-                default_router6=UCI.IPAddress(default_router_v6),
+                default_router6=default_router_v6,
                 hermes_primary_user=main_user,
             )
 
@@ -144,7 +124,7 @@ def create_configfile(box: Box):
                 src=user.wan_zone,
                 src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
                 dest=user.lan_zone,
-                dest_ip=UCI.IPAddress(port_forwarding.lan_ip),
+                dest_ip=port_forwarding.lan_ip,
                 dest_port=UCI.TCPUDPPort(port_forwarding.lan_port),
                 proto=UCI.Protocol(port_forwarding.protocol),
             )
@@ -211,9 +191,3 @@ def create_default_configfile():
             + "/-- SEPARATOR dropbear --/\n"
             + Dropbearconf.build()
         )
-
-
-if __name__ == "__main__":
-    mac = EUI("00:00:00:00:00:00")
-    mac.dialect = mac_unix_expanded
-    create_configfile(mac)

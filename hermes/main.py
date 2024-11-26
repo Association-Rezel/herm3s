@@ -1,3 +1,5 @@
+import logging
+
 import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -57,6 +59,7 @@ async def ac2350_get_file_config_init(mac: str, db=get_db):
     try:
         config_ac2350.create_configfile(await get_box_by_mac(db, mac_box))
     except ValueError as e:
+        logging.error("Error: %s", str(e))
         raise HTTPException(404, {"Erreur": str(e)}) from e
     return FileResponse(
         f"{ENV.temp_generated_box_configs_dir}configfile_" + str(mac_box) + ".txt",
@@ -77,7 +80,7 @@ async def ac2350_get_default_config():
 
 
 @app.get("/v1/sysupgrade/{box}/{version}")
-async def sysupgrade(box: str, version: str):
+async def sysupgrade_to_version(box: str, version: str):
     """
     Download the default configuration file
     """
@@ -117,7 +120,7 @@ async def sysupgrade(box: str, version: str):
 
 
 @app.get("/v1/ptah/latest-version")
-async def sysupgrade():
+async def get_latest_version():
     """
     Tell what is the latest version of the ptah firmware for the box
     """

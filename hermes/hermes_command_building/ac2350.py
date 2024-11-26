@@ -1,5 +1,15 @@
-from hermes.hermes_command_building import uci_common as UCI
+from ipaddress import (
+    IPv4Address,
+    IPv4Interface,
+    IPv4Network,
+    IPv6Address,
+    IPv6Interface,
+    IPv6Network,
+)
+from typing import Optional
+
 from hermes.hermes_command_building import common_command_builder as ccb
+from hermes.hermes_command_building import uci_common as UCI
 
 
 class HermesDefaultConfig(ccb.HermesDefaultConfig):
@@ -24,13 +34,14 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         # Network Configuration
         self.loopback = UCI.UCIInterface(
             UCI.UCISectionNamePrefix("loopback"),
-            UCI.IPAddress("127.0.0.1"),
-            UCI.IPAddress("255.0.0.0"),
             UCI.InterfaceProto("static"),
+            IPv4Interface("127.0.0.1/8"),
             device=UCI.UCISimpleDevice("lo"),
         )
         self.network_commands.append(self.loopback)
-        self.network_commands.append(UCI.UCINetGlobals("fdb2:b6c0:8430::/48"))
+        self.network_commands.append(
+            UCI.UCINetGlobals(IPv6Network("fdb2:b6c0:8430::/48"))
+        )
         self.switch0 = UCI.UCISwitch("switch0")
         self.network_commands.append(self.switch0)
         self.vlan_65 = UCI.UCISwitchVlan(
@@ -95,37 +106,37 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         self.firewall_commands.append(self.static_mgt_zone)
 
         self.rule_icmpv6_mgt = UCI.UCIRule(
-            unetid="manageme",
+            unetid=UCI.UNetId("manageme"),
             name=UCI.UCISectionName("mgt_allow_ping"),
             desc=UCI.Description("Allow ICMPv6 to MGT"),
             src=self.mgt_zone,
             proto=UCI.Protocol("icmp"),
             target=UCI.Target("ACCEPT"),
-            family="ipv6",
+            family=UCI.Family("ipv6"),
         )
         self.firewall_commands.append(self.rule_icmpv6_mgt)
 
         self.rule_ssh_mgt = UCI.UCIRule(
-            unetid="manageme",
+            unetid=UCI.UNetId("manageme"),
             name=UCI.UCISectionName("mgt_allow_ssh"),
             desc=UCI.Description("Allow ssh to MGT"),
             src=self.mgt_zone,
             dest_port=UCI.TCPUDPPort(22),
             proto=UCI.Protocol("tcp"),
             target=UCI.Target("ACCEPT"),
-            family="ipv6",
+            family=UCI.Family("ipv6"),
         )
         self.firewall_commands.append(self.rule_ssh_mgt)
 
         self.rule_daemon_mgt = UCI.UCIRule(
-            unetid="manageme",
+            unetid=UCI.UNetId("manageme"),
             name=UCI.UCISectionName("mgt_allow_daemon"),
             desc=UCI.Description("Allow deamon to MGT"),
             src=self.mgt_zone,
             dest_port=UCI.TCPUDPPort(50051),
             proto=UCI.Protocol("tcp"),
             target=UCI.Target("ACCEPT"),
-            family="ipv6",
+            family=UCI.Family("ipv6"),
         )
         self.firewall_commands.append(self.rule_daemon_mgt)
 
@@ -173,10 +184,10 @@ class HermesUser(ccb.HermesConfigBuilder):
     lan_int: UCI.UCIInterface
     wan_int: UCI.UCIInterface
     wan6_int: UCI.UCIInterface
-    route: UCI.UCIRoute
-    route_rule: UCI.UCIRouteRule
+    route: UCI.UCIRoute4
+    route_rule: UCI.UCIRoute4Rule
     route6: UCI.UCIRoute6
-    route6_rule: UCI.UCIRouteRule
+    route6_rule: UCI.UCIRoute6Rule
     wifi_iface_0: UCI.UCIWifiIface
     wifi_iface_1: UCI.UCIWifiIface
     dhcp: UCI.UCIDHCP
@@ -188,39 +199,35 @@ class HermesUser(ccb.HermesConfigBuilder):
         self,
         unetid: UCI.UNetId,
         ssid: UCI.SSID,
-        wan_address: UCI.IPAddress,
-        wan_netmask: UCI.IPAddress,
-        lan_address: UCI.IPAddress,
-        lan_network: UCI.IPNetwork,
+        wan_address: IPv4Interface,
+        lan_address: IPv4Interface,
         wifi_passphrase: UCI.WifiPassphrase,
         dns_servers_v4: UCI.DnsServers,
         dns_servers_v6: UCI.DnsServers,
         wan_vlan: int,
         lan_vlan: int,
         default_config: HermesDefaultConfig,
-        wan6_address: UCI.IPNetwork,
-        unet6_prefix: UCI.IPNetwork,
+        wan6_address: IPv6Interface,
+        unet6_prefix: IPv6Network,
         wan6_vlan: int,
-        default_router6: UCI.IPAddress,
+        default_router6: IPv6Address,
     ):
         """Create a main user configuration
 
         Args:
             unetid (UCI.UNetId): The user netid
             ssid (UCI.SSID): The SSID of the user
-            wan_address (UCI.IPAddress): The WAN address
-            wan_netmask (UCI.IPAddress): The WAN netmask
-            wan6_address (UCI.IPAddress): The WAN IPv6 address
-            lan_address (UCI.IPAddress): The LAN address
-            lan_network (UCI.IPNetwork): The LAN network
-            lan6_prefix (UCI.IPNetwork): The LAN IPv6 prefix
+            wan_address (IPv4Interface): The WAN address
+            wan6_address (IPv6Interface): The WAN IPv6 address
+            lan_address (IPv4Interface): The LAN address
+            lan6_prefix (IPv6Network): The LAN IPv6 prefix
             wifi_passphrase (UCI.WifiPassphrase): The wifi passphrase
             dns_servers_v4 (UCI.DnsServers): A list of ipv4 DNS servers
             dns_servers_v6 (UCI.DnsServers): A list of ipv6 DNS servers
             wan_vlan (int): The WAN VLAN
             wan6_vlan (int): The WAN IPv6 VLAN
             default_config (HermesDefaultConfig): The default configuration
-            default_router6 (UCI.IPAddress): The default IPv6 router
+            default_router6 (IPv6Address): The default IPv6 router
         """
         super().__init__()
         self.unetid = unetid
@@ -230,9 +237,8 @@ class HermesUser(ccb.HermesConfigBuilder):
 
         self.wan_int = UCI.UCIInterface(
             unetid=unetid,
-            name_prefix="wan_",
+            name_prefix=UCI.UCISectionNamePrefix("wan_"),
             ip=wan_address,
-            mask=wan_netmask,
             proto=UCI.InterfaceProto("static"),
             device=UCI.UCISimpleDevice(f"eth0.{wan_vlan}"),
         )
@@ -240,7 +246,7 @@ class HermesUser(ccb.HermesConfigBuilder):
 
         self.wan6_int = UCI.UCIInterface(
             unetid=unetid,
-            name_prefix="wan6_",
+            name_prefix=UCI.UCISectionNamePrefix("wan6_"),
             ip6addr=wan6_address,
             ip6gw=default_router6,
             ip6prefix=unet6_prefix,
@@ -251,28 +257,28 @@ class HermesUser(ccb.HermesConfigBuilder):
 
         self.route6 = UCI.UCIRoute6(
             unetid=unetid,
-            name_prefix="route6_default_wan_",
-            target=UCI.IPNetwork("::/0"),
+            name_prefix=UCI.UCISectionNamePrefix("route6_default_wan_"),
+            target=IPv6Network("::/0"),
             gateway=default_router6,
             interface=self.wan6_int,
             table=int(f"6{str(lan_vlan).zfill(2)}"),
         )
         self.network_commands.append(self.route6)
 
-        self.route6_rule = UCI.UCIRoute6Rule(
-            name=UCI.UCISectionName(f"route6_rule_{unetid}"),
-            src=unet6_prefix,
-            lookup=self.route6.table,
-        )
-        self.network_commands.append(self.route6_rule)
+        if self.route6.table:
+            self.route6_rule = UCI.UCIRoute6Rule(
+                name=UCI.UCISectionName(f"route6_rule_{unetid}"),
+                src=unet6_prefix,
+                lookup=self.route6.table,
+            )
+            self.network_commands.append(self.route6_rule)
 
         self.lan_int = UCI.UCIInterface(
-            name_prefix="lan_",
+            name_prefix=UCI.UCISectionNamePrefix("lan_"),
             ip=lan_address,
-            mask=lan_network.netmask,
             proto=UCI.InterfaceProto("static"),
             unetid=unetid,
-            device=self.br_lan,
+            device=self.br_lan.as_device(),
             ip6class=self.wan6_int.name,
             ip6assign=64,
         )
@@ -339,7 +345,7 @@ class HermesUser(ccb.HermesConfigBuilder):
             proto=UCI.Protocol("icmp"),
             icmp_type="echo-request",
             target=UCI.Target("ACCEPT"),
-            family="ipv4",
+            family=UCI.Family("ipv4"),
         )
         self.firewall_commands.append(self.ping_rule)
         self.snat = UCI.UCISnat(
@@ -372,7 +378,7 @@ class HermesUser(ccb.HermesConfigBuilder):
             src=self.wan6_zone,
             proto=UCI.Protocol("icmp"),
             target=UCI.Target("ACCEPT"),
-            family="ipv6",
+            family=UCI.Family("ipv6"),
         )
         self.firewall_commands.append(self.rule_icmpv6_wan6)
 
@@ -386,38 +392,38 @@ class HermesMainUser(HermesUser):
         self,
         unetid: UCI.UNetId,
         ssid: UCI.SSID,
-        wan_address: UCI.IPAddress,
-        wan_netmask: UCI.IPAddress,
-        lan_address: UCI.IPAddress,
-        lan_network: UCI.IPNetwork,
+        wan_address: IPv4Interface,
+        lan_address: IPv4Interface,
         wifi_passphrase: UCI.WifiPassphrase,
         dns_servers_v4: UCI.DnsServers,
         dns_servers_v6: UCI.DnsServers,
         wan_vlan: int,
         lan_vlan: int,
         default_config: HermesDefaultConfig,
-        default_router: UCI.IPAddress,
-        wan6_address: UCI.IPNetwork,
-        unet6_prefix: UCI.IPNetwork,
+        default_router: IPv4Address,
+        wan6_address: IPv6Interface,
+        unet6_prefix: IPv6Network,
         wan6_vlan: int,
-        default_router6: UCI.IPAddress,
+        default_router6: IPv6Address,
     ):
         """Create a main user configuration
 
         Args:
             unetid (UCI.UNetId): The user netid
             ssid (UCI.SSID): The SSID of the user
-            wan_address (UCI.IPAddress): The WAN address
-            wan_netmask (UCI.IPAddress): The WAN netmask
-            lan_address (UCI.IPAddress): The LAN address
-            lan_network (UCI.IPNetwork): The LAN network
+            wan_address (IPv4Interface): The WAN address
+            lan_address (IPv4Interface): The LAN address
             wifi_passphrase (UCI.WifiPassphrase): The wifi passphrase
             dns_servers_v4 (UCI.DnsServers): A list of ipv4 DNS servers
             dns_servers_v6 (UCI.DnsServers): A list of ipv6 DNS servers
             wan_vlan (int): The WAN VLAN
             lan_vlan (int): The LAN VLAN
             default_config (HermesDefaultConfig): The default configuration
-            default_router (UCI.IPAddress): The default router
+            default_router (IPv4Address): The default router
+            wan6_address (IPv6Interface): The WAN IPv6 address
+            unet6_prefix (IPv6Network): The WAN IPv6 prefix
+            wan6_vlan (int): The WAN IPv6 VLAN
+            default_router6 (IPv6Address): The default IPv6 router
         """
         self.lan_switch_vlan = UCI.UCISwitchVlan(
             UCI.UCISectionName(f"switch_vlan_{unetid}"),
@@ -429,16 +435,14 @@ class HermesMainUser(HermesUser):
         self.br_lan = UCI.UCIBridge(
             unetid=unetid,
             name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
-            ports=UCI.UCISimpleDevice(f"eth0.{lan_vlan}"),
+            ports=UCI.UCINetworkPorts(f"eth0.{lan_vlan}"),
         )
 
         super().__init__(
             unetid=unetid,
             ssid=ssid,
             wan_address=wan_address,
-            wan_netmask=wan_netmask,
             lan_address=lan_address,
-            lan_network=lan_network,
             wifi_passphrase=wifi_passphrase,
             dns_servers_v4=dns_servers_v4,
             dns_servers_v6=dns_servers_v6,
@@ -453,10 +457,9 @@ class HermesMainUser(HermesUser):
         self.network_commands.append(self.lan_switch_vlan)
         self.network_commands.append(self.br_lan)
 
-        self.default_route = UCI.UCIRoute(
-            unetid="all",
-            name_prefix=UCI.UCISectionNamePrefix("route_default_wan_"),
-            target=UCI.IPNetwork("0.0.0.0/0"),
+        self.default_route = UCI.UCIRoute4(
+            name=UCI.UCISectionName("route_default_wan_all"),
+            target=IPv4Network("0.0.0.0/0"),
             gateway=default_router,
             interface=self.wan_int,
         )
@@ -473,20 +476,18 @@ class HermesSecondaryUser(HermesUser):
         self,
         unetid: UCI.UNetId,
         ssid: UCI.SSID,
-        wan_address: UCI.IPAddress,
-        wan_netmask: UCI.IPAddress,
-        lan_address: UCI.IPAddress,
-        lan_network: UCI.IPNetwork,
+        wan_address: IPv4Interface,
+        lan_address: IPv4Interface,
         wifi_passphrase: UCI.WifiPassphrase,
         dns_servers_v4: UCI.DnsServers,
         dns_servers_v6: UCI.DnsServers,
         wan_vlan: int,
         lan_vlan: int,
         default_config: HermesDefaultConfig,
-        wan6_address: UCI.IPNetwork,
-        unet6_prefix: UCI.IPNetwork,
+        wan6_address: IPv6Interface,
+        unet6_prefix: IPv6Network,
         wan6_vlan: int,
-        default_router6: UCI.IPAddress,
+        default_router6: IPv6Address,
         hermes_primary_user: HermesMainUser,
     ):
         """Create a secondary user configuration
@@ -494,16 +495,17 @@ class HermesSecondaryUser(HermesUser):
         Args:
             unetid (UCI.UNetId): The user netid
             ssid (UCI.SSID): The SSID of the user
-            wan_address (UCI.IPAddress): The WAN address
-            wan_netmask (UCI.IPAddress): The WAN netmask
-            lan_address (UCI.IPAddress): The LAN address
-            lan_network (UCI.IPNetwork): The LAN network
+            wan_address (IPv4Address): The WAN address
+            wan_netmask (IPv4Address): The WAN netmask
+            lan_address (IPv4Address): The LAN address
+            lan_network (IPv4Network): The LAN network
             wifi_passphrase (UCI.WifiPassphrase): The wifi passphrase
             dns_servers_v4 (UCI.DnsServers): A list of ipv4 DNS servers
             dns_servers_v6 (UCI.DnsServers): A list of ipv6 DNS servers
             wan_vlan (int): The WAN VLAN
             lan_vlan (int): The LAN VLAN
             default_config (HermesDefaultConfig): The default configuration
+            default_router6 (IPv6Address): The default IPv6 router
         """
         self.lan_switch_vlan = UCI.UCISwitchVlan(
             name=UCI.UCISectionName(f"switch_vlan_{unetid}"),
@@ -514,15 +516,13 @@ class HermesSecondaryUser(HermesUser):
         self.br_lan = UCI.UCIBridge(
             unetid=unetid,
             name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
-            ports=UCI.UCISimpleDevice(f"eth0.{lan_vlan}"),
+            ports=UCI.UCINetworkPorts(f"eth0.{lan_vlan}"),
         )
         super().__init__(
             unetid=unetid,
             ssid=ssid,
             wan_address=wan_address,
-            wan_netmask=wan_netmask,
             lan_address=lan_address,
-            lan_network=lan_network,
             wifi_passphrase=wifi_passphrase,
             dns_servers_v4=dns_servers_v4,
             dns_servers_v6=dns_servers_v6,
@@ -558,12 +558,12 @@ class HermesPortForwarding(ccb.HermesConfigBuilder):
         desc: UCI.Description,
         src_dport: UCI.TCPUDPPort,
         dest: UCI.UCIZone,
-        dest_ip: UCI.IPAddress,
+        dest_ip: IPv4Address,
         dest_port: UCI.TCPUDPPort,
         proto: UCI.Protocol,
-        src_dip: UCI.IPAddress = None,
-        src: UCI.UCIZone = None,
-        src_ip: UCI.IPAddress = None,
+        src: UCI.UCIZone,
+        src_dip: Optional[IPv4Address] = None,
+        src_ip: Optional[IPv4Address] = None,
     ):
         """Create a port forwarding configuration
 
@@ -574,10 +574,10 @@ class HermesPortForwarding(ccb.HermesConfigBuilder):
             src (UCI.UCIZone): The source interface
             src_dport (UCI.TCPUDPPort): The source port
             dest (UCI.UCIZone): The destination interface
-            dest_ip (UCI.IPAddress): The destination IP
+            dest_ip (IPv4Address): The destination IP
             dest_port (UCI.TCPUDPPort): The destination port
             proto (UCI.Protocol): The protocol
-            src_ip (UCI.IPAddress, optional): The source IP. Defaults to None."""
+            src_ip (IPv4Address, optional): The source IP. Defaults to None."""
         super().__init__()
         self.port_forwarding = UCI.UCIRedirect4(
             unetid=unetid,
@@ -607,7 +607,7 @@ class HermesIPv6PortOpening(ccb.HermesConfigBuilder):
         desc: UCI.Description,
         src: UCI.UCIZone,
         dest: UCI.UCIZone,
-        dest_ip: UCI.IPAddress,
+        dest_ip: IPv6Address,
         dest_port: UCI.TCPUDPPort,
         proto: UCI.Protocol,
     ):
@@ -622,7 +622,7 @@ class HermesIPv6PortOpening(ccb.HermesConfigBuilder):
             dest_port=dest_port,
             proto=proto,
             target=UCI.Target("ACCEPT"),
-            family="ipv6",
+            family=UCI.Family("ipv6"),
         )
         self.firewall_commands.append(self.ipv6_port_opening)
 
@@ -637,10 +637,10 @@ class HermesStaticDHCPLease(ccb.HermesConfigBuilder):
         self,
         unetid: UCI.UNetId,
         hostname: str,
-        ip: UCI.IPAddress = None,
-        mac: UCI.EUI = None,
-        hostid: str = None,
-        duid: UCI.DUid = None,
+        ip: Optional[IPv4Address] = None,
+        mac: Optional[UCI.EUI] = None,
+        hostid: Optional[str] = None,
+        duid: Optional[UCI.DUid] = None,
     ):
         super().__init__()
         self.static_dhcp_lease = UCI.UCIHost(
@@ -670,7 +670,7 @@ class HermesDynIPv6PrefDelegation(ccb.HermesConfigBuilder):
         desc: UCI.Description,
         src: UCI.UCIZone,
         dest: UCI.UCIZone,
-        proto: UCI.Protocol = "tcp udp icmp",
+        proto: UCI.Protocol = UCI.Protocol("tcp udp icmp"),
     ):
         super().__init__()
         self.ipv6_pref_delegation = UCI.UCIRule(
@@ -680,9 +680,9 @@ class HermesDynIPv6PrefDelegation(ccb.HermesConfigBuilder):
             src=src,
             dest=dest,
             proto=proto,
-            dest_ip=f"::{associated_lease.static_dhcp_lease.ip}/-64",
+            dest_ip=IPv6Address(f"::{associated_lease.static_dhcp_lease.ip}/64"),
             target=UCI.Target("ACCEPT"),
-            family="ipv6",
+            family=UCI.Family("ipv6"),
         )
         self.firewall_commands.append(self.ipv6_pref_delegation)
 
@@ -694,14 +694,14 @@ class HermesStaticIPv6PrefDelegation(ccb.HermesConfigBuilder):
 
     def __init__(
         self,
-        name: UCI.UCISectionName,
+        name: UCI.UCISectionNamePrefix,
         user: HermesUser,
-        dest_router: UCI.IPAddress,
-        prefix: UCI.IPNetwork,
+        dest_router: IPv6Address,
+        prefix: IPv6Network,
     ):
         super().__init__()
 
-        self.route6 = UCI.UCIRoute(
+        self.route6 = UCI.UCIRoute6(
             unetid=user.unetid,
             name_prefix=name,
             target=prefix,
@@ -711,17 +711,18 @@ class HermesStaticIPv6PrefDelegation(ccb.HermesConfigBuilder):
         )
         self.network_commands.append(self.route6)
 
-        self.route6_rule = UCI.UCIRouteRule(
-            name=UCI.UCISectionName(f"{user.unetid}_{name}_rule"),
-            dest=prefix,
-            lookup=self.route6.table,
-        )
-        self.network_commands.append(self.route6_rule)
+        if self.route6.table:
+            self.route6_rule = UCI.UCIRoute6Rule(
+                name=UCI.UCISectionName(f"{user.unetid}_{name}_rule"),
+                dest=prefix,
+                lookup=self.route6.table,
+            )
+            self.network_commands.append(self.route6_rule)
 
         self.ipset = UCI.UCIIpset(
             name=UCI.UCISectionName(f"{user.unetid}_set_{name}"),
             match=UCI.MatchIPSet("net_dest"),
-            entry=[UCI.IPNetwork(prefix)],
+            entry=[IPv6Network(prefix)],
         )
         self.firewall_commands.append(self.ipset)
 
@@ -729,7 +730,7 @@ class HermesStaticIPv6PrefDelegation(ccb.HermesConfigBuilder):
             src=user.wan6_zone,
             dest=user.lan_zone,
             ipset=self.ipset,
-            optional_name_suffix=name,
+            optional_name_suffix=name.value,
         )
         self.firewall_commands.append(self.forwarding)
 
@@ -766,28 +767,26 @@ if __name__ == "__main__":
         main_user = HermesMainUser(
             unetid=UCI.UNetId("aaaaaaaa"),
             ssid=UCI.SSID("Rezel-main"),
-            wan_address=UCI.IPAddress("137.194.8.2"),
-            wan_netmask=UCI.IPAddress("255.255.252.0"),
-            lan_address=UCI.IPAddress("192.168.0.1"),
-            lan_network=UCI.IPNetwork("192.168.0.0/24"),
+            wan_address=IPv4Interface("137.194.8.2/22"),
+            lan_address=IPv4Interface("192.168.0.1/24"),
             wifi_passphrase=UCI.WifiPassphrase("password"),
             dns_servers_v4=UCI.DnsServers(
-                [UCI.IPAddress("137.194.15.132"), UCI.IPAddress("137.194.15.222")]
+                [IPv4Address("137.194.15.132"), IPv4Address("137.194.15.222")]
             ),
             dns_servers_v6=UCI.DnsServers(
                 [
-                    UCI.IPAddress("2001:4860:4860::8844"),
-                    UCI.IPAddress("2001:4860:4860::8888"),
+                    IPv6Address("2001:4860:4860::8844"),
+                    IPv6Address("2001:4860:4860::8888"),
                 ]
             ),
             wan_vlan=101,
             lan_vlan=1,
             default_config=defconf,
-            default_router=UCI.IPAddress("137.194.11.254"),
-            wan6_address=UCI.IPNetwork("2a09:6847:ffff::0802/64"),
-            unet6_prefix=UCI.IPNetwork("2a09:6847:0802::/48"),
+            default_router=IPv4Address("137.194.11.254"),
+            wan6_address=IPv6Interface("2a09:6847:ffff::0802/64"),
+            unet6_prefix=IPv6Network("2a09:6847:0802::/48"),
             wan6_vlan=103,
-            default_router6=UCI.IPAddress("2a09:6847:ffff::1"),
+            default_router6=IPv6Address("2a09:6847:ffff::1"),
         )
         # route 2a09:6847:0802::/48 via 2a09:6847:ffff::0802;
         main_user.build_network(Netconf)
@@ -798,27 +797,25 @@ if __name__ == "__main__":
         secondary_user = HermesSecondaryUser(
             unetid=UCI.UNetId("bbbbbbbb"),
             ssid=UCI.SSID("Rezel-secondary"),
-            wan_address=UCI.IPAddress("195.14.28.2"),
-            wan_netmask=UCI.IPAddress("255.255.255.0"),
-            lan_address=UCI.IPAddress("192.168.1.1"),
-            lan_network=UCI.IPNetwork("192.168.1.0/24"),
+            wan_address=IPv4Interface("195.14.28.2/24"),
+            lan_address=IPv4Interface("192.168.1.1/24"),
             wifi_passphrase=UCI.WifiPassphrase("password"),
             dns_servers_v4=UCI.DnsServers(
-                [UCI.IPAddress("137.194.15.132"), UCI.IPAddress("137.194.15.222")]
+                [IPv4Address("137.194.15.132"), IPv4Address("137.194.15.222")]
             ),
             dns_servers_v6=UCI.DnsServers(
                 [
-                    UCI.IPAddress("2001:4860:4860::8844"),
-                    UCI.IPAddress("2001:4860:4860::8888"),
+                    IPv6Address("2001:4860:4860::8844"),
+                    IPv6Address("2001:4860:4860::8888"),
                 ]
             ),
             wan_vlan=102,
             lan_vlan=2,
             default_config=defconf,
-            wan6_address=UCI.IPNetwork("2a09:6847:ffff::0402/64"),
-            unet6_prefix=UCI.IPNetwork("2a09:6847:0402::/48"),
+            wan6_address=IPv6Interface("2a09:6847:ffff::0402/64"),
+            unet6_prefix=IPv6Network("2a09:6847:0402::/48"),
             wan6_vlan=103,
-            default_router6=UCI.IPAddress("2a09:6847:ffff::1"),
+            default_router6=IPv6Address("2a09:6847:ffff::1"),
             hermes_primary_user=main_user,
         )
         # route 2a09:6847:0402::/48 via 2a09:6847:ffff::0402;
@@ -830,27 +827,25 @@ if __name__ == "__main__":
         tertiary_user = HermesSecondaryUser(
             unetid=UCI.UNetId("cccccccc"),
             ssid=UCI.SSID("Rezel-tertiary"),
-            wan_address=UCI.IPAddress("137.194.8.3"),
-            wan_netmask=UCI.IPAddress("255.255.252.0"),
-            lan_address=UCI.IPAddress("192.168.2.1"),
-            lan_network=UCI.IPNetwork("192.168.2.0/24"),
+            wan_address=IPv4Interface("137.194.8.3/22"),
+            lan_address=IPv4Interface("192.168.2.1/24"),
             wifi_passphrase=UCI.WifiPassphrase("password"),
             dns_servers_v4=UCI.DnsServers(
-                [UCI.IPAddress("137.194.15.132"), UCI.IPAddress("137.194.15.222")]
+                [IPv4Address("137.194.15.132"), IPv4Address("137.194.15.222")]
             ),
             dns_servers_v6=UCI.DnsServers(
                 [
-                    UCI.IPAddress("2001:4860:4860::8844"),
-                    UCI.IPAddress("2001:4860:4860::8888"),
+                    IPv6Address("2001:4860:4860::8844"),
+                    IPv6Address("2001:4860:4860::8888"),
                 ]
             ),
             wan_vlan=101,
             lan_vlan=3,
             default_config=defconf,
-            wan6_address=UCI.IPNetwork("2a09:6847:ffff::0803/64"),
-            unet6_prefix=UCI.IPNetwork("2a09:6847:0803::/48"),
+            wan6_address=IPv6Interface("2a09:6847:ffff::0803/64"),
+            unet6_prefix=IPv6Network("2a09:6847:0803::/48"),
             wan6_vlan=103,
-            default_router6=UCI.IPAddress("2a09:6847:ffff::1"),
+            default_router6=IPv6Address("2a09:6847:ffff::1"),
             hermes_primary_user=main_user,
         )
         # route 2a09:6847:0803::/48 via 2a09:6847:ffff::0803;
@@ -866,7 +861,7 @@ if __name__ == "__main__":
             src=main_user.wan_zone,
             src_dport=UCI.TCPUDPPort(80),
             dest=main_user.lan_zone,
-            dest_ip=UCI.IPAddress("192.168.0.5"),
+            dest_ip=IPv4Address("192.168.0.5"),
             dest_port=UCI.TCPUDPPort(80),
             proto=UCI.Protocol("tcp"),
         )
@@ -878,7 +873,7 @@ if __name__ == "__main__":
             desc=UCI.Description("HTTP IPv6 Opening"),
             src=secondary_user.wan6_zone,
             dest=secondary_user.lan_zone,
-            dest_ip=UCI.IPAddress("2a09:6847:402:0:ee2:7ff:fe59:0"),
+            dest_ip=IPv6Address("2a09:6847:402:0:ee2:7ff:fe59:0"),
             dest_port=UCI.TCPUDPPort(80),
             proto=UCI.Protocol("tcp"),
         )
@@ -903,10 +898,10 @@ if __name__ == "__main__":
         # ipv6_pref_delegation.build_firewall(Fireconf)
 
         static_ipv6_pref_delegation = HermesStaticIPv6PrefDelegation(
-            name=UCI.UCISectionName("ip6_pref_deleg_1"),
+            name=UCI.UCISectionNamePrefix("ip6_pref_deleg_1"),
             user=secondary_user,
-            dest_router=UCI.IPAddress("2a09:6847:402:0:ee2:7ff:fe59:0"),
-            prefix=UCI.IPNetwork("2a09:6847:0402:3::/64"),
+            dest_router=IPv6Address("2a09:6847:402:0:ee2:7ff:fe59:0"),
+            prefix=IPv6Network("2a09:6847:0402:3::/64"),
         )
         static_ipv6_pref_delegation.build_network(Netconf)
         static_ipv6_pref_delegation.build_firewall(Fireconf)
