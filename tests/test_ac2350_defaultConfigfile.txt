@@ -1,8 +1,8 @@
 /-- SEPARATOR network --/
 uci set network.loopback=interface
-uci set network.loopback.proto='127.0.0.1'
-uci set network.loopback.ipaddr='255.0.0.0'
-uci set network.loopback.netmask='static'
+uci set network.loopback.proto='static'
+uci set network.loopback.ipaddr='127.0.0.1'
+uci set network.loopback.netmask='255.0.0.0'
 uci set network.loopback.device='lo'
 uci set network.globals=globals
 uci set network.globals.ula_prefix='fdb2:b6c0:8430::/48'
@@ -35,12 +35,9 @@ uci set network.vlan_103.ports='1t 0t'
 uci commit
 service network restart
 /-- SEPARATOR firewall --/
+uci set firewall.defaults=defaults
 uci set firewall.defaults.synflood_protect='1'
 uci set firewall.defaults.flow_offloading='1'
-uci set firewall.defaults.flow_offloading_hw='1'
-uci set firewall.defaults.input='ACCEPT'
-uci set firewall.defaults.output='ACCEPT'
-uci set firewall.defaults.forward='REJECT'
 uci set firewall.zone_management=zone
 uci set firewall.zone_management.name='zone_management'
 uci set firewall.zone_management.network='management'

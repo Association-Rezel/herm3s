@@ -1,7 +1,9 @@
+from abc import ABC, abstractmethod
+
 from hermes.hermes_command_building import uci_common as UCI
 
 
-class UCITypeConfig:
+class UCITypeConfig(ABC):
     """
     Mother class reprensenting a config block UCI
     (e.g. network, firewall, dhcp, wireless, dropbear)
@@ -12,6 +14,7 @@ class UCITypeConfig:
     def __init__(self):
         pass
 
+    @abstractmethod
     def build(self) -> str:
         """
         Add the reload commands to the config block

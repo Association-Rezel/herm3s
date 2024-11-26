@@ -9,7 +9,7 @@ RESET  := $(shell tput -Txterm sgr0)
 .PHONY: help
 help:
 	@echo ''
-	@echo 'Availaible commands :'
+	@echo 'Available commands :'
 	@echo '  ${YELLOW}make tests${RESET}     : ${GREEN}Run unit tests script${RESET}'
 	@echo '  ${YELLOW}make dev${RESET}       : ${GREEN}Run dev compose${RESET}'
 	@echo '  ${YELLOW}make docker-start${RESET} : ${GREEN}Build Docker image and start container${RESET}'

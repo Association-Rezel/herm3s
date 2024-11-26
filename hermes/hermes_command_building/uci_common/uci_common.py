@@ -1,5 +1,15 @@
 import re
-from netaddr import IPAddress, IPNetwork, EUI, mac_unix_expanded
+from ipaddress import (
+    IPv4Address,
+    IPv4Interface,
+    IPv4Network,
+    IPv6Address,
+    IPv6Interface,
+    IPv6Network,
+)
+from typing import Optional
+
+from netaddr import EUI, mac_unix_expanded
 
 
 class Attribute:
@@ -28,7 +38,7 @@ class UNetId(Attribute):
             unetid (str): The name of the user network id
         """
         if re.match(r"^[a-z0-9]{8}$", unetid) is None:
-            raise ValueError("Invalid UNetId")
+            raise ValueError("Invalid UNetId : " + unetid)
         self.value = unetid
 
 
@@ -102,7 +112,7 @@ class UCIConfig:
     optional_uci_commands: str
     built_string: str
 
-    def __init__(self, name: UCISectionName, optional_uci_commands: str = ""):
+    def __init__(self, name: UCISectionName | str, optional_uci_commands: str = ""):
         """
         Initialize the UCIConfig object
 
@@ -194,19 +204,19 @@ class UCISimpleDevice(Device):
         self.name = name
 
 
-class UCIBridge(UCIConfig, Device):
+class UCIBridge(UCIConfig):
     """
     Represents a network bridge in UCI
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_device
     """
 
-    ports: UCINetworkPorts
+    ports: Optional[UCINetworkPorts]
 
     def __init__(
         self,
         unetid: UNetId,
         name_prefix: UCISectionNamePrefix,
-        ports: UCINetworkPorts = None,
+        ports: Optional[UCINetworkPorts] = None,
     ):
         """
         Initialize the UCIBridge object
@@ -238,6 +248,15 @@ class UCIBridge(UCIConfig, Device):
             )
         return self.built_string
 
+    def as_device(self) -> Device:
+        """
+        Return the UCISimpleDevice object
+
+        Returns:
+            UCISimpleDevice: The UCISimpleDevice object.
+        """
+        return UCISimpleDevice(self.name.value)
+
 
 class UCINetGlobals(UCIConfig):
     """
@@ -245,14 +264,14 @@ class UCINetGlobals(UCIConfig):
     See https://openwrt.org/docs/guide-user/network/network_configuration#section_globals
     """
 
-    ula_prefix: IPNetwork
+    ula_prefix: IPv6Network
 
-    def __init__(self, ula_prefix: IPNetwork):
+    def __init__(self, ula_prefix: IPv6Network):
         """
         Initialize the UCINetGlobals object
 
         Args:
-            ula_prefix (IPNetwork): The ULA prefix.
+            ula_prefix (IPv6Network): The ULA prefix.
         """
         super().__init__("globals")
         self.ula_prefix = ula_prefix
@@ -278,9 +297,11 @@ class UCISwitch(UCIConfig):
     """
 
     name: UCISectionName
-    ports: UCINetworkPorts
+    ports: Optional[UCINetworkPorts]
 
-    def __init__(self, name: UCISectionName, ports: UCINetworkPorts = None):
+    def __init__(
+        self, name: UCISectionName | str, ports: Optional[UCINetworkPorts] = None
+    ):
         """Initialize the UCISwitch object
 
         Args:
@@ -317,43 +338,40 @@ class UCIInterface(UCIConfig):
     And for IPv6 https://openwrt.org/docs/guide-user/network/ipv6/configuration
     """
 
-    ip: IPAddress
-    mask: IPAddress
+    ip: Optional[IPv4Interface]
     proto: InterfaceProto
-    device: Device
-    ip6addr: IPNetwork
-    ip6gw: IPAddress
-    ip6prefix: IPNetwork
-    ip6class: UCISectionName
-    ip6assign: int
+    device: Optional[Device]
+    ip6addr: Optional[IPv6Interface]
+    ip6gw: Optional[IPv6Address]
+    ip6prefix: Optional[IPv6Network]
+    ip6class: Optional[UCISectionName]
+    ip6assign: Optional[int]
 
     def __init__(
         self,
         name_prefix: UCISectionNamePrefix,
         proto: InterfaceProto,
-        ip: IPAddress = None,
-        mask: IPAddress = None,
-        unetid: UNetId = None,
-        device: Device = None,
-        ip6addr: IPNetwork = None,
-        ip6gw: IPAddress = None,
-        ip6prefix: IPNetwork = None,
-        ip6class: UCISectionName = None,
-        ip6assign: int = None,
+        ip: Optional[IPv4Interface] = None,
+        unetid: Optional[UNetId] = None,
+        device: Optional[Device] = None,
+        ip6addr: Optional[IPv6Interface] = None,
+        ip6gw: Optional[IPv6Address] = None,
+        ip6prefix: Optional[IPv6Network] = None,
+        ip6class: Optional[UCISectionName] = None,
+        ip6assign: Optional[int] = None,
     ):
         """
         Initialize the UCIInterface object
 
         Args:
-            unetid (UNetId): The UNetId object.
             name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
-            ip (IPAddress): The IP address e.g. 192.168.1.1.
-            mask (IPAddress): The subnet mask e.g. 255.255.255.0.
             proto (InterfaceProto): The InterfaceProto object.
+            ip (IPv4Interface): The IP address e.g. 192.168.1.1.
+            unetid (UNetId): The UNetId object.
             device (Device, optional): The Device object. Defaults to None.
-            ip6addr (IPNetwork): The IPv6 address e.g. 2001:db8::1/64.
-            ip6gw (IPAddress): The IPv6 gateway e.g. 2001:db8::1.
-            ip6prefix (IPNetwork): The IPv6 prefix for downstream interfaces e.g. 2001:db8::/64.
+            ip6addr (IPv6Interface): The IPv6 address e.g. 2001:db8::1.
+            ip6gw (IPv6Address): The IPv6 gateway e.g. 2001:db8::1.
+            ip6prefix (IPv6Network): The IPv6 prefix for downstream interfaces e.g. 2001:db8::/64.
             ip6class (UCISectionName): Interface where the assigned prefix come from e.g. wan_unetid
             ip6assign (int): The IPv6 prefix assignment number for the interface e.g. 64.
         """
@@ -362,7 +380,6 @@ class UCIInterface(UCIConfig):
         else:
             super().__init__(f"{name_prefix}")
         self.ip = ip
-        self.mask = mask
         self.proto = proto
         self.device = device
         self.ip6addr = ip6addr
@@ -385,11 +402,10 @@ class UCIInterface(UCIConfig):
 
         if self.ip is not None:
             self.contatenate_uci_commands(
-                f"uci set network.{self.name}.ipaddr='{self.ip}'"
+                f"uci set network.{self.name}.ipaddr='{self.ip.ip}'"
             )
-        if self.mask is not None:
             self.contatenate_uci_commands(
-                f"uci set network.{self.name}.netmask='{self.mask}'"
+                f"uci set network.{self.name}.netmask='{self.ip.netmask}'"
             )
         if self.device is not None:
             self.contatenate_uci_commands(
@@ -418,29 +434,29 @@ class UCIInterface(UCIConfig):
         return self.built_string
 
 
-class UCIRouteRule(UCIConfig):
+class UCIRoute4Rule(UCIConfig):
     """
     Used to create a network route rule
     See https://openwrt.org/docs/guide-user/network/routing/ip_rules
     """
 
-    src: IPNetwork
+    src: Optional[IPv4Network]
     lookup: int
-    dest: IPNetwork
+    dest: Optional[IPv4Network]
 
     def __init__(
         self,
-        name: UCISectionName,
+        name: UCISectionName | str,
         lookup: int,
-        src: IPNetwork = None,
-        dest: IPNetwork = None,
+        src: Optional[IPv4Network] = None,
+        dest: Optional[IPv4Network] = None,
     ):
         """
         Initialize the UCIRouteRule object
 
         Args:
             unetid (UNetId): The UNetId object.
-            src (IPNetwork): The source IP network.
+            src (IPv4Network): The source IP network.
             lookup (int): The routing table to use.
         """
         super().__init__(name)
@@ -470,7 +486,7 @@ class UCIRouteRule(UCIConfig):
         return self.built_string
 
 
-class UCIRoute(UCIConfig):
+class UCIRoute4(UCIConfig):
     """
     Used to create a network route
     See https://openwrt.org/docs/guide-user/network/routing/routes_configuration#static_routes
@@ -478,25 +494,24 @@ class UCIRoute(UCIConfig):
 
     def __init__(
         self,
-        unetid: UNetId,
-        name_prefix: UCISectionNamePrefix,
-        target: IPNetwork,
-        gateway: IPAddress,
+        name: UCISectionName,
+        target: IPv4Network,
+        gateway: IPv4Address,
         interface: UCIInterface,
-        table: int = None,
+        table: Optional[int] = None,
     ):
         """
         Initialize the UCIRoute object
 
         Args:
             unetid (UNetId): The UNetId object.
-            name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
-            target (IPNetwork): The target IP network.
-            gateway (IPAddress): The gateway IP address.
+            name (UCISectionName): The name of the route.
+            target (IPv4Network): The target IP network.
+            gateway (IPv4Address): The gateway IP address.
             interface (UCIInterface): The UCIInterface object.
             table (int, optional): The routing table to use. Defaults to None.
         """
-        super().__init__(f"{name_prefix}{unetid}")
+        super().__init__(name)
         self.target = target
         self.gateway = gateway
         self.interface = interface
@@ -528,23 +543,23 @@ class UCIRoute6Rule(UCIConfig):
     See https://openwrt.org/docs/guide-user/network/routing/ip_rules
     """
 
-    src: IPNetwork
+    src: Optional[IPv6Network]
     lookup: int
-    dest: IPNetwork
+    dest: Optional[IPv6Network]
 
     def __init__(
         self,
-        name: UCISectionName,
+        name: UCISectionName | str,
         lookup: int,
-        src: IPNetwork = None,
-        dest: IPNetwork = None,
+        src: Optional[IPv6Network] = None,
+        dest: Optional[IPv6Network] = None,
     ):
         """
         Initialize the UCIRouteRule object
 
         Args:
             unetid (UNetId): The UNetId object.
-            src (IPNetwork): The source IP network.
+            src (IPv6Network): The source IP network.
             lookup (int): The routing table to use.
         """
         super().__init__(name)
@@ -584,10 +599,10 @@ class UCIRoute6(UCIConfig):
         self,
         unetid: UNetId,
         name_prefix: UCISectionNamePrefix,
-        target: IPNetwork,
-        gateway: IPAddress,
+        target: IPv6Network,
+        gateway: IPv6Address,
         interface: UCIInterface,
-        table: int = None,
+        table: Optional[int] = None,
     ):
         """
         Initialize the UCIRoute6 object
@@ -595,8 +610,8 @@ class UCIRoute6(UCIConfig):
         Args:
             unetid (UNetId): The UNetId object.
             name_prefix (UCISectionNamePrefix): The UCISectionNamePrefix object.
-            target (IPNetwork): The target IP network.
-            gateway (IPAddress): The gateway IP address.
+            target (IPv6Network): The target IP network.
+            gateway (IPv6Address): The gateway IP address.
             interface (UCIInterface): The UCIInterface object.
             table (int, optional): The routing table to use. Defaults to None.
         """
@@ -633,7 +648,10 @@ class UCINoIPInterface(UCIConfig):
     """
 
     def __init__(
-        self, name: UCISectionName, device: Device, proto: InterfaceProto = None
+        self,
+        name: UCISectionName | str,
+        device: Device,
+        proto: Optional[InterfaceProto] = None,
     ):
         """
         Initialize the UCINoIPInterface object
@@ -678,7 +696,11 @@ class UCISwitchVlan(UCIConfig):
     ports: UCINetworkPorts
 
     def __init__(
-        self, name: UCISectionName, device: UCISwitch, vid: int, ports: UCINetworkPorts
+        self,
+        name: UCISectionName | str,
+        device: UCISwitch,
+        vid: int,
+        ports: UCINetworkPorts,
     ):
         """
         Initialize the UCISwitchVlan object
@@ -924,7 +946,7 @@ class UCIWifiDevice(UCIConfig):
     path: Path
     type: WifiDeviceType
     channel: Channel
-    channels: Channels
+    channels: Optional[Channels]
     htmode: Htmode
     country: Country
     band: Band
@@ -932,7 +954,7 @@ class UCIWifiDevice(UCIConfig):
 
     def __init__(
         self,
-        name: UCISectionName,
+        name: UCISectionName | str,
         path: Path,
         device_type: WifiDeviceType,
         channel: Channel,
@@ -940,7 +962,7 @@ class UCIWifiDevice(UCIConfig):
         country: Country,
         band: Band,
         disabled: int = 0,
-        channels: Channels = None,
+        channels: Optional[Channels] = None,
     ):
         """
         Create a wifi device
@@ -997,7 +1019,7 @@ class UCIWifiIface(UCIConfig):
         self,
         unetid: UNetId,
         device: UCIWifiDevice,
-        network: UCIInterface,
+        network: UCIInterface | UCINoIPInterface,
         mode: Mode,
         ssid: SSID,
         encryption: Encryption,
@@ -1210,9 +1232,9 @@ class UCIIpset(UCIConfig):
 
     def __init__(
         self,
-        name: UCISectionName,
+        name: UCISectionName | str,
         match: MatchIPSet,
-        entry: list[IPNetwork],
+        entry: list[IPv4Network | IPv6Network],
         family: Family = Family("ipv6"),
     ):
         """
@@ -1255,27 +1277,27 @@ class UCIZone(UCIConfig):
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#zones
     """
 
-    network: UCIInterface
+    network: UCIInterface | UCINoIPInterface
     input: InOutForw
     output: InOutForw
     forward: InOutForw
-    family: Family
+    family: Optional[Family]
     is_wan_zone: bool
 
     def __init__(
         self,
-        network: UCIInterface,
+        network: UCIInterface | UCINoIPInterface,
         _input: InOutForw,
         output: InOutForw,
         forward: InOutForw,
-        family: Family = None,
+        family: Optional[Family] = None,
         is_wan_zone: bool = False,
     ):
         """
         Initialize a UCIZone object.
 
         Args:
-            network (UCIInterface): The network interface.
+            network (UCIInterface | UCINoIPInterface): The network interface.
             _input (InOutForw): The input value.
             output (InOutForw): The output value.
             forward (InOutForw): The forward value.
@@ -1319,27 +1341,27 @@ class UCIRedirect4(UCIConfig):
 
     desc: Description
     src: UCIZone
-    src_ip: IPAddress
-    src_dip: IPAddress
+    src_ip: Optional[IPv4Address]
+    src_dip: Optional[IPv4Address]
     src_dport: TCPUDPPort
     dest: UCIZone
-    dest_ip: IPAddress
+    dest_ip: IPv4Address
     dest_port: TCPUDPPort
     proto: Protocol
 
     def __init__(
         self,
         unetid: UNetId,
-        name: UCISectionName,
+        name: UCISectionName | str,
         desc: Description,
         src_dport: TCPUDPPort,
         dest: UCIZone,
-        dest_ip: IPAddress,
+        dest_ip: IPv4Address,
         dest_port: TCPUDPPort,
         proto: Protocol,
-        src: UCIZone = None,
-        src_dip: IPAddress = None,
-        src_ip: IPAddress = None,
+        src: UCIZone,
+        src_dip: Optional[IPv4Address] = None,
+        src_ip: Optional[IPv4Address] = None,
     ):
         """
         Initialize a UCIRedirect4 object.
@@ -1349,11 +1371,11 @@ class UCIRedirect4(UCIConfig):
             name (UCISectionName): The name of the redirect.
             desc (Description): The description of the redirect.
             src (UCIZone): The source zone. Defaults to None.
-            src_dip (IPAddress): The destination IP address. Defaults to None.
-            src_ip (IPAddress): The source IP address. Defaults to None.
+            src_dip (IPv4Address): The destination IP address. Defaults to None.
+            src_ip (IPv4Address): The source IP address. Defaults to None.
             src_dport (TCPUDPPort): The source destination port.
             dest (UCIZone): The destination zone.
-            dest_ip (IPAddress): The destination IP address.
+            dest_ip (IPv4Address): The destination IP address.
             dest_port (TCPUDPPort): The destination port.
             proto (Protocol): protocol (tcp, udp...)
         """
@@ -1407,7 +1429,7 @@ class UCIForwarding(UCIConfig):
         self,
         src: UCIZone,
         dest: UCIZone,
-        ipset: UCIIpset = None,
+        ipset: Optional[UCIIpset] = None,
         optional_name_suffix: str = "",
     ):
         """
@@ -1449,30 +1471,30 @@ class UCIRule(UCIConfig):
 
     desc: Description
     proto: Protocol
-    src: UCIZone
-    src_ip: IPAddress
-    src_port: TCPUDPPort
-    dest: UCIZone
-    dest_ip: IPAddress
-    dest_port: TCPUDPPort
+    src: Optional[UCIZone]
+    src_ip: Optional[IPv4Address | IPv6Address]
+    src_port: Optional[TCPUDPPort]
+    dest: Optional[UCIZone]
+    dest_ip: Optional[IPv4Address | IPv6Address]
+    dest_port: Optional[TCPUDPPort]
     target: Target
-    icmp_type: str
+    icmp_type: Optional[str]
     family: Family
 
     def __init__(
         self,
         unetid: UNetId,
-        name: UCISectionName,
+        name: UCISectionName | str,
         desc: Description,
         proto: Protocol,
         target: Target,
-        src: UCIZone = None,
-        src_ip: IPAddress = None,
-        src_port: TCPUDPPort = None,
-        dest_ip: IPAddress = None,
-        dest: UCIZone = None,
-        dest_port: TCPUDPPort = None,
-        icmp_type: str = None,
+        src: Optional[UCIZone] = None,
+        src_ip: Optional[IPv4Address | IPv6Address] = None,
+        src_port: Optional[TCPUDPPort] = None,
+        dest_ip: Optional[IPv4Address | IPv6Address] = None,
+        dest: Optional[UCIZone] = None,
+        dest_port: Optional[TCPUDPPort] = None,
+        icmp_type: Optional[str] = None,
         family: Family = Family("ipv4"),
     ):
         """
@@ -1482,12 +1504,12 @@ class UCIRule(UCIConfig):
             unetid (UNetId): The UNetId object.
             name (UCISectionName): The name of the rule.
             desc (Description): The description of the rule.
-            dest_ip (IPAddress): The destination IP address.
+            dest_ip (IPv4Address | IPv6Address): The destination IP address.
             dest (UCIZone): The destination interface.
             proto (Protocol): The protocol.
             target (Target): The target.
             src (UCIZone, optional): The source interface. Defaults to None.
-            src_ip (IPAddress, optional): The source IP address. Defaults to None.
+            src_ip (IPv4Address, optional): The source IP address. Defaults to None.
             src_port (TCPUDPPort, optional): The source port. Defaults to None.
             dest_port (TCPUDPPort, optional): The destination port. Defaults to None.
             family (Family, optional): The IP family. Defaults to "ipv4".
@@ -1573,11 +1595,23 @@ class UCISnat(UCIConfig):
             lan_interface (UCIInterface): The LAN interface.
         """
         super().__init__(f"nat_{lan_interface.name}_to_{wan_interface.name}")
+
+        if not lan_interface.ip:
+            raise ValueError(
+                "LAN interface must have an IPv4 address to create a NAT rule"
+            )
+
+        if not wan_interface.ip:
+            raise ValueError(
+                "WAN interface must have an IPv4 address to create a NAT rule"
+            )
+
         self.wan_zone = wan_zone
         self.lan_zone = lan_zone
         self.wan_interface = wan_interface
         self.lan_interface = lan_interface
-        self.lan_network = IPNetwork(f"{lan_interface.ip}/{lan_interface.mask}").cidr
+        self.lan_network = lan_interface.ip.network
+        self.snat_ip = wan_interface.ip.ip
 
     def uci_build_string(self):
         """
@@ -1590,7 +1624,7 @@ class UCISnat(UCIConfig):
             f"uci set firewall.{self.name}=nat",
             f"uci set firewall.{self.name}.name='{self.name}'",
             f"uci set firewall.{self.name}.target='SNAT'",
-            f"uci set firewall.{self.name}.snat_ip='{self.wan_interface.ip}'",
+            f"uci set firewall.{self.name}.snat_ip='{self.snat_ip}'",
             f"uci set firewall.{self.name}.src_ip='{self.lan_network}'",
             f"uci set firewall.{self.name}.proto='all'",
         )
@@ -1606,20 +1640,22 @@ class DnsServers(Attribute):
     Its value is a list of IP addresses
     """
 
-    def __init__(self, value: list[IPAddress]):
+    servers: list[IPv4Address] | list[IPv6Address]
+
+    def __init__(self, servers: list[IPv4Address] | list[IPv6Address]):
         """
         Initialize the DnsServers object.
 
         Parameters:
-        - value (list[IPAddress]): A list of IP addresses representing the DNS servers.
+        - value (list[IPv4Address] | list[IPv6Address]): A list of IP addresses representing the DNS servers.
 
         Raises:
-        - ValueError: If any of the IP addresses in the list is not of type IPAddress.
+        - ValueError: If any of the IP addresses in the list is not of type IPv4Address | IPv6Address.
         """
-        for ip in value:
-            if not isinstance(ip, IPAddress):
+        for ip in servers:
+            if not isinstance(ip, IPv4Address | IPv6Address):
                 raise ValueError("Invalid DNS Servers")
-        self.value = value
+        self.servers = servers
 
 
 class DUid(Attribute):
@@ -1782,9 +1818,9 @@ class UCIDHCP(UCIConfig):
         )
         # see https://openwrt.org/docs/guide-user/base-system/dhcp#dhcp_pools
         self.contatenate_uci_commands(
-            f"uci add_list dhcp.{self.name}.dhcp_option='6,{','.join([str(dns) for dns in self.dns_v4.value])}'"
+            f"uci add_list dhcp.{self.name}.dhcp_option='6,{','.join([str(dns) for dns in self.dns_v4.servers])}'"
         )
-        for dns in self.dns_v6.value:
+        for dns in self.dns_v6.servers:
             self.contatenate_uci_commands(f"uci add_list dhcp.{self.name}.dns='{dns}'")
         return self.built_string
 
@@ -1796,26 +1832,26 @@ class UCIHost(UCIConfig):
     And https://openwrt.org/docs/guide-user/base-system/dhcp_configuration#static_leases
     """
 
-    ip: IPAddress
-    mac: EUI
-    hostid: str
-    duid: DUid
+    ip: Optional[IPv4Address | IPv6Address]
+    mac: Optional[EUI]
+    hostid: Optional[str]
+    duid: Optional[DUid]
     hostname: str
 
     def __init__(
         self,
         unetid: UNetId,
         hostname: str,
-        ip: IPAddress = None,
-        mac: EUI = None,
-        hostid: str = None,
-        duid: DUid = None,
+        ip: Optional[IPv4Address | IPv6Address] = None,
+        mac: Optional[EUI] = None,
+        hostid: Optional[str] = None,
+        duid: Optional[DUid] = None,
     ):
         """
         Initialize the UCIHost object.
 
         Parameters:
-        - ip (IPAddress): The IP address for the static lease.
+        - ip (IPv4Address | IPv6Address): The IP address for the static lease.
         - mac (EUI): The MAC address of the target. Defaults to None.
         - hostid (str): The host ID. Defaults to None.
         - duid (DUid): The DUID of the target. Defaults to None.

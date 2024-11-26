@@ -38,7 +38,7 @@
           ],
           "ipv6_port_opening": [
             {
-              "ip": "2a09:6847:402:0:ee2:7ff:fe59:0",
+              "ip": "2a09:6847:0802:0:ee2:7ff:fe59:0",
               "port": "8000",
               "protocol": "tcp",
               "name": "http_to_internal_ipv6",
@@ -101,18 +101,15 @@
     "wan_vlan": [
       {
         "vlan_id": 101,
-        "ipv4_gateway": "137.194.8.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "137.194.8.1"
       },
       {
         "vlan_id": 102,
-        "ipv4_gateway": "195.14.28.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "195.14.28.1"
       },
       {
         "vlan_id": 103,
-        "ipv4_gateway": "",
-        "ipv6_gateway": "2a09:6847:ffff::1/64"
+        "ipv6_gateway": "2a09:6847:ffff::1"
       }
     ]
   },
@@ -210,18 +207,15 @@
     "wan_vlan": [
       {
         "vlan_id": 101,
-        "ipv4_gateway": "137.194.8.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "137.194.8.1"
       },
       {
         "vlan_id": 102,
-        "ipv4_gateway": "195.14.28.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "195.14.28.1"
       },
       {
         "vlan_id": 103,
-        "ipv4_gateway": "",
-        "ipv6_gateway": "2a09:6847:ffff::1/64"
+        "ipv6_gateway": "2a09:6847:ffff::1"
       }
     ]
   },
@@ -348,18 +342,15 @@
     "wan_vlan": [
       {
         "vlan_id": 101,
-        "ipv4_gateway": "137.194.8.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "137.194.8.1"
       },
       {
         "vlan_id": 102,
-        "ipv4_gateway": "195.14.28.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "195.14.28.1"
       },
       {
         "vlan_id": 103,
-        "ipv4_gateway": "",
-        "ipv6_gateway": "2a09:6847:ffff::1/64"
+        "ipv6_gateway": "2a09:6847:ffff::1"
       }
     ]
   },
@@ -402,7 +393,7 @@
           ],
           "ipv6_port_opening": [
             {
-              "ip": "2a09:6847:402:0:ee2:7ff:fe59:0",
+              "ip": "2a09:6847:0404:0:ee2:7ff:fe59:0",
               "port": "8000",
               "protocol": "tcp",
               "name": "http_to_internal_ipv6",
@@ -465,18 +456,15 @@
     "wan_vlan": [
       {
         "vlan_id": 101,
-        "ipv4_gateway": "137.194.8.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "137.194.8.1"
       },
       {
         "vlan_id": 102,
-        "ipv4_gateway": "195.14.28.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "195.14.28.1"
       },
       {
         "vlan_id": 103,
-        "ipv4_gateway": "",
-        "ipv6_gateway": "2a09:6847:ffff::1/64"
+        "ipv6_gateway": "2a09:6847:ffff::1"
       }
     ]
   },
@@ -603,18 +591,15 @@
     "wan_vlan": [
       {
         "vlan_id": 101,
-        "ipv4_gateway": "137.194.8.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "137.194.8.1"
       },
       {
         "vlan_id": 102,
-        "ipv4_gateway": "195.14.28.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "195.14.28.1"
       },
       {
         "vlan_id": 103,
-        "ipv4_gateway": "",
-        "ipv6_gateway": "2a09:6847:ffff::1/64"
+        "ipv6_gateway": "2a09:6847:ffff::1"
       }
     ]
   },
@@ -657,7 +642,7 @@
           ],
           "ipv6_port_opening": [
             {
-              "ip": "2a09:6847:402:0:ee2:7ff:fe59:0",
+              "ip": "2a09:6847:0803:0:ee2:7ff:fe59:0",
               "port": "80",
               "protocol": "tcp",
               "name": "http_to_internal_ipv6",
@@ -720,18 +705,15 @@
     "wan_vlan": [
       {
         "vlan_id": 101,
-        "ipv4_gateway": "137.194.8.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "137.194.8.1"
       },
       {
         "vlan_id": 102,
-        "ipv4_gateway": "195.14.28.1/24",
-        "ipv6_gateway": ""
+        "ipv4_gateway": "195.14.28.1"
       },
       {
         "vlan_id": 103,
-        "ipv4_gateway": "",
-        "ipv6_gateway": "2a09:6847:ffff::1/64"
+        "ipv6_gateway": "2a09:6847:ffff::1"
       }
     ]
   }
