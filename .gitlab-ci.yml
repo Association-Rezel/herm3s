@@ -1,18 +1,20 @@
 stages:
-  - pre_checks
+  - test
   - build
   - deploy
 
 include:
   - project: 'fai/shared-ci'
     file: .gitlab-ci-template-vault_get_secrets.yml
+  - template: Jobs/SAST.latest.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.latest.gitlab-ci.yml
 
 variables:
   IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   DEPLOY_ENV: "prod"
 
 linting:
-  stage: pre_checks
+  stage: test
   image: python
   script:
     - pip install black
@@ -21,7 +23,7 @@ linting:
     - when: always
 
 unit-tests:
-  stage: pre_checks
+  stage: test
   image: docker:24.0.7
   services:
     - docker:24.0.7-dind
@@ -35,7 +37,7 @@ unit-tests:
     - dind
 
 sonarqube:
-  stage: pre_checks
+  stage: test
   image: 
     name: sonarsource/sonar-scanner-cli:11
     entrypoint: [""]
