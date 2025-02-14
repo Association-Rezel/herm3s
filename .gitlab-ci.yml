@@ -48,7 +48,7 @@ sonarqube:
     SONAR_HOST_URL: https://sonarqube.core.rezel.net
     VAULT_SERVER_URL: https://vault.fai.rezel.net
     VAULT_SECRETS_ROLE: service_hermes
-    VAULT_SECRETS_PATH: kv/data/hermes_secrets
+    VAULT_SECRETS_PATH: kv/data/hermes_ci_secrets
   cache:
     policy: pull-push
     key: "sonar-cache-$CI_COMMIT_REF_SLUG"
