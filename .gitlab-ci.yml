@@ -3,6 +3,10 @@ stages:
   - build
   - deploy
 
+include:
+  - project: 'fai/shared-ci'
+    file: .gitlab-ci-template-vault_get_secrets.yml
+
 variables:
   IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
   DEPLOY_ENV: "prod"
@@ -29,6 +33,41 @@ unit-tests:
     - when: always
   tags:
     - dind
+
+sonarqube:
+  stage: pre_checks
+  image: 
+    name: sonarsource/sonar-scanner-cli:11
+    entrypoint: [""]
+  id_tokens:
+    VAULT_ID_TOKEN:
+      aud: $VAULT_SERVER_URL
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # Defines the location of the analysis task cache
+    GIT_DEPTH: "0"  # Tells git to fetch all the branches of the project, required by the analysis task
+    SONAR_HOST_URL: https://sonarqube.core.rezel.net
+    VAULT_SERVER_URL: https://vault.fai.rezel.net
+    VAULT_SECRETS_ROLE: service_hermes
+    VAULT_SECRETS_PATH: kv/data/hermes_secrets
+  cache:
+    policy: pull-push
+    key: "sonar-cache-$CI_COMMIT_REF_SLUG"
+    paths:
+      - "${SONAR_USER_HOME}/cache"
+      - sonar-scanner/
+  before_script:
+    - mkdir /tmp/bin
+    - PATH=$PATH:/tmp/bin
+    - curl -o /tmp/bin/jq -L https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64
+    - chmod +x /tmp/bin/jq
+    - !reference [.vault_service_secrets, before_script] # Retrieve SONAR_TOKEN
+  script: 
+    - sonar-scanner -Dsonar.host.url="${SONAR_HOST_URL}"
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH
+      when: never
+    - when: always
 
 build:
   stage: build
