@@ -18,6 +18,7 @@ RUN dos2unix unit_tests.sh
 RUN dos2unix test_ac2350_defaultConfigfile.txt
 RUN dos2unix test_ac2350_configfile.txt
 
+USER nonroot
 
 # Run the script when the container starts
 CMD ["./unit_tests.sh"]
