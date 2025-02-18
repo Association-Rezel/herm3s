@@ -1,24 +1,71 @@
 stages:
-  - triggers
+  - pre_checks
+  - build
+  - deploy
+  - security-checks
+  - publish
 
-main:
-  stage: triggers
-  variables:
-    SKIP_UNIT_TESTS: "true"
-  trigger:
-    include: gitlab-ci/main.yml
-    strategy: depend
-    forward:
-      pipeline_variables: true
+include:
+  - project: 'fai/shared-ci'
+    file: .gitlab-ci-template-publish_to_github.yml
+    inputs:
+      vault_secrets_role: service_hermes
+      vault_secrets_path: kv/data/hermes_ci_secrets
+      github_git_remote: git@github.com:Association-Rezel/herm3s.git
 
-publish-to-github:
-  stage: triggers
-  trigger:
-    include: gitlab-ci/publish-to-github.yml
-    strategy: depend
-    forward:
-      pipeline_variables: true
+variables:
+  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  DEPLOY_ENV: "prod"
+
+linting:
+  stage: pre_checks
+  image: python
+  script:
+    - pip install black
+    - black --check .
   rules:
-    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "merge_request_event"
-      when: never
     - when: always
+
+unit-tests:
+  stage: pre_checks
+  image: docker:24.0.7
+  services:
+    - docker:24.0.7-dind
+  script:
+    - docker compose -f tests/docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests
+  rules:
+    - if: $SKIP_UNIT_TESTS == "true"
+      when: never
+    - when: never
+  tags:
+    - dind
+
+build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"},\"$(echo -n $CI_DEPENDENCY_PROXY_SERVER | awk -F[:] '{print $1}')\":{\"auth\":\"$(printf "%s:%s" ${CI_DEPENDENCY_PROXY_USER} "${CI_DEPENDENCY_PROXY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --destination "${IMAGE_TAG}"
+
+deploy:
+  stage: deploy
+  image:
+    name: bitnami/kubectl:latest
+    entrypoint: ['']
+  script:
+    # Substitute environment variables in Kubernetes manifests
+    - mkdir k8s-envsubst
+    - |
+      for file in k8s/*.yaml; do
+        envsubst < $file | tee k8s-envsubst/$(basename $file)
+      done
+    # Apply Kubernetes manifests
+    - kubectl config use-context fai/k8s-cluster:main-k8s-agent
+    - kubectl apply -f k8s-envsubst/
+  rules: 
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
