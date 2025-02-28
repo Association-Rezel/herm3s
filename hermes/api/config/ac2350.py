@@ -115,12 +115,16 @@ def create_configfile(box: Box):
         user.build_dhcp(Dhcpconf)
         user.build_wireless(Wirelessconf)
 
-        # Create port forwarding
+        # Create port forwardings
         for port_forwarding in unet.firewall.ipv4_port_forwarding:
             user_port_forwarding = ac2350.HermesPortForwarding(
                 unetid=UCI.UNetId(unet.unet_id),
-                name=UCI.UCISectionName("http_to_internal"),
-                desc=UCI.Description("HTTP forwarding"),
+                name=UCI.UCISectionName(
+                    f"port_forwarding_dport_{port_forwarding.wan_port}"
+                ),
+                desc=UCI.Description(
+                    f"port_forwarding_dport_{port_forwarding.wan_port}"
+                ),
                 src=user.wan_zone,
                 src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
                 dest=user.lan_zone,
