@@ -16,8 +16,6 @@ COPY .env* /
 
 EXPOSE 8000
 
-USER nonroot
-
 #entry point for "uvicorn main:app --reload"
 # CMD ["ls /"]
 ENTRYPOINT [ "uvicorn", "hermes.main:app","--host", "::", "--reload"]
