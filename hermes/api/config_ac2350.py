@@ -1,11 +1,57 @@
 from ipaddress import IPv4Address, IPv6Address
+import logging
 from typing import Optional
+
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
+from netaddr import EUI, AddrFormatError, mac_unix_expanded
 
 from hermes.env import ENV
 from hermes.hermes_command_building import ac2350
 from hermes.hermes_command_building import common_command_builder as ccb
 from hermes.hermes_command_building import uci_common as UCI
+from hermes.mongodb.db import get_box_by_mac, get_db
 from hermes.mongodb.models import Box, UnetProfile
+
+router = APIRouter()
+
+
+# download file from hermes to box
+@router.get("/v1/config/ac2350/{mac}")
+async def ac2350_get_file_config_init(mac: str, db=Depends(get_db)):
+    """
+    Download the configuration file for the box with the mac address mac
+    args:
+        mac: str: mac address of the box
+    """
+    try:
+        mac_box = EUI(mac)
+        mac_box.dialect = mac_unix_expanded
+    except AddrFormatError as e:
+        raise HTTPException(
+            400, {"Erreur": "invalid mac address", "details": str(e)}
+        ) from e
+    try:
+        create_configfile(await get_box_by_mac(db, mac_box))
+    except ValueError as e:
+        logging.error("Error: %s", str(e))
+        raise HTTPException(404, {"Erreur": str(e)}) from e
+    return FileResponse(
+        f"{ENV.temp_generated_box_configs_dir}configfile_" + str(mac_box) + ".txt",
+        filename="configfile.txt",
+    )
+
+
+@router.get("/v1/config/ac2350/default/file")
+async def ac2350_get_default_config():
+    """
+    Download the default configuration file
+    """
+    create_default_configfile()
+    return FileResponse(
+        f"{ENV.temp_generated_box_configs_dir}defaultConfigfile.txt",
+        filename="defaultConfigfile.txt",
+    )
 
 
 def create_configfile(box: Box):

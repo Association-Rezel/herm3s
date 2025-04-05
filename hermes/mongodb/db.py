@@ -12,7 +12,6 @@ database: Optional[AsyncIOMotorDatabase] = None
 db_client: Optional[AsyncIOMotorClient] = None
 
 
-@Depends
 def get_db() -> AsyncIOMotorDatabase:
     if database is None:
         raise ValueError("Database is not connected.")
