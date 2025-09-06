@@ -180,6 +180,22 @@ def create_configfile(box: Box):
             )
             user_port_forwarding.build_firewall(Fireconf)
 
+        # BOUCLE POUR L'OUVERTURE DES PORTS IPV6
+        for ipv6_rule in unet.firewall.ipv6_port_opening:
+            user_ipv6_opening = ac2350.HermesIPv6PortOpening(
+                unetid=UCI.UNetId(unet.unet_id),
+                name=UCI.UCISectionName(f"ipv6_open_dport_{ipv6_rule.port}"),
+                desc=UCI.Description(
+                    f"Allow IPv6 to {ipv6_rule.ip} on port {ipv6_rule.port}"
+                ),
+                src=user.wan6_zone,
+                dest=user.lan_zone,
+                dest_ip=ipv6_rule.ip,
+                dest_port=UCI.TCPUDPPort(ipv6_rule.port),
+                proto=UCI.Protocol(ipv6_rule.protocol),
+            )
+            user_ipv6_opening.build_firewall(Fireconf)
+
     # Add to the config file
     with open(
         f"{ENV.temp_generated_box_configs_dir}configfile_" + str(box.mac) + ".txt",
