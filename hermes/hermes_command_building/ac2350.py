@@ -555,13 +555,13 @@ class HermesPortForwarding(ccb.HermesConfigBuilder):
         self,
         unetid: UCI.UNetId,
         name: UCI.UCISectionName,
-        desc: UCI.Description,
         src_dport: UCI.TCPUDPPort,
         dest: UCI.UCIZone,
         dest_ip: IPv4Address,
         dest_port: UCI.TCPUDPPort,
         proto: UCI.Protocol,
         src: UCI.UCIZone,
+        desc: Optional[UCI.Description] = None,
         src_dip: Optional[IPv4Address] = None,
         src_ip: Optional[IPv4Address] = None,
     ):
@@ -570,7 +570,7 @@ class HermesPortForwarding(ccb.HermesConfigBuilder):
         Args:
             unetid (UCI.UNetId): The user netid
             name (UCI.UCISectionName): The name of the port forwarding
-            desc (UCI.Description): The description of the port forwarding
+            desc (UCI.Description, optional): The description of the port forwarding
             src (UCI.UCIZone): The source interface
             src_dport (UCI.TCPUDPPort): The source port
             dest (UCI.UCIZone): The destination interface
@@ -604,12 +604,12 @@ class HermesIPv6PortOpening(ccb.HermesConfigBuilder):
         self,
         unetid: UCI.UNetId,
         name: UCI.UCISectionName,
-        desc: UCI.Description,
         src: UCI.UCIZone,
         dest: UCI.UCIZone,
         dest_ip: IPv6Address,
         dest_port: UCI.TCPUDPPort,
         proto: UCI.Protocol,
+        desc: Optional[UCI.Description] = None,
     ):
         super().__init__()
         self.ipv6_port_opening = UCI.UCIRule(
@@ -667,10 +667,10 @@ class HermesDynIPv6PrefDelegation(ccb.HermesConfigBuilder):
         associated_lease: HermesStaticDHCPLease,
         unetid: UCI.UNetId,
         name: UCI.UCISectionName,
-        desc: UCI.Description,
         src: UCI.UCIZone,
         dest: UCI.UCIZone,
         proto: UCI.Protocol = UCI.Protocol("tcp udp icmp"),
+        desc: Optional[UCI.Description] = None,
     ):
         super().__init__()
         self.ipv6_pref_delegation = UCI.UCIRule(
@@ -857,7 +857,6 @@ if __name__ == "__main__":
         main_port_forwarding = HermesPortForwarding(
             unetid=UCI.UNetId("aaaaaaaa"),
             name=UCI.UCISectionName("http_to_internal"),
-            desc=UCI.Description("HTTP forwarding"),
             src=main_user.wan_zone,
             src_dport=UCI.TCPUDPPort(80),
             dest=main_user.lan_zone,
@@ -870,7 +869,6 @@ if __name__ == "__main__":
         ipv6_port_opening = HermesIPv6PortOpening(
             unetid=UCI.UNetId("bbbbbbbb"),
             name=UCI.UCISectionName("http_to_internal_ipv6"),
-            desc=UCI.Description("HTTP IPv6 Opening"),
             src=secondary_user.wan6_zone,
             dest=secondary_user.lan_zone,
             dest_ip=IPv6Address("2a09:6847:402:0:ee2:7ff:fe59:0"),
@@ -891,7 +889,6 @@ if __name__ == "__main__":
         #     associated_lease=static_dhcp_lease,
         #     unetid=UCI.UNetId("bbbbbbbb"),
         #     name=UCI.UCISectionName("ipv6_pref_delegation"),
-        #     desc=UCI.Description("IPv6 prefix delegation"),
         #     src=secondary_user.wan6_zone,
         #     dest=secondary_user.lan_zone,
         # )

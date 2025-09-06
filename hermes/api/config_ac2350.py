@@ -1,5 +1,5 @@
-from ipaddress import IPv4Address, IPv6Address
 import logging
+from ipaddress import IPv4Address, IPv6Address
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -168,9 +168,6 @@ def create_configfile(box: Box):
                 name=UCI.UCISectionName(
                     f"port_forwarding_dport_{port_forwarding.wan_port}"
                 ),
-                desc=UCI.Description(
-                    f"port_forwarding_dport_{port_forwarding.wan_port}"
-                ),
                 src=user.wan_zone,
                 src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
                 dest=user.lan_zone,
@@ -185,9 +182,6 @@ def create_configfile(box: Box):
             user_ipv6_opening = ac2350.HermesIPv6PortOpening(
                 unetid=UCI.UNetId(unet.unet_id),
                 name=UCI.UCISectionName(f"ipv6_open_dport_{ipv6_rule.port}"),
-                desc=UCI.Description(
-                    f"Allow IPv6 to {ipv6_rule.ip} on port {ipv6_rule.port}"
-                ),
                 src=user.wan6_zone,
                 dest=user.lan_zone,
                 dest_ip=ipv6_rule.ip,
