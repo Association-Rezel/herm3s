@@ -152,6 +152,7 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
             channel=UCI.Channel("auto"),
             htmode=UCI.Htmode("VHT80"),
             country=UCI.Country("PA"),
+            channels=UCI.Channels("36 40 44 48 149 153 157 161 169 173")
             band=UCI.Band("5g"),
             disabled=0,
         )
