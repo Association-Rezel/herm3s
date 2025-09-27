@@ -149,7 +149,7 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
             name=UCI.UCISectionName("radio0"),
             path=UCI.Path("pci0000:00/0000:00:00.0"),
             device_type=UCI.WifiDeviceType("mac80211"),
-            channel=UCI.Channel("auto"),,
+            channel=UCI.Channel("auto"),
             htmode=UCI.Htmode("VHT80"),
             country=UCI.Country("PA"),
             band=UCI.Band("5g"),
