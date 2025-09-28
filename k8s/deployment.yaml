@@ -40,7 +40,6 @@ spec:
         - "0.0.0.0"
         - "--port"
         - "8000"
-        - "${RELOAD_ARG}"
         env:
         - name: DEPLOY_ENV
           value: "${DEPLOY_ENV}"
