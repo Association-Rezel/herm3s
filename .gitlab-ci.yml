@@ -14,17 +14,18 @@ include:
       github_git_remote: git@github.com:Association-Rezel/herm3s.git
 
 variables:
-  IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-  DEPLOY_ENV: "prod"
+  IMAGE_TAG: $CI_REGISTRY_IMAGE/herm3s:${DEPLOY_ENV}-$CI_COMMIT_SHORT_SHA
+  IMAGE_TAG_LATEST: $CI_REGISTRY_IMAGE/herm3s:${DEPLOY_ENV}-latest
 
 linting:
-  stage: pre_checks
-  image: python
-  script:
-    - pip install black
-    - black --check .
   rules:
-    - when: always
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  stage: pre_checks
+  image: registry.gitlab.com/pipeline-components/black:latest
+  script:
+    - black --version
+    - black --check --verbose --diff --color -- .
 
 unit-tests:
   stage: pre_checks
@@ -45,27 +46,40 @@ build:
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      variables:
+        DEPLOY_ENV: "prod"
+    - variables:
+        DEPLOY_ENV: "dev"
   script:
-    - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"},\"$(echo -n $CI_DEPENDENCY_PROXY_SERVER | awk -F[:] '{print $1}')\":{\"auth\":\"$(printf "%s:%s" ${CI_DEPENDENCY_PROXY_USER} "${CI_DEPENDENCY_PROXY_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}"
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${IMAGE_TAG}"
+      --destination "${IMAGE_TAG_LATEST}"
 
 deploy:
   stage: deploy
+  rules: 
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      variables:
+        DEPLOY_ENV: "prod"
+        DEPLOY_NAMESPACE: "default"
+    - variables:
+        DEPLOY_ENV: "dev"
+        DEPLOY_NAMESPACE: "dev"
+        RELOAD_ARG: "--reload"
   image:
-    name: bitnami/kubectl:latest
+    name: dtzar/helm-kubectl
     entrypoint: ['']
+  before_script:
+    - apk add envsubst
   script:
-    # Substitute environment variables in Kubernetes manifests
     - mkdir k8s-envsubst
     - |
       for file in k8s/*.yaml; do
         envsubst < $file | tee k8s-envsubst/$(basename $file)
       done
-    # Apply Kubernetes manifests
     - kubectl config use-context rezel/k8s-cluster:main-k8s-agent
     - kubectl apply -f k8s-envsubst/
-  rules: 
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

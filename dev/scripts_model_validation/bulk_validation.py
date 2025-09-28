@@ -6,7 +6,7 @@ Usage: python -m hermes.communication_db.scripts_model_validation.bulk_validatio
 
 import pymongo
 
-from hermes.mongodb.models import Box
+from common_models.hermes_models import Box
 
 # GLOBALS
 DB_URI = "mongodb://admintest:Rwy4ygL5hqoNUr@137.194.13.162/?retryWrites=true&w=majority&authSource=test"

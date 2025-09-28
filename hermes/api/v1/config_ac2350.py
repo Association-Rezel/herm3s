@@ -5,19 +5,19 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from netaddr import EUI, AddrFormatError, mac_unix_expanded
+from common_models.hermes_models import Box, UnetProfile
 
 from hermes.env import ENV
 from hermes.hermes_command_building import ac2350
 from hermes.hermes_command_building import common_command_builder as ccb
 from hermes.hermes_command_building import uci_common as UCI
 from hermes.mongodb.db import get_box_by_mac, get_db
-from hermes.mongodb.models import Box, UnetProfile
 
 router = APIRouter()
 
 
 # download file from hermes to box
-@router.get("/v1/config/ac2350/{mac}")
+@router.get("/config/ac2350/{mac}")
 async def ac2350_get_file_config_init(mac: str, db=Depends(get_db)):
     """
     Download the configuration file for the box with the mac address mac
@@ -42,7 +42,7 @@ async def ac2350_get_file_config_init(mac: str, db=Depends(get_db)):
     )
 
 
-@router.get("/v1/config/ac2350/default/file")
+@router.get("/config/ac2350/default/file")
 async def ac2350_get_default_config():
     """
     Download the default configuration file

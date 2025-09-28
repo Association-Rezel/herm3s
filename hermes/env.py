@@ -50,10 +50,14 @@ class Env:  # pylint: disable=too-many-instance-attributes
     db_uri: str
     db_name: str
 
-    ptah_releases_base_url: str
-    gitlab_ptah_access_token: str
+    ptah_base_url: str
 
     temp_generated_box_configs_dir: str
+
+    vault_url: str
+    vault_role_name: str
+    vault_transit_mount: str
+    vault_transit_key: str
 
     def __init__(self) -> None:
         """Load all variables."""
@@ -65,20 +69,25 @@ class Env:  # pylint: disable=too-many-instance-attributes
             load_dotenv(f".env.{getenv('DEPLOY_ENV')}")
 
         # Else, env variables are already loaded via docker compose
+        self.deploy_env = get_or_default("DEPLOY_ENV", "dev")
 
         self.db_uri = get_or_raise("DB_URI")
         self.db_name = get_or_raise("DB_NAME")
-        self.ptah_releases_base_url = get_or_raise("PTAH_RELEASES_BASE_URL")
-        self.gitlab_ptah_access_token = get_or_raise("GITLAB_PTAH_ACCESS_TOKEN")
         self.temp_generated_box_configs_dir = get_or_raise(
             "TEMP_GENERATED_BOX_CONFIGS_DIR"
         )
+        self.ptah_base_url = get_or_raise("PTAH_BASE_URL")
+
+        self.vault_url = get_or_raise("VAULT_URL")
+        self.vault_role_name = get_or_raise("VAULT_ROLE_NAME")
+        self.vault_transit_mount = get_or_raise("VAULT_TRANSIT_MOUNT")
+        self.vault_transit_key = get_or_raise("VAULT_TRANSIT_KEY")
 
         if self.temp_generated_box_configs_dir[-1] != "/":
             self.temp_generated_box_configs_dir += "/"
 
-        if self.ptah_releases_base_url[-1] != "/":
-            self.ptah_releases_base_url += "/"
+        if self.ptah_base_url[-1] != "/":
+            self.ptah_base_url += "/"
 
 
 ENV = Env()

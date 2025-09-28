@@ -1,14 +1,9 @@
-import logging
-
-import requests
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, StreamingResponse
-from netaddr import EUI, AddrFormatError, mac_unix_expanded
 
 from hermes.env import ENV
-from hermes.mongodb.db import close_db, get_box_by_mac, get_db, init_db
+from hermes.mongodb.db import close_db, init_db
 from hermes.api.routes import router as api_router
 
 app = FastAPI()
@@ -25,6 +20,23 @@ app.add_event_handler("startup", init_db)
 app.add_event_handler("shutdown", close_db)
 
 app.include_router(api_router)
+
+
+@app.get("/")
+async def root():
+    """
+    Return 200 code
+    """
+    return {"status": "OK"}
+
+
+@app.get("/status")
+async def status():
+    """
+    Return 200 code
+    """
+    return {"status": "OK"}
+
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="::", reload=True)

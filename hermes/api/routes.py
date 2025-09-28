@@ -1,24 +1,8 @@
 from fastapi import APIRouter
-from .config_ac2350 import router as config_ac2350_router
-from .sysupgrade import router as sysupgrade_router
+
+from .v1 import router as router_v1
+from .v2 import router as router_v2
 
 router = APIRouter()
-
-router.include_router(config_ac2350_router)
-router.include_router(sysupgrade_router)
-
-
-@router.get("/")
-async def root():
-    """
-    Return 200 code
-    """
-    return {"status": "OK"}
-
-
-@router.get("/status")
-async def status():
-    """
-    Return 200 code
-    """
-    return {"status": "OK"}
+router.include_router(router_v1)
+router.include_router(router_v2)

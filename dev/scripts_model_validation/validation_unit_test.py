@@ -6,7 +6,7 @@ Usage: python3 validation_unit_test.py <filename>
 
 import sys
 
-from hermes.mongodb.models import Box
+from common_models.hermes_models import Box
 
 if len(sys.argv) != 2:
     print("Veuillez fournir un nom de fichier en argument.")

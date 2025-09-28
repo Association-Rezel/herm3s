@@ -4,9 +4,9 @@ from typing import Optional
 from fastapi import Depends
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from netaddr import EUI
+from common_models.hermes_models import Box
 
 from hermes.env import ENV
-from hermes.mongodb.models import Box
 
 database: Optional[AsyncIOMotorDatabase] = None
 db_client: Optional[AsyncIOMotorClient] = None

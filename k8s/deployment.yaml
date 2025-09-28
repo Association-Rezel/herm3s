@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hermes-deployment
+  namespace: ${DEPLOY_NAMESPACE}
   labels:
     app: hermes
 spec:
@@ -15,11 +16,10 @@ spec:
         app: hermes
       annotations:
         vault.hashicorp.com/agent-inject: "true"
-        vault.hashicorp.com/role: "hermes"
+        vault.hashicorp.com/role: "hermes_${DEPLOY_ENV}"
         vault.hashicorp.com/agent-inject-template-env: | # Writes at /vault/secrets/env
-          {{ with secret "kv/data/hermes" -}}
+          {{ with secret "kv/data/hermes_${DEPLOY_ENV}" -}}
             MONGODB_PASSWORD="{{ .Data.data.mongodb_password }}"
-            PTAH_ACCESS_TOKEN="{{ .Data.data.ptah_access_token }}"
           {{- end }}
     spec:
       serviceAccountName: hermes-ksa
@@ -35,8 +35,18 @@ spec:
           requests:
             cpu: "0.2"
             memory: "256Mi"
+        args:
+        - "--host"
+        - "0.0.0.0"
+        - "--port"
+        - "8000"
+        - "${RELOAD_ARG}"
         env:
         - name: DEPLOY_ENV
           value: "${DEPLOY_ENV}"
+        - name: VAULT_URL
+          value: "https://vault.core.rezel.net"
+        - name: VAULT_ROLE_NAME
+          value: "hermes_${DEPLOY_ENV}"
       imagePullSecrets:
        - name: gitlab-registery-credentials

@@ -1339,7 +1339,7 @@ class UCIRedirect4(UCIConfig):
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#redirects
     """
 
-    desc: Description
+    desc: Optional[Description]
     src: UCIZone
     src_ip: Optional[IPv4Address]
     src_dip: Optional[IPv4Address]
@@ -1353,7 +1353,7 @@ class UCIRedirect4(UCIConfig):
         self,
         unetid: UNetId,
         name: UCISectionName | str,
-        desc: Description,
+        desc: Optional[Description],
         src_dport: TCPUDPPort,
         dest: UCIZone,
         dest_ip: IPv4Address,
@@ -1369,7 +1369,7 @@ class UCIRedirect4(UCIConfig):
         Args:
             unetid (UNetId): The UNetId object.
             name (UCISectionName): The name of the redirect.
-            desc (Description): The description of the redirect.
+            desc (Description, optional): The description of the redirect.
             src (UCIZone): The source zone. Defaults to None.
             src_dip (IPv4Address): The destination IP address. Defaults to None.
             src_ip (IPv4Address): The source IP address. Defaults to None.
@@ -1469,7 +1469,7 @@ class UCIRule(UCIConfig):
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#rules
     """
 
-    desc: Description
+    desc: Optional[Description]
     proto: Protocol
     src: Optional[UCIZone]
     src_ip: Optional[IPv4Address | IPv6Address]
@@ -1485,7 +1485,7 @@ class UCIRule(UCIConfig):
         self,
         unetid: UNetId,
         name: UCISectionName | str,
-        desc: Description,
+        desc: Optional[Description],
         proto: Protocol,
         target: Target,
         src: Optional[UCIZone] = None,

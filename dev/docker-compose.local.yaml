@@ -1,11 +1,17 @@
 services:
   api_hermes:
     container_name: api_hermes
+    command: --reload
     build: ..
     env_file:
       - .env.local
+      - .env.secrets
     ports:
       - "8000:8000"
+    network_mode: host
+    volumes:
+      - ../hermes:/hermes:Z
+
 
   mongodb:
     container_name: mongodb
@@ -19,7 +25,7 @@ services:
     links:
       - mongodb
     volumes:
-      - ./mongodb-import:/mongodb-import
+      - ./mongodb-import:/mongodb-import:Z
     command: >
       bash -c '
       mongoimport --host mongodb --db test --collection boxes --type json --file /mongodb-import/test.boxes.json --jsonArray'

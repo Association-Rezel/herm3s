@@ -13,3 +13,5 @@ hermes/communication_db/test.py
 
 # Tests
 communication_db/scripts_model_validation/instance.txt
+
+.env.secrets
