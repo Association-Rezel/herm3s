@@ -60,6 +60,15 @@ async def sysupgrade_to_version(
     except Exception as e:
         return JSONResponse(status_code=500, content={"detail": str(e)})
 
+    if not box_obj.ptah_profile == "ac2350-canary":
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "Unsupported profile",
+                "message": "Sysupgrade is only supported for ac2350-canary profile.",
+            },
+        )
+
     k8s_token_processing = K8sVaultTokenProcessing(
         vault_url=ENV.vault_url,
         vault_role_name=ENV.vault_role_name,
