@@ -5,6 +5,7 @@
     },
     "mac": "00:00:00:00:00:00",
     "type": "ac2350",
+    "ptah_profile": "default",
     "main_unet_id": "ac2350a1",
     "unets": [
       {

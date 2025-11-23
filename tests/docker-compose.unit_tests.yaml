@@ -28,35 +28,15 @@ services:
     command: >
       bash -c '
       mongoimport --host test_mongodb --db test --collection boxes --type json --file /mongodb-import/test.boxes.json --jsonArray && sleep infinity'
-    
 
   unit_tests:
     container_name: unit_tests
     depends_on:
-       api_hermes:
-          condition: service_healthy
-    build: 
+      api_hermes:
+        condition: service_healthy
+    build:
       context: .
       dockerfile: Dockerfile.unit_tests
+    env_file: .env.tests
     environment:
-      - PATH_DEFAULT_CONFIG_FILE=/
-      - NAME_DEFAULT_CONFIG_FILE=test_ac2350_defaultConfigfile.txt
-
-      - PATH_DEFAULT_CONFIG_FILE_TEST=/
-      - NAME_DEFAULT_CONFIG_FILE_TEST=test_ac2350_defaultConfigfileTest_received.txt
-
-      - MAC=00:00:00:00:00:00
-      - PATH_CONFIG_FILE=/
-      - NAME_CONFIG_FILE=test_ac2350_configfile.txt
-
-      - PATH_CONFIG_FILE_TEST=/
-      - NAME_CONFIG_FILE_TEST=test_ac2350_configfile_received.txt
-
       - URL=http://test_api_hermes:8000
-      - ENDPOINT_DEFAULT_CONFIG=/v1/config/ac2350/default/file
-      - ENDPOINT_CONFIG=/v1/config/ac2350/
-      - ENDPOINT_STATUS=/status
-    
-
-
- 

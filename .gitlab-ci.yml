@@ -6,7 +6,7 @@ stages:
   - publish
 
 include:
-  - project: 'rezel/shared-ci'
+  - project: "rezel/shared-ci"
     file: .gitlab-ci-template-publish_to_github.yml
     inputs:
       vault_secrets_role: service_hermes
@@ -29,17 +29,20 @@ linting:
 
 unit-tests:
   stage: pre_checks
-  image: docker:24.0.7
+  image: python:3.12
   services:
-    - docker:24.0.7-dind
+    - name: mongo:4.4
+      alias: mongo-service
+  variables:
+    MONGO_HOST: "mongo-service"
+    MONGO_URI: "mongodb://mongo-service:27017"
+  before_script:
+    - apt-get update && apt-get install -y curl
+    - curl -OL https://fastdl.mongodb.org/tools/db/mongodb-database-tools-debian12-x86_64-100.10.0.deb
+    - apt-get install -y ./mongodb-database-tools-*.deb
+    - pip install -r requirements.txt
   script:
-    - docker compose -f tests/docker-compose.unit_tests.yaml up --build --exit-code-from unit_tests
-  rules:
-    - if: $SKIP_UNIT_TESTS == "true"
-      when: never
-    - when: never
-  tags:
-    - dind
+    - make tests-native-ci
 
 build:
   stage: build
@@ -61,7 +64,7 @@ build:
 
 deploy:
   stage: deploy
-  rules: 
+  rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       variables:
         DEPLOY_ENV: "prod"
@@ -72,7 +75,7 @@ deploy:
         RELOAD_ARG: "--reload"
   image:
     name: dtzar/helm-kubectl
-    entrypoint: ['']
+    entrypoint: [""]
   before_script:
     - apk add envsubst
   script:

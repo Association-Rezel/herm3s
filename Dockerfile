@@ -18,4 +18,4 @@ WORKDIR /app
 
 EXPOSE 8000
 
-ENTRYPOINT [ "uvicorn", "hermes.main:app" ]
+ENTRYPOINT [ "uvicorn", "hermes.main:app", "--host", "0.0.0.0" ]
