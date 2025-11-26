@@ -170,12 +170,29 @@ def create_configfile(box: Box):
                 ),
                 src=user.wan_zone,
                 src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
+                src_dip=wan_ip_address,
                 dest=user.lan_zone,
                 dest_ip=port_forwarding.lan_ip,
                 dest_port=UCI.TCPUDPPort(port_forwarding.lan_port),
                 proto=UCI.Protocol(port_forwarding.protocol),
             )
             user_port_forwarding.build_firewall(Fireconf)
+
+            # Nat loopback rule
+            user_port_forwarding_loopback = ac2350.HermesPortForwarding(
+                unetid=UCI.UNetId(unet.unet_id),
+                name=UCI.UCISectionName(
+                    f"port_forwarding_dport_{port_forwarding.wan_port}_lan"
+                ),
+                src=user.wan_zone,
+                src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
+                src_dip=wan_ip_address,
+                dest=user.lan_zone,
+                dest_ip=port_forwarding.lan_ip,
+                dest_port=UCI.TCPUDPPort(port_forwarding.lan_port),
+                proto=UCI.Protocol(port_forwarding.protocol),
+            )
+            user_port_forwarding_loopback.build_firewall(Fireconf)
 
         # BOUCLE POUR L'OUVERTURE DES PORTS IPV6
         for ipv6_rule in unet.firewall.ipv6_port_opening:
