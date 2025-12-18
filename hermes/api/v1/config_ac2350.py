@@ -184,7 +184,7 @@ def create_configfile(box: Box):
                 name=UCI.UCISectionName(
                     f"port_forwarding_dport_{port_forwarding.wan_port}_lan"
                 ),
-                src=user.wan_zone,
+                src=user.lan_zone,
                 src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
                 src_dip=wan_ip_address,
                 dest=user.lan_zone,
