@@ -1,4 +1,5 @@
 import uvicorn
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -6,7 +7,17 @@ from hermes.env import ENV
 from hermes.mongodb.db import close_db, init_db
 from hermes.api.routes import router as api_router
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    init_db()
+    try:
+        yield
+    finally:
+        close_db()
+
+
+app = FastAPI(lifespan=lifespan)
 
 # Enable CORS (for swagger)
 app.add_middleware(
@@ -15,9 +26,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.add_event_handler("startup", init_db)
-app.add_event_handler("shutdown", close_db)
 
 app.include_router(api_router)
 
