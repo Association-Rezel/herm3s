@@ -92,6 +92,10 @@ def create_configfile(box: Box):
 
     for unet in unets:
 
+        if unet.disabled and unet.unet_id != main_user_unetid:
+            # Not sending config to boxes which internet is disabled
+            continue
+
         wan_ip_address = unet.network.wan_ipv4.ip
         lan_ip_address = unet.network.lan_ipv4.address
 

@@ -9,5 +9,5 @@ python-dotenv<2
 pyyaml<7
 requests<3
 uvicorn<1
-common-models==0.2.1
-rezel-vault-jwt==0.1.1
+common-models==0.5.2
+rezel-vault-jwt~=0.1.1
