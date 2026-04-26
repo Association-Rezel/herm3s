@@ -122,7 +122,7 @@ def create_configfile(box: Box):
             user_port_forwarding = ac2350.HermesPortForwarding(
                 unetid=UCI.UNetId(unet.unet_id),
                 name=UCI.UCISectionName(
-                    f"port_forwarding_dport_{port_forwarding.wan_port}"
+                    f"port_forwarding_dport_{port_forwarding.wan_port}_{port_forwarding.protocol}"
                 ),
                 src=user.wan_zone,
                 src_dport=UCI.TCPUDPPort(port_forwarding.wan_port),
@@ -137,7 +137,9 @@ def create_configfile(box: Box):
         for ipv6_rule in unet.firewall.ipv6_port_opening:
             user_ipv6_opening = ac2350.HermesIPv6PortOpening(
                 unetid=UCI.UNetId(unet.unet_id),
-                name=UCI.UCISectionName(f"ipv6_open_dport_{ipv6_rule.port}"),
+                name=UCI.UCISectionName(
+                    f"ipv6_open_dport_{ipv6_rule.port}_{ipv6_rule.protocol}"
+                ),
                 src=user.wan6_zone,
                 dest=user.lan_zone,
                 dest_ip=ipv6_rule.ip,
