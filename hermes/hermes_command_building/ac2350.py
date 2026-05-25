@@ -96,13 +96,6 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         )
         self.network_commands.append(self.vlan_104)
 
-        self.vlan_104_test = UCI.UCINoIPInterface(
-            name=UCI.UCISectionName("vlan_104_test"),
-            device=UCI.UCISimpleDevice("eth0.104"),
-            proto=UCI.InterfaceProto("dhcpv6"),
-        )
-        self.network_commands.append(self.vlan_104_test)
-
         # Firewall Configuration
         self.firewall_commands.append(UCI.UCIFirewallDefaults())
 
@@ -114,14 +107,6 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         )
         self.firewall_commands.append(self.mgt_zone)
 
-        self.vlan_104_test_zone = UCI.UCIZone(
-            network=self.vlan_104_test,
-            _input=UCI.InOutForw("REJECT"),
-            output=UCI.InOutForw("ACCEPT"),
-            forward=UCI.InOutForw("REJECT"),
-        )
-        self.firewall_commands.append(self.vlan_104_test_zone)
-
         self.static_mgt_zone = UCI.UCIZone(
             network=self.static_mgt,
             _input=UCI.InOutForw("REJECT"),
@@ -130,17 +115,6 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
             family=UCI.Family("ipv6"),
         )
         self.firewall_commands.append(self.static_mgt_zone)
-
-        self.rule_icmpv6_vlan_104_test = UCI.UCIRule(
-            unetid=UCI.UNetId("v104test"),
-            name=UCI.UCISectionName("allow_ping"),
-            desc=UCI.Description("Allow ICMPv6 to VLAN 104 test"),
-            src=self.vlan_104_test_zone,
-            proto=UCI.Protocol("icmp"),
-            target=UCI.Target("ACCEPT"),
-            family=UCI.Family("ipv6"),
-        )
-        self.firewall_commands.append(self.rule_icmpv6_vlan_104_test)
 
         self.rule_icmpv6_mgt = UCI.UCIRule(
             unetid=UCI.UNetId("manageme"),
