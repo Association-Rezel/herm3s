@@ -100,7 +100,7 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         self.firewall_commands.append(UCI.UCIFirewallDefaults())
 
         self.mgt_zone = UCI.UCIZone(
-            networks=[self.management],
+            network=self.management,
             _input=UCI.InOutForw("REJECT"),
             output=UCI.InOutForw("ACCEPT"),
             forward=UCI.InOutForw("REJECT"),
@@ -108,7 +108,7 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
         self.firewall_commands.append(self.mgt_zone)
 
         self.static_mgt_zone = UCI.UCIZone(
-            networks=[self.static_mgt],
+            network=self.static_mgt,
             _input=UCI.InOutForw("REJECT"),
             output=UCI.InOutForw("ACCEPT"),
             forward=UCI.InOutForw("REJECT"),
@@ -331,16 +331,15 @@ class HermesUser(ccb.HermesConfigBuilder):
 
         # Firewall Configuration
         self.lan_zone = UCI.UCIZone(
-            networks=[self.lan_int],
+            network=self.lan_int,
             _input=UCI.InOutForw("ACCEPT"),
             output=UCI.InOutForw("ACCEPT"),
             forward=UCI.InOutForw("REJECT"),
             family=UCI.Family("any"),
         )
         self.firewall_commands.append(self.lan_zone)
-
         self.wan_zone = UCI.UCIZone(
-            networks=[self.wan_int, self.wan6_int],
+            network=self.wan_int,
             _input=UCI.InOutForw("REJECT"),
             output=UCI.InOutForw("ACCEPT"),
             forward=UCI.InOutForw("REJECT"),
@@ -368,16 +367,31 @@ class HermesUser(ccb.HermesConfigBuilder):
         )
         self.firewall_commands.append(self.snat)
 
-        self.rule_icmpv6_wan = UCI.UCIRule(
+        self.wan6_zone = UCI.UCIZone(
+            network=self.wan6_int,
+            _input=UCI.InOutForw("REJECT"),
+            output=UCI.InOutForw("ACCEPT"),
+            forward=UCI.InOutForw("REJECT"),
+            family=UCI.Family("ipv6"),
+        )
+        self.firewall_commands.append(self.wan6_zone)
+
+        self.forwarding6 = UCI.UCIForwarding(
+            src=self.lan_zone,
+            dest=self.wan6_zone,
+        )
+        self.firewall_commands.append(self.forwarding6)
+
+        self.rule_icmpv6_wan6 = UCI.UCIRule(
             unetid=unetid,
-            name=UCI.UCISectionName("wan_allow_icmpv6"),
-            desc=UCI.Description("Allow ICMPv6 to WAN"),
-            src=self.wan_zone,
+            name=UCI.UCISectionName("wan6_allow_ping"),
+            desc=UCI.Description("Allow ICMPv6 to WAN6"),
+            src=self.wan6_zone,
             proto=UCI.Protocol("icmp"),
             target=UCI.Target("ACCEPT"),
             family=UCI.Family("ipv6"),
         )
-        self.firewall_commands.append(self.rule_icmpv6_wan)
+        self.firewall_commands.append(self.rule_icmpv6_wan6)
 
 
 class HermesMainUser(HermesUser):
@@ -724,7 +738,7 @@ class HermesStaticIPv6PrefDelegation(ccb.HermesConfigBuilder):
         self.firewall_commands.append(self.ipset)
 
         self.forwarding = UCI.UCIForwarding(
-            src=user.wan_zone,
+            src=user.wan6_zone,
             dest=user.lan_zone,
             ipset=self.ipset,
             optional_name_suffix=name.value,
@@ -866,7 +880,7 @@ if __name__ == "__main__":
         ipv6_port_opening = HermesIPv6PortOpening(
             unetid=UCI.UNetId("bbbbbbbb"),
             name=UCI.UCISectionName("http_to_internal_ipv6"),
-            src=secondary_user.wan_zone,
+            src=secondary_user.wan6_zone,
             dest=secondary_user.lan_zone,
             dest_ip=IPv6Address("2a09:6847:402:0:ee2:7ff:fe59:0"),
             dest_port=UCI.TCPUDPPort(80),

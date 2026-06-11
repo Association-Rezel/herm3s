@@ -1277,7 +1277,7 @@ class UCIZone(UCIConfig):
     See https://openwrt.org/docs/guide-user/firewall/firewall_configuration#zones
     """
 
-    network: list[UCIInterface | UCINoIPInterface]
+    network: UCIInterface | UCINoIPInterface
     input: InOutForw
     output: InOutForw
     forward: InOutForw
@@ -1286,7 +1286,7 @@ class UCIZone(UCIConfig):
 
     def __init__(
         self,
-        networks: list[UCIInterface | UCINoIPInterface],
+        network: UCIInterface | UCINoIPInterface,
         _input: InOutForw,
         output: InOutForw,
         forward: InOutForw,
@@ -1303,8 +1303,8 @@ class UCIZone(UCIConfig):
             forward (InOutForw): The forward value.
             is_wan_zone (bool): True if its a wan zone (for masq). Defaults to False.
         """
-        super().__init__(f"zone_{networks[0].name}")
-        self.network = networks
+        super().__init__(f"zone_{network.name}")
+        self.network = network
         self.input = _input
         self.output = output
         self.forward = forward
@@ -1321,20 +1321,11 @@ class UCIZone(UCIConfig):
         self.contatenate_uci_commands(
             f"uci set firewall.{self.name}=zone",
             f"uci set firewall.{self.name}.name='{self.name}'",
+            f"uci set firewall.{self.name}.network='{self.network.name}'",
             f"uci set firewall.{self.name}.input='{self.input}'",
             f"uci set firewall.{self.name}.output='{self.output}'",
             f"uci set firewall.{self.name}.forward='{self.forward}'",
         )
-        if len(self.network) == 1:
-            self.contatenate_uci_commands(
-                f"uci set firewall.{self.name}.network='{self.network[0].name}'"
-            )
-        else:
-            # UCI requires a different syntax when using multiple networks for one zone
-            for network in self.network:
-                self.contatenate_uci_commands(
-                    f"uci add_list firewall.{self.name}.network='{network.name}'"
-                )
         if self.family is not None:
             self.contatenate_uci_commands(
                 f"uci set firewall.{self.name}.family='{self.family}'"

@@ -201,7 +201,7 @@ def create_configfile(box: Box):
                 name=UCI.UCISectionName(
                     f"ipv6_open_dport_{ipv6_rule.port}_{ipv6_rule.protocol}"
                 ),
-                src=user.wan_zone,
+                src=user.wan6_zone,
                 dest=user.lan_zone,
                 dest_ip=ipv6_rule.ip,
                 dest_port=UCI.TCPUDPPort(ipv6_rule.port),
