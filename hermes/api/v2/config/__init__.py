@@ -29,6 +29,8 @@ async def get_file_config_by_mac(
     match box.type:
         case "ac2350":
             from hermes.api.v2.config.ac2350 import create_configfile
+        case "wr3000":
+            from hermes.api.v2.config.wr3000 import create_configfile
         case _:
             raise HTTPException(400, {"Erreur": f"Box type {box.type} not supported"})
     try:
@@ -56,6 +58,8 @@ async def get_default_config_by_mac(
     match box.type:
         case "ac2350":
             from hermes.api.v2.config.ac2350 import create_default_configfile
+        case "wr3000":
+            from hermes.api.v2.config.wr3000 import create_default_configfile
         case _:
             raise HTTPException(400, {"Erreur": f"Box type {box.type} not supported"})
     create_default_configfile()
