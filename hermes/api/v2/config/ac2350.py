@@ -112,8 +112,14 @@ def create_configfile(box: Box):
                 hermes_primary_user=main_user,
             )
 
-        user.build_network(Netconf)
         user.build_firewall(Fireconf)
+        # We build the firewall regardeless of the disable status
+
+        if unet.disabled:
+            # Not sending config to boxes which internet is disabled
+            continue
+
+        user.build_network(Netconf)
         user.build_dhcp(Dhcpconf)
         user.build_wireless(Wirelessconf)
 

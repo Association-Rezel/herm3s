@@ -11,11 +11,11 @@ RUN  pip install -r /hermes/requirements.txt
 #for health check
 RUN apt-get update && apt-get install -y curl 
 
-COPY ./hermes /app/hermes
-COPY .env* /app
+COPY ./hermes /app/hermes/
+COPY .env* /app/
 
 WORKDIR /app
 
 EXPOSE 8000
 
-ENTRYPOINT [ "uvicorn", "hermes.main:app", "--host", "0.0.0.0" ]
+ENTRYPOINT [ "uvicorn", "hermes.main:app", "--host", "::" ]
