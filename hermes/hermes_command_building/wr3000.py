@@ -403,7 +403,7 @@ class HermesMainUser(HermesUser):
         self.br_lan = UCI.UCIBridge(
             unetid=unetid,
             name_prefix=UCI.UCISectionNamePrefix("br_lan_"),
-            ports=UCI.UCINetworkPorts("lan1 lan2 lan3"),
+            ports=UCI.UCINetworkPorts("lan1 lan2 lan3 lan4"),
         )
 
         super().__init__(
