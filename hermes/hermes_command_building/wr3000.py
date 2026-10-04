@@ -1,4 +1,3 @@
-from common_models.hermes_models import WanVlan
 from ipaddress import (
     IPv4Address,
     IPv4Interface,
@@ -8,6 +7,8 @@ from ipaddress import (
     IPv6Network,
 )
 from typing import Optional
+
+from common_models.hermes_models import WanVlan
 
 from hermes.hermes_command_building import common_command_builder as ccb
 from hermes.hermes_command_building import uci_common as UCI
@@ -133,8 +134,8 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
             path=UCI.Path("platform/soc/18000000.wifi"),
             device_type=UCI.WifiDeviceType("mac80211"),
             channel=UCI.Channel("auto"),
-            htmode=UCI.Htmode("HE40"),
-            country=UCI.Country("FR"),
+            htmode=UCI.Htmode("HE20"),
+            country=UCI.Country("PA"),
             band=UCI.Band("2g"),
         )
         self.wireless_commands.append(self.radio0)
@@ -143,9 +144,9 @@ class HermesDefaultConfig(ccb.HermesDefaultConfig):
             name=UCI.UCISectionName("radio1"),
             path=UCI.Path("platform/soc/18000000.wifi+1"),
             device_type=UCI.WifiDeviceType("mac80211"),
-            channel=UCI.Channels("36 40 44 48 149 153 157 161 169 173"),
+            channels=UCI.Channels("36 40 44 48 149 153 157 161 169 173"),
             htmode=UCI.Htmode("HE80"),
-            country=UCI.Country("FR"),
+            country=UCI.Country("PA"),
             band=UCI.Band("5g"),
         )
         self.wireless_commands.append(self.radio1)
